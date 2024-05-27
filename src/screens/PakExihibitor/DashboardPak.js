@@ -17,6 +17,7 @@ import MeetingRequestPak from './MeetingRequestPak';
 import CustomDrawer from '../../components/CustomDrawer';
 import {Icon} from 'react-native-elements';
 import {useNavigation} from '@react-navigation/native';
+import BottomNavigator from '../../components/BottomNavigator';
 
 const {width, height} = Dimensions.get('screen');
 
@@ -259,16 +260,24 @@ const DashboardPak = () => {
           </View>
         </ScrollView>
       </View>
-      <Modal
+      {/* <Modal
         animationType="fade"
         transparent={true}
         visible={modalVisible}
         onRequestClose={() => setModalVisible(!modalVisible)}>
+        <ScrollView horizontal={true}>
+          <MeetingRequestPak
+            modalVisible={modalVisible}
+            setModalVisible={setModalVisible}
+          />
+        </ScrollView>
+      </Modal> */}
+      {modalVisible && (
         <MeetingRequestPak
           modalVisible={modalVisible}
           setModalVisible={setModalVisible}
         />
-      </Modal>
+      )}
       <Modal
         animationType="fade"
         transparent={true}
@@ -321,6 +330,7 @@ const DashboardPak = () => {
         onClose={() => setDrawerVisible(false)}
         navigation={navigation}
       />
+      <BottomNavigator />
     </View>
   );
 };
@@ -350,7 +360,6 @@ const styles = StyleSheet.create({
   headerSubCont: {
     width: '100%',
     borderColor: '#ccc',
-    marginTop: 10,
     marginBottom: 15,
     paddingHorizontal: 20,
     zIndex: 999,
@@ -428,14 +437,13 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   tableContainer: {
-    width: '90%',
+    width: '95%',
     backgroundColor: '#fff',
-    marginTop: 20,
+    marginTop: width * 0.06,
     borderWidth: 1,
     borderRadius: 10,
     overflow: 'hidden',
     borderColor: '#ccc',
-    marginBottom: 15,
   },
   headerRow: {
     flexDirection: 'row',

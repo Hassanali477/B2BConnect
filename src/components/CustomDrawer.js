@@ -1,4 +1,5 @@
 import React from 'react';
+import {Image} from 'react-native';
 import {
   View,
   Text,
@@ -26,25 +27,20 @@ const CustomDrawer = ({visible, onClose, navigation}) => {
               <Text style={styles.drawerTitle}>B2B CONNECT</Text>
             </View>
             <View style={styles.mainContainer}>
-              <TouchableOpacity
-                onPress={() => navigateToScreen('ProfilePak')}>
+              <TouchableOpacity onPress={() => navigateToScreen('ProfilePak')}>
                 <View style={styles.drawerItem}>
-                  <Icon
-                    name="user"
-                    type="font-awesome"
-                    size={24}
-                    color="#fff"
+                  <Image
+                    source={require('../assets/icons/person_24dp.png')}
+                    style={styles.icon}
                   />
                   <Text style={styles.drawerItemText}>Profile</Text>
                 </View>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => navigateToScreen('KsaDelegate')}>
                 <View style={styles.drawerItem}>
-                  <Icon
-                    name="users"
-                    type="font-awesome"
-                    size={24}
-                    color="#fff"
+                  <Image
+                    source={require('../assets/icons/groups_24dp.png')}
+                    style={styles.icon}
                   />
                   <Text style={styles.drawerItemText}>KSA DELEGATE</Text>
                 </View>
@@ -52,11 +48,9 @@ const CustomDrawer = ({visible, onClose, navigation}) => {
               <TouchableOpacity
                 onPress={() => navigateToScreen('MeetingRequest')}>
                 <View style={styles.drawerItem}>
-                  <Icon
-                    name="calendar-plus"
-                    type="material-community"
-                    size={24}
-                    color="#fff"
+                  <Image
+                    source={require('../assets/icons/event_note_24dp.png')}
+                    style={styles.icon}
                   />
                   <Text style={styles.drawerItemText}>Meeting Request</Text>
                 </View>
@@ -64,11 +58,9 @@ const CustomDrawer = ({visible, onClose, navigation}) => {
               <TouchableOpacity
                 onPress={() => navigateToScreen('ConfirmedAppointments')}>
                 <View style={styles.drawerItem}>
-                  <Icon
-                    name="check"
-                    type="font-awesome"
-                    size={24}
-                    color="#fff"
+                  <Image
+                    source={require('../assets/icons/done_outline_24dp.png')}
+                    style={styles.icon}
                   />
                   <Text style={styles.drawerItemText}>
                     Confirmed Appointments
@@ -77,18 +69,17 @@ const CustomDrawer = ({visible, onClose, navigation}) => {
               </TouchableOpacity>
               <TouchableOpacity onPress={() => navigateToScreen('Feedback')}>
                 <View style={styles.drawerItem}>
-                  <Icon
-                    name="feedback"
-                    type="material"
-                    size={24}
-                    color="#fff"
+                  <Image
+                    source={require('../assets/icons/chat_bubble_outline_24dp.png')}
+                    style={styles.icon}
                   />
+
                   <Text style={styles.drawerItemText}>Feedback</Text>
                 </View>
               </TouchableOpacity>
             </View>
             <View style={styles.footerContainer}>
-              <TouchableOpacity onPress={() => navigateToScreen('Logout')}>
+              <TouchableOpacity onPress={() => navigateToScreen('LoginPak')}>
                 <View style={styles.drawerItem1}>
                   <Icon name="log-out" type="entypo" size={24} color="#fff" />
                   <Text style={styles.logoutText}>Logout</Text>
@@ -116,7 +107,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    zIndex:999
+    zIndex: 999,
   },
   blankSpace: {
     width: width * 0.3,
@@ -146,6 +137,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 10,
     paddingHorizontal: 10,
+  },
+  icon: {
+    width: 30,
+    height: 30,
   },
 
   drawerItemText: {

@@ -25,9 +25,11 @@ const MeetingRequestPak = ({modalVisible, setModalVisible}) => {
   const [alertMessage, setAlertMessage] = useState('');
   const [alertType, setAlertType] = useState('');
 
-  const dates = ['2023-05-01', '2023-05-02', '2023-05-03'];
+  const dates = ['2023-05-01', '2023-05-02', '2023-05-03', '2023-05-03', '2023-05-03'];
   const timeslots = [
     '10:00 AM - 11:00 AM',
+    '11:00 AM - 12:00 PM',
+    '11:00 AM - 12:00 PM',
     '11:00 AM - 12:00 PM',
     '01:00 PM - 02:00 PM',
   ];

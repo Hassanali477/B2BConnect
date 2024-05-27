@@ -1,14 +1,15 @@
 import React, {useState} from 'react';
 import {
-  Dimensions,
   StyleSheet,
   Text,
   View,
   TouchableOpacity,
   ScrollView,
+  Dimensions,
 } from 'react-native';
 import {Icon} from 'react-native-elements';
 
+const {width, height} = Dimensions.get('screen');
 const SelectDropdown = ({title, options, selectedValue, onSelect}) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -27,7 +28,7 @@ const SelectDropdown = ({title, options, selectedValue, onSelect}) => {
       </TouchableOpacity>
       {isOpen && (
         <View style={styles.optionsContainer}>
-          <ScrollView style={styles.scrollView}>
+          <ScrollView>
             {options.map((item, index) => (
               <TouchableOpacity
                 key={index}
@@ -68,23 +69,22 @@ const styles = StyleSheet.create({
   },
   optionsContainer: {
     position: 'absolute',
-    top: 50, // Adjust this value based on the height of the dropdown header
+    top: 50,
     width: '100%',
     backgroundColor: '#fff',
     borderColor: '#ccc',
     borderWidth: 1,
     borderTopWidth: 0,
     borderRadius: 5,
-    zIndex: 1000, // Ensure the dropdown is above other elements
-    maxHeight: 150, // Fixed height for the dropdown
-  },
-  scrollView: {
-    width: '100%',
+    zIndex: 1000,
+    height: height * 0.15,
   },
   option: {
     padding: 10,
     justifyContent: 'center',
     alignItems: 'center',
+    borderBottomWidth: 1,
+    borderColor: '#ccc',
   },
   optionText: {
     color: 'black',

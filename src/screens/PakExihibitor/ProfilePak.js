@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
-import {Image} from 'react-native';
 import {
+  Image,
   StyleSheet,
   Text,
   View,
@@ -10,6 +10,8 @@ import {
   Modal,
 } from 'react-native';
 import {Icon} from 'react-native-elements';
+import AlertMessage from '../../components/AlertMessage'; // Import the AlertMessage component
+import BottomNavigator from '../../components/BottomNavigator';
 
 const {width, height} = Dimensions.get('window');
 
@@ -27,22 +29,42 @@ const ProfilePak = ({navigation}) => {
   const [updatedEmail, setUpdatedEmail] = useState(email);
   const [updatedWebsiteLink, setUpdatedWebsiteLink] = useState(websiteLink);
 
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+  const [alertType, setAlertType] = useState('');
+
   const openModal = () => {
     setIsModalVisible(true);
   };
+
   const updateProfile = () => {
+    if (
+      !updatedFullName ||
+      !updatedCompanyName ||
+      !updatedPhoneNumber ||
+      !updatedEmail ||
+      !updatedWebsiteLink
+    ) {
+      setAlertMessage('All fields are required.');
+      setAlertType('error');
+      setAlertVisible(true);
+      return;
+    }
+
     setFullName(updatedFullName);
     setCompanyName(updatedCompanyName);
     setPhoneNumber(updatedPhoneNumber);
     setEmail(updatedEmail);
     setWebsiteLink(updatedWebsiteLink);
     setIsModalVisible(false);
+    setAlertMessage('Profile updated successfully.');
+    setAlertType('success');
+    setAlertVisible(true);
   };
 
   return (
     <View style={styles.container}>
       {/* Header */}
-
       <View style={styles.headerContainer}>
         <Icon
           name="keyboard-backspace"
@@ -55,7 +77,6 @@ const ProfilePak = ({navigation}) => {
           source={require('../../assets/images/SplashScreen.png')}
           style={styles.headerImage}
         />
-
         <Icon
           name="account-edit"
           type="material-community"
@@ -64,24 +85,10 @@ const ProfilePak = ({navigation}) => {
           onPress={openModal}
         />
       </View>
-      {/* <View style={styles.headerImageCont}>
-          source={require('../../assets/images/SplashScreen.png')}
-          style={styles.headerImage}
-        />
-      </View> */}
+
       {/* Profile Section */}
       <View style={styles.card}>
-        <Text
-          style={{
-            color: 'black',
-            padding: 10,
-            fontSize: 24,
-            textTransform: 'uppercase',
-            fontWeight: '500',
-            alignSelf: 'center',
-          }}>
-          My Profile
-        </Text>
+        <Text style={styles.profileTitle}>My Profile</Text>
         <TextInput
           style={[styles.input, {color: '#000'}]}
           value={fullName}
@@ -117,15 +124,19 @@ const ProfilePak = ({navigation}) => {
           value={websiteLink}
           onChangeText={setWebsiteLink}
           placeholder="Website Link"
-          keyboardType="text"
+          keyboardType="url"
           placeholderTextColor="#000"
         />
       </View>
+
       {/* Update Button */}
-      <TouchableOpacity style={styles.updateButton} onPress={openModal}>
+      <TouchableOpacity
+        style={[styles.updateButton, {marginTop: width * 0.1}]}
+        onPress={openModal}>
         <Text style={styles.updateButtonText}>Edit Profile</Text>
       </TouchableOpacity>
 
+      {/* Modal for editing profile */}
       <Modal
         animationType="fade"
         transparent={true}
@@ -153,7 +164,6 @@ const ProfilePak = ({navigation}) => {
               onChangeText={setUpdatedFullName}
               placeholder="Full Name"
               placeholderTextColor="#000"
-              keyboardType="twitter"
             />
             <TextInput
               style={styles.input}
@@ -161,7 +171,6 @@ const ProfilePak = ({navigation}) => {
               onChangeText={setUpdatedCompanyName}
               placeholder="Company Name"
               placeholderTextColor="#000"
-              keyboardType="twitter"
             />
             <TextInput
               style={styles.input}
@@ -195,6 +204,15 @@ const ProfilePak = ({navigation}) => {
           </View>
         </View>
       </Modal>
+
+      {/* Alert Message */}
+      <AlertMessage
+        message={alertMessage}
+        type={alertType}
+        visible={alertVisible}
+        onClose={() => setAlertVisible(false)}
+      />
+      <BottomNavigator />
     </View>
   );
 };
@@ -202,7 +220,6 @@ const ProfilePak = ({navigation}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'space-around',
     paddingHorizontal: width * 0.04,
   },
   headerImageCont: {
@@ -221,6 +238,7 @@ const styles = StyleSheet.create({
     height: height * 0.08,
     paddingHorizontal: 10,
     borderRadius: 10,
+    marginTop: width * 0.1,
   },
   header: {
     fontSize: width * 0.07,
@@ -236,6 +254,7 @@ const styles = StyleSheet.create({
     borderRadius: width * 0.02,
   },
   card: {
+    marginTop: width * 0.1,
     backgroundColor: '#fff',
     borderRadius: width * 0.03,
     padding: width * 0.04,
@@ -270,7 +289,7 @@ const styles = StyleSheet.create({
     padding: width * 0.04,
     borderRadius: width * 0.02,
     alignItems: 'center',
-    marginTop: height * 0.03,
+    marginTop: width * 0.1,
   },
   updateButtonText: {
     fontWeight: 'bold',
@@ -326,6 +345,14 @@ const styles = StyleSheet.create({
   updateButtonText: {
     fontWeight: 'bold',
     color: 'white',
+  },
+  profileTitle: {
+    color: 'black',
+    padding: 10,
+    fontSize: 24,
+    textTransform: 'uppercase',
+    fontWeight: '500',
+    alignSelf: 'center',
   },
 });
 
