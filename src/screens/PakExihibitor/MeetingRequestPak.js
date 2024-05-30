@@ -8,13 +8,17 @@ import {
   TouchableOpacity,
   TextInput,
 } from 'react-native';
-import {Icon, Button} from 'react-native-elements';
+import Icon from 'react-native-vector-icons/FontAwesome';
+
 import SelectDropdown from '../../components/PakExhibitor/SelectDropdownPak';
 import AlertMessage from '../../components/AlertMessage';
 
 const {width, height} = Dimensions.get('screen');
 
-const MeetingRequestPak = ({modalVisible, setModalVisible}) => {
+const MeetingRequestPak = ({
+  modalVisible,
+  setModalVisible,
+}) => {
   const [selectedDate, setSelectedDate] = useState('Select Date');
   const [selectedTimeslot, setSelectedTimeslot] = useState('Select Timeslot');
   const [selectedLocation, setSelectedLocation] = useState(
@@ -25,7 +29,13 @@ const MeetingRequestPak = ({modalVisible, setModalVisible}) => {
   const [alertMessage, setAlertMessage] = useState('');
   const [alertType, setAlertType] = useState('');
 
-  const dates = ['2023-05-01', '2023-05-02', '2023-05-03', '2023-05-03', '2023-05-03'];
+  const dates = [
+    '2023-05-01',
+    '2023-05-02',
+    '2023-05-03',
+    '2023-05-03',
+    '2023-05-03',
+  ];
   const timeslots = [
     '10:00 AM - 11:00 AM',
     '11:00 AM - 12:00 PM',
@@ -66,21 +76,10 @@ const MeetingRequestPak = ({modalVisible, setModalVisible}) => {
     'Hunza Serena Inn, Hunza',
   ];
 
-  const handleDateSelect = date => {
-    setSelectedDate(date);
-  };
-
-  const handleTimeslotSelect = timeslot => {
-    setSelectedTimeslot(timeslot);
-  };
-
-  const handleLocationSelect = location => {
-    setSelectedLocation(location);
-  };
-
-  const handleMessageChange = text => {
-    setMessage(text);
-  };
+  const handleDateSelect = date => setSelectedDate(date);
+  const handleTimeslotSelect = timeslot => setSelectedTimeslot(timeslot);
+  const handleLocationSelect = location => setSelectedLocation(location);
+  const handleMessageChange = text => setMessage(text);
 
   const handleSendMessage = () => {
     if (
@@ -91,19 +90,22 @@ const MeetingRequestPak = ({modalVisible, setModalVisible}) => {
     ) {
       setAlertMessage('Please fill all the fields');
       setAlertType('error');
+      setAlertVisible(true);
     } else {
       setAlertMessage('Meeting request sent successfully!');
       setAlertType('success');
-      setModalVisible(false);
+      setAlertVisible(true);
       setSelectedDate('Select Date');
       setSelectedTimeslot('Select Timeslot');
       setSelectedLocation('Select Meeting Location');
       setMessage('');
     }
-    setAlertVisible(true);
   };
 
-  const closeAlert = () => setAlertVisible(false);
+  const closeAlert = () => {
+    setAlertVisible(false);
+    setModalVisible(false);
+  };
 
   return (
     <View style={styles.container}>
@@ -117,23 +119,21 @@ const MeetingRequestPak = ({modalVisible, setModalVisible}) => {
         animationType="fade"
         transparent={true}
         visible={modalVisible}
-        onRequestClose={() => {
-          setModalVisible(!modalVisible);
-        }}>
+        onRequestClose={() => setModalVisible(!modalVisible)}>
         <View style={styles.modalBackground}>
           <View style={styles.modalView}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Meeting Request - ELM</Text>
               <TouchableOpacity onPress={() => setModalVisible(false)}>
                 <Icon
-                  name="close"
+                  name="times"
                   type="material"
                   size={26}
-                  color={'#3C4B64'}
+                  color={'#0059CF'}
                 />
               </TouchableOpacity>
             </View>
-            <View style={styles.modalSeparator}></View>
+            <View style={styles.modalSeparator} />
             <View style={styles.modalContent}>
               <Text style={styles.modalSubTitle}>Send request for Meeting</Text>
               <View style={styles.dropdownContainer}>
@@ -157,7 +157,7 @@ const MeetingRequestPak = ({modalVisible, setModalVisible}) => {
                 </View>
               </View>
             </View>
-            <View style={styles.modalSeparator}></View>
+            <View style={styles.modalSeparator} />
             <Text style={styles.meetingHeading}>Meeting Location</Text>
             <View style={styles.locationContainer}>
               <Text style={styles.locationHeading}>Select Location</Text>
@@ -168,7 +168,7 @@ const MeetingRequestPak = ({modalVisible, setModalVisible}) => {
                 onSelect={handleLocationSelect}
               />
             </View>
-            <View style={styles.separator}></View>
+            <View style={styles.separator} />
             <Text style={styles.messageHeading}>Type Message...</Text>
             <TextInput
               style={styles.messageInput}
@@ -305,7 +305,7 @@ const styles = StyleSheet.create({
   },
   sendButton: {
     width: '80%',
-    backgroundColor: '#000',
+    backgroundColor: '#0059CF',
     borderWidth: 1,
     padding: 15,
     borderRadius: 50,

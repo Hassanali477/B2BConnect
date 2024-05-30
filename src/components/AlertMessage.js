@@ -6,12 +6,30 @@ import {
   TouchableOpacity,
   StyleSheet,
   Dimensions,
+  Animated,
+  Easing,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import LinearGradient from 'react-native-linear-gradient';
 
 const {width, height} = Dimensions.get('screen');
 
 const AlertMessage = ({message, type, visible, onClose}) => {
+  const scaleValue = React.useRef(new Animated.Value(0)).current;
+
+  React.useEffect(() => {
+    const animation = Animated.timing(scaleValue, {
+      toValue: visible ? 1 : 0,
+      duration: visible ? 300 : 0,
+      easing: Easing.ease,
+      useNativeDriver: true,
+    });
+
+    animation.start();
+
+    return () => animation.stop();
+  }, [visible, scaleValue]);
+
   return (
     <Modal
       transparent={true}
@@ -19,34 +37,30 @@ const AlertMessage = ({message, type, visible, onClose}) => {
       visible={visible}
       onRequestClose={onClose}>
       <View style={styles.modalBackground}>
-        <View
+        <Animated.View
           style={[
             styles.modalView,
-            type === 'error'
-              ? styles.errorBackground
-              : styles.successBackground,
+            {
+              transform: [{scale: scaleValue}],
+            },
           ]}>
-          <Icon
-            name={type === 'error' ? 'exclamation-circle' : 'check-circle'}
-            size={60}
-            color={type === 'error' ? 'red' : 'green'}
-          />
-          <Text
-            style={[
-              styles.messageText,
-              {color: type === 'error' ? 'red' : 'green'},
-            ]}>
-            {message}
-          </Text>
-          <TouchableOpacity
-            style={[
-              styles.closeButton,
-              {backgroundColor: type === 'error' ? 'red' : 'green'},
-            ]}
-            onPress={onClose}>
-            <Text style={styles.closeButtonText}>Close</Text>
-          </TouchableOpacity>
-        </View>
+          <LinearGradient
+            colors={
+              type === 'error' ? ['#ff7e7e', '#ff4d4d'] : ['#7efc7e', '#4caf50']
+            }
+            style={styles.gradientBackground}>
+            <Icon
+              name={type === 'error' ? 'exclamation-circle' : 'check-circle'}
+              size={60}
+              color="#fff"
+              style={styles.icon}
+            />
+            <Text style={styles.messageText}>{message}</Text>
+            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+              <Text style={styles.closeButtonText}>Close</Text>
+            </TouchableOpacity>
+          </LinearGradient>
+        </Animated.View>
       </View>
     </Modal>
   );
@@ -59,38 +73,53 @@ const styles = StyleSheet.create({
     flex: 1,
     width: width,
     height: height,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   modalView: {
-    width: width / 1.2,
-    padding: 20,
-    borderRadius: 10,
+    width: width * 0.8,
+    borderRadius: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.4,
+    shadowRadius: 5,
+    elevation: 10,
+  },
+  gradientBackground: {
+    width: '100%',
+    paddingVertical: 30,
+    paddingHorizontal: 20,
+    borderRadius: 15,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  errorBackground: {
-    backgroundColor: '#f0acb2',
-  },
-  successBackground: {
-    backgroundColor: '#8fd09f',
+  icon: {
+    marginBottom: 20,
   },
   messageText: {
     fontSize: 18,
     textAlign: 'center',
-    marginVertical: 10,
+    marginVertical: 15,
+    fontWeight: '600',
+    color: '#fff',
   },
   closeButton: {
-    padding: 10,
-    borderRadius: 5,
-    marginTop: 10,
-    width: '100%',
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 25,
+    marginTop: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    width: '80%',
+    alignItems: 'center',
+    elevation: 2,
   },
   closeButtonText: {
     textAlign: 'center',
     color: '#fff',
-    fontWeight: 'bold',
-    letterSpacing: 1.5,
+    fontWeight: '700',
+    letterSpacing: 1,
   },
 });

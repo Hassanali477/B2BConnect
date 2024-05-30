@@ -8,7 +8,7 @@ import {
   Dimensions,
   Pressable,
 } from 'react-native';
-import {Icon} from 'react-native-elements'; // Assuming you're using react-native-elements
+import {Icon} from 'react-native-elements';
 
 const {width, height} = Dimensions.get('screen');
 
@@ -27,7 +27,7 @@ const CustomDrawer = ({visible, onClose, navigation}) => {
               <Text style={styles.drawerTitle}>B2B CONNECT</Text>
             </View>
             <View style={styles.mainContainer}>
-              <TouchableOpacity onPress={() => navigateToScreen('ProfilePak')}>
+              {/* <TouchableOpacity onPress={() => navigateToScreen('ProfilePak')}>
                 <View style={styles.drawerItem}>
                   <Image
                     source={require('../assets/icons/person_24dp.png')}
@@ -35,7 +35,7 @@ const CustomDrawer = ({visible, onClose, navigation}) => {
                   />
                   <Text style={styles.drawerItemText}>Profile</Text>
                 </View>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
               <TouchableOpacity onPress={() => navigateToScreen('KsaDelegate')}>
                 <View style={styles.drawerItem}>
                   <Image
@@ -73,8 +73,14 @@ const CustomDrawer = ({visible, onClose, navigation}) => {
                     source={require('../assets/icons/chat_bubble_outline_24dp.png')}
                     style={styles.icon}
                   />
-
                   <Text style={styles.drawerItemText}>Feedback</Text>
+                </View>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => navigateToScreen('ResetPassword')}>
+                <View style={styles.drawerItem}>
+                  <Icon name="key" type="font-awesome" size={26} color="#fff" />
+                  <Text style={styles.drawerItemText}>Reset Password</Text>
                 </View>
               </TouchableOpacity>
             </View>

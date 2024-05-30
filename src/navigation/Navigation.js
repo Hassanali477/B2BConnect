@@ -12,6 +12,8 @@ import LoginKSA from '../screens/KSADelegates/LoginKSA';
 import ForgotPasswordKSA from '../screens/KSADelegates/ForgotPasswordKSA';
 import DashboardPak from '../screens/PakExihibitor/DashboardPak';
 import ProfilePak from '../screens/PakExihibitor/ProfilePak';
+import ResetPassword from '../screens/PakExihibitor/ResetPassword';
+import MeetingRequestPak from '../screens/PakExihibitor/MeetingRequestPak';
 const Stack = createStackNavigator();
 
 const Navigation = () => {
@@ -28,12 +30,15 @@ const Navigation = () => {
         <Stack.Screen name="AppStarter" component={AppStarterScreen} />
         <Stack.Screen name="LoginPak" component={LoginPak} />
         <Stack.Screen name="ForgotPasswordPak" component={ForgotPasswordPak} />
+        <Stack.Screen name="ResetPassword" component={ResetPassword} />
         <Stack.Screen name="DashboardPak" component={DashboardPak} />
         <Stack.Screen name="ProfilePak" component={ProfilePak} />
+        <Stack.Screen name="MeetingRequestPak" component={MeetingRequestPak} />
+
         {/* KSA Exhibitor */}
         <Stack.Screen name="LoginKSA" component={LoginKSA} />
         <Stack.Screen name="ForgotPasswordKSA" component={ForgotPasswordKSA} />
-        <Stack.Screen name="MeetingRequestKsa" component={MeetingRequestKsa} />
+        {/* <Stack.Screen name="MeetingRequestKsa" component={MeetingRequestKsa} /> */}
       </Stack.Navigator>
     </NavigationContainer>
   );

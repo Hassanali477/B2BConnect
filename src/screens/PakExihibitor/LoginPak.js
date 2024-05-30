@@ -12,6 +12,9 @@ import {
   ImageBackground,
 } from 'react-native';
 import CheckBox from '@react-native-community/checkbox';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import AlertMessage from '../../components/AlertMessage';
+import {Icon} from 'react-native-elements';
 
 const {width, height} = Dimensions.get('screen');
 
@@ -22,6 +25,8 @@ const LoginPak = () => {
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
 
   const validateEmail = email => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -36,7 +41,6 @@ const LoginPak = () => {
     } else {
       setEmailError('');
     }
-
     if (!password) {
       setPasswordError('Password is required');
     } else if (password.length < 6) {
@@ -44,29 +48,31 @@ const LoginPak = () => {
     } else {
       setPasswordError('');
     }
-
     if (validateEmail(email) && password.length >= 6) {
-      Alert.alert('Login Successful', 'Welcome back!');
-      // Perform login action
+      setShowAlert(true);
     }
     navigation.navigate('DashboardPak');
   };
 
-  // const handleSignUp = () => {
-  //   navigation.navigate('SignUpScreenPak'); // Navigate to the SignUp screen
-  // };
-
   const handleForgotPassword = () => {
-    navigation.navigate('ForgotPasswordPak'); // Navigate to the Forgot Password screen
+    navigation.navigate('ForgotPasswordPak');
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <View style={styles.headerIconCont}>
+          <Icon
+            name="keyboard-backspace"
+            type="material-community"
+            color="grey"
+            size={30}
+            style={styles.IconArrow}
+            onPress={() => navigation.goBack()}
+          />
           <Image
             source={require('../../assets/images/SplashScreen.png')}
-            style={styles.logo}
+            style={styles.logoTop}
           />
         </View>
         <Text style={styles.headerText}>Sign in</Text>
@@ -90,14 +96,25 @@ const LoginPak = () => {
           onChangeText={text => setEmail(text)}
         />
         {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          placeholderTextColor="#000"
-          value={password}
-          onChangeText={text => setPassword(text)}
-          secureTextEntry
-        />
+        <View style={styles.passwordInputContainer}>
+          <TextInput
+            style={styles.passwordInput}
+            placeholder="Password"
+            placeholderTextColor="#000"
+            value={password}
+            onChangeText={text => setPassword(text)}
+            secureTextEntry={!passwordVisible} // Toggle secureTextEntry based on passwordVisible state
+          />
+          <TouchableOpacity
+            style={styles.eyeIcon}
+            onPress={() => setPasswordVisible(!passwordVisible)}>
+            <FontAwesome
+              name={passwordVisible ? 'eye' : 'eye-slash'}
+              size={20}
+              color="grey"
+            />
+          </TouchableOpacity>
+        </View>
         {passwordError ? (
           <Text style={styles.errorText}>{passwordError}</Text>
         ) : null}
@@ -120,9 +137,15 @@ const LoginPak = () => {
         <View>
           <Image
             source={require('../../assets/images/A2Z.png')}
-            style={[styles.logo, {marginTop: 10}]}
+            style={styles.logoBottom}
           />
         </View>
+        <AlertMessage
+          message="Login Successful. Welcome back!"
+          type="success"
+          visible={showAlert}
+          onClose={() => setShowAlert(false)}
+        />
       </View>
     </View>
   );
@@ -144,14 +167,17 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   headerIconCont: {
+    flexDirection: 'row',
+    alignItems: 'center',
     width: '100%',
     alignItems: 'center',
   },
-  logo: {
+  logoTop: {
     height: 110,
-    width: 170,
+    width: 180,
     resizeMode: 'contain',
     alignSelf: 'center',
+    marginLeft: width * 0.16,
   },
   headerText: {
     fontSize: 28,
@@ -283,5 +309,28 @@ const styles = StyleSheet.create({
     color: '#000',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  passwordInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 5,
+    marginVertical: 10,
+  },
+  passwordInput: {
+    flex: 1,
+    height: height * 0.05,
+    color: 'black',
+  },
+  eyeIcon: {
+    padding: 10,
+  },
+  logoBottom: {
+    height: height * 0.11,
+    width: width * 0.45,
+    resizeMode: 'contain',
+    alignSelf: 'center',
   },
 });

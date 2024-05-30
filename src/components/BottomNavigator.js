@@ -59,9 +59,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     backgroundColor: '#2f3c54',
-    paddingVertical: 10,
-    borderTopWidth: 1,
-    borderColor: '#3c4b64',
+    paddingVertical: width * 0.020,
   },
   tab: {
     alignItems: 'center',

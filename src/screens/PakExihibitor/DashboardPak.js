@@ -9,13 +9,16 @@ import {
   TouchableOpacity,
   Modal,
   FlatList,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import HeaderComponent from '../../components/HeaderComponent';
 import CustomDropdown from '../../components/CustomDropdown';
 import CustomSelectEntries from '../../components/CustomSelectEntries';
 import MeetingRequestPak from './MeetingRequestPak';
 import CustomDrawer from '../../components/CustomDrawer';
-import {Icon} from 'react-native-elements';
+import {Icon as RNElementsIcon} from 'react-native-elements';
+import Icon from 'react-native-vector-icons/FontAwesome';
 import {useNavigation} from '@react-navigation/native';
 import BottomNavigator from '../../components/BottomNavigator';
 
@@ -118,7 +121,10 @@ const DashboardPak = () => {
     setModalVisible1(true);
   };
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : -width * 0.1}
+      behavior={Platform.OS === 'ios' ? 'height' : 'height'}>
       <HeaderComponent onMenuPress={() => setDrawerVisible(!drawerVisible)} />
       <View style={styles.headerCont}>
         <Text style={styles.headerText}>List of KSA DELEGATES</Text>
@@ -133,12 +139,7 @@ const DashboardPak = () => {
               <Text style={styles.text}>
                 {selectedJob ? selectedJob.label : 'All Sectors ...'}
               </Text>
-              <Icon
-                name="keyboard-arrow-down"
-                size={24}
-                color="black"
-                style={styles.icon}
-              />
+              <Icon name="angle-down" size={24} color="#000" />
             </TouchableOpacity>
             {dropdownVisible && (
               <View style={styles.dropdownListContainer}>
@@ -230,16 +231,31 @@ const DashboardPak = () => {
               showsVerticalScrollIndicator={false}>
               {filteredData.map(item => (
                 <View key={item.id} style={styles.row}>
-                  <Text style={[styles.headerCell, {width: 20, color: 'grey'}]}>
+                  <Text
+                    style={[styles.headerCell, {width: 20, color: '#4a5f85'}]}>
                     {item.id}
                   </Text>
-                  <Text style={styles.headerCell}>{item.name}</Text>
-                  <Text style={styles.headerCell}>{item.company}</Text>
-                  <Text style={styles.headerCell}>{item.sector}</Text>
-                  <Text style={styles.headerCell}>{item.website}</Text>
-                  <Text style={styles.headerCell}>{item.email}</Text>
-                  <Text style={styles.headerCell}>{item.mobile}</Text>
-                  <Text style={styles.headerCell}>{item.location}</Text>
+                  <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
+                    {item.name}
+                  </Text>
+                  <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
+                    {item.company}
+                  </Text>
+                  <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
+                    {item.sector}
+                  </Text>
+                  <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
+                    {item.website}
+                  </Text>
+                  <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
+                    {item.email}
+                  </Text>
+                  <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
+                    {item.mobile}
+                  </Text>
+                  <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
+                    {item.location}
+                  </Text>
                   <View style={styles.headerCell}>
                     <TouchableOpacity
                       style={styles.meetingButton}
@@ -260,70 +276,79 @@ const DashboardPak = () => {
           </View>
         </ScrollView>
       </View>
-      {/* <Modal
-        animationType="fade"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(!modalVisible)}>
-        <ScrollView horizontal={true}>
-          <MeetingRequestPak
-            modalVisible={modalVisible}
-            setModalVisible={setModalVisible}
-          />
-        </ScrollView>
-      </Modal> */}
+
       {modalVisible && (
         <MeetingRequestPak
+          onClose={() => setModalVisible(false)}
           modalVisible={modalVisible}
           setModalVisible={setModalVisible}
         />
       )}
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={modalVisible1}
-        onRequestClose={() => setModalVisible1(false)}>
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalHeading}>About</Text>
-            <View style={styles.card}>
-              <View style={styles.cardItem}>
-                <Text style={styles.cardLabel}>Name:</Text>
-                <Text style={styles.cardValue}>{selectedUserData?.name}</Text>
+      {modalVisible1 && (
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={modalVisible1}
+          onRequestClose={() => setModalVisible(false)}>
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <View style={styles.header}>
+                <Text style={styles.modalHeading}>About</Text>
+                <TouchableOpacity onPress={() => setModalVisible1(false)}>
+                  <Icon name="times" size={28} color="#0059CF" />
+                </TouchableOpacity>
               </View>
-              <View style={styles.cardItem}>
-                <Text style={styles.cardLabel}>Email:</Text>
-                <Text style={styles.cardValue}>{selectedUserData?.email}</Text>
+              <View style={styles.card}>
+                {selectedUserData && (
+                  <>
+                    <View style={styles.cardItem}>
+                      <Text style={styles.cardLabel}>Name:</Text>
+                      <Text style={styles.cardValue}>
+                        {selectedUserData.name}
+                      </Text>
+                    </View>
+                    <View style={styles.cardItem}>
+                      <Text style={styles.cardLabel}>Email:</Text>
+                      <Text style={styles.cardValue}>
+                        {selectedUserData.email}
+                      </Text>
+                    </View>
+                    <View style={styles.cardItem}>
+                      <Text style={styles.cardLabel}>Company:</Text>
+                      <Text style={styles.cardValue}>
+                        {selectedUserData.company}
+                      </Text>
+                    </View>
+                    <View style={styles.cardItem}>
+                      <Text style={styles.cardLabel}>Sector:</Text>
+                      <Text style={styles.cardValue}>
+                        {selectedUserData.sector}
+                      </Text>
+                    </View>
+                    <View style={styles.cardItem}>
+                      <Text style={styles.cardLabel}>Mobile:</Text>
+                      <Text style={styles.cardValue}>
+                        {selectedUserData.mobile}
+                      </Text>
+                    </View>
+                    <View style={styles.cardItem}>
+                      <Text style={styles.cardLabel}>Location:</Text>
+                      <Text style={styles.cardValue}>
+                        {selectedUserData.location}
+                      </Text>
+                    </View>
+                  </>
+                )}
               </View>
-              <View style={styles.cardItem}>
-                <Text style={styles.cardLabel}>Company:</Text>
-                <Text style={styles.cardValue}>
-                  {selectedUserData?.company}
-                </Text>
-              </View>
-              <View style={styles.cardItem}>
-                <Text style={styles.cardLabel}>Sector:</Text>
-                <Text style={styles.cardValue}>{selectedUserData?.sector}</Text>
-              </View>
-              <View style={styles.cardItem}>
-                <Text style={styles.cardLabel}>Mobile:</Text>
-                <Text style={styles.cardValue}>{selectedUserData?.mobile}</Text>
-              </View>
-              <View style={styles.cardItem}>
-                <Text style={styles.cardLabel}>Location:</Text>
-                <Text style={styles.cardValue}>
-                  {selectedUserData?.location}
-                </Text>
-              </View>
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={() => setModalVisible1(false)}>
+                <Text style={styles.closeButtonText}>Close</Text>
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => setModalVisible1(false)}>
-              <Text style={styles.closeButtonText}>Close</Text>
-            </TouchableOpacity>
           </View>
-        </View>
-      </Modal>
+        </Modal>
+      )}
 
       <CustomDrawer
         visible={drawerVisible}
@@ -331,7 +356,7 @@ const DashboardPak = () => {
         navigation={navigation}
       />
       <BottomNavigator />
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -472,76 +497,85 @@ const styles = StyleSheet.create({
   meetingButton: {
     width: 100,
     padding: 10,
-    backgroundColor: '#007bff',
+    backgroundColor: '#002387',
     borderRadius: 5,
     alignItems: 'center',
   },
   meetingButtonText: {
     color: '#fff',
+    fontWeight: 'bold',
   },
   modalContainer: {
     flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
+    width: width * 0.85,
     backgroundColor: '#fff',
-    borderRadius: 10,
+    borderRadius: 15,
     padding: 20,
-    width: '80%',
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
   },
   modalHeading: {
-    alignSelf: 'center',
-    padding: 5,
     fontSize: 24,
-    color: 'black',
     fontWeight: 'bold',
-    marginBottom: 10,
-    textTransform: 'uppercase',
+    color: '#333',
   },
   card: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 15,
     marginBottom: 20,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
   },
   cardItem: {
     flexDirection: 'row',
-    marginBottom: 10,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+    paddingBottom: 8,
   },
   cardLabel: {
-    fontWeight: 'bold',
-    marginRight: 5,
-    color: '#007bff', // Blue color
     fontSize: 16,
+    fontWeight: '600',
+    color: '#4a5f85',
+    flex: 1,
   },
   cardValue: {
-    flex: 1,
-    color: '#333', // Dark gray color
-    fontSize: 15,
-    fontWeight: '500',
-    letterSpacing: 1,
+    fontSize: 16,
+    fontWeight: '400',
+    color: '#333',
+    flex: 2,
+    textAlign: 'right',
   },
-
   closeButton: {
-    backgroundColor: '#000',
-    padding: 10,
-    borderRadius: 5,
+    backgroundColor: '#0059CF',
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 25,
     alignItems: 'center',
-    marginTop: 20,
+    alignSelf: 'center',
+    marginTop: 10,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   closeButtonText: {
     color: '#fff',
-    fontWeight: 'bold',
+    fontSize: 16,
+    fontWeight: '700',
   },
 });
 

@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
+import { Icon } from 'react-native-elements';
 
 const {width, height} = Dimensions.get('screen');
 
@@ -34,17 +35,24 @@ const ForgotPasswordPak = () => {
         'Reset Link Sent',
         'A password reset link has been sent to your email.',
       );
-      // Perform reset password action
     }
   };
 
   const handleSignIn = () => {
-    navigation.navigate('LoginPak'); // Navigate to the Login screen
+    navigation.navigate('LoginPak');
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
+        <Icon
+          name="keyboard-backspace"
+          type="material-community"
+          color="grey"
+          size={30}
+          style={styles.IconArrow}
+          onPress={() => navigation.goBack()}
+        />
         <View style={styles.headerIconCont}>
           <Image
             source={require('../../assets/images/SplashScreen.png')}
@@ -76,6 +84,7 @@ const ForgotPasswordPak = () => {
           onChangeText={text => setEmail(text)}
         />
         {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
+
         <TouchableOpacity style={styles.button} onPress={handleResetPassword}>
           <Text style={styles.buttonText}>Reset Password</Text>
         </TouchableOpacity>
