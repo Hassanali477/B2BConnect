@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {StyleSheet, Text, View, LogBox, StatusBar} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
@@ -14,10 +14,15 @@ import DashboardPak from '../screens/PakExihibitor/DashboardPak';
 import ProfilePak from '../screens/PakExihibitor/ProfilePak';
 import ResetPassword from '../screens/PakExihibitor/ResetPassword';
 import MeetingRequestPak from '../screens/PakExihibitor/MeetingRequestPak';
+import MeetingRequestScreenPak from '../screens/PakExihibitor/MeetingRequestScreenPak';
+import ConfirmAppointment from '../screens/PakExihibitor/ConfirmAppointment';
+import FeedbackScreen from '../screens/PakExihibitor/FeedbackScreen';
+import CustomActivityIndicator from '../components/CustomActivityIndicator';
 const Stack = createStackNavigator();
 
 const Navigation = () => {
   LogBox.ignoreAllLogs();
+
   return (
     <NavigationContainer>
       <Stack.Navigator
@@ -32,6 +37,15 @@ const Navigation = () => {
         <Stack.Screen name="ForgotPasswordPak" component={ForgotPasswordPak} />
         <Stack.Screen name="ResetPassword" component={ResetPassword} />
         <Stack.Screen name="DashboardPak" component={DashboardPak} />
+        <Stack.Screen
+          name="MeetingRequestScreen"
+          component={MeetingRequestScreenPak}
+        />
+        <Stack.Screen
+          name="ConfirmAppointment"
+          component={ConfirmAppointment}
+        />
+        <Stack.Screen name="FeedbackScreen" component={FeedbackScreen} />
         <Stack.Screen name="ProfilePak" component={ProfilePak} />
         <Stack.Screen name="MeetingRequestPak" component={MeetingRequestPak} />
 

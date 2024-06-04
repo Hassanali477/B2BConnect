@@ -497,7 +497,7 @@ const styles = StyleSheet.create({
   meetingButton: {
     width: 100,
     padding: 10,
-    backgroundColor: '#002387',
+    backgroundColor: '#4a5f85',
     borderRadius: 5,
     alignItems: 'center',
   },

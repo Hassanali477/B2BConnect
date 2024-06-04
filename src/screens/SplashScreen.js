@@ -7,7 +7,7 @@ const SplashScreen = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       navigation.replace('AppStarter');
-    }, 1000);
+    }, 1500);
     return () => {
       clearTimeout(timer);
     };

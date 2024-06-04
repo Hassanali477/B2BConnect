@@ -1,90 +1,70 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, FlatList } from 'react-native';
-import { Icon } from 'react-native-elements';
+// CustomDropdown.js
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import ModalDropdown from 'react-native-modal-dropdown';
 
-const CustomDropdown = ({ data, placeholder, onSelect }) => {
-  const [visible, setVisible] = useState(false);
-  const [selected, setSelected] = useState(null);
-
-  const handleSelect = (item) => {
-    setSelected(item);
-    setVisible(false);
-    onSelect(item);
-  };
-
+const CustomDropdown = ({ data, placeholder, onSelect, style }) => {
   return (
-    <View style={styles.container}>
-      <TouchableOpacity
+    <View style={[styles.container, style]}>
+      <ModalDropdown
+        options={data.map(item => item.label)}
+        onSelect={(index, value) => onSelect(data[index].value)}
         style={styles.dropdown}
-        onPress={() => setVisible(!visible)}
+        textStyle={styles.dropdownText}
+        dropdownStyle={styles.dropdownContainer}
+        dropdownTextStyle={styles.dropdownItemText}
+        adjustFrame={(style) => {
+          style.width = '80%';
+          style.left = '10%';
+          return style;
+        }}
       >
-        <Text style={styles.text}>
-          {selected ? selected.label : placeholder}
-        </Text>
-        <Icon
-          name="keyboard-arrow-down"
-          size={24}
-          color="black"
-          style={styles.icon}
-        />
-      </TouchableOpacity>
-      {visible && (
-        <View style={styles.dropdownList}>
-          <FlatList
-            data={data}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={styles.dropdownItem}
-                onPress={() => handleSelect(item)}
-              >
-                <Text style={styles.text}>{item.label}</Text>
-              </TouchableOpacity>
-            )}
-            keyExtractor={(item) => item.value}
-          />
-        </View>
-      )}
+        <Text style={styles.placeholder}>{placeholder}</Text>
+      </ModalDropdown>
     </View>
   );
 };
 
-export default CustomDropdown;
-
 const styles = StyleSheet.create({
   container: {
-    width: '45%',
-    position: 'relative',
+    borderWidth: 1,
+    borderColor: '#007BFF',
+    borderRadius: 8,
+    backgroundColor: '#FFF',
+    overflow: 'hidden',
   },
   dropdown: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 12,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    backgroundColor: '#fff',
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    backgroundColor: '#FFF',
   },
-  text: {
+  dropdownText: {
+    color: '#007BFF',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  dropdownContainer: {
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: '#007BFF',
+    borderRadius: 8,
+    backgroundColor: '#FFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  dropdownItemText: {
+    fontSize: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
     color: '#000',
   },
-  icon: {
-    marginLeft: 10,
-  },
-  dropdownList: {
-    position: 'absolute',
-    top: '100%',
-    width: '100%',
-    maxHeight: 150,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    backgroundColor: '#fff',
-    zIndex: 2, // Ensure dropdown list is above other elements
-  },
-  dropdownItem: {
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
+  placeholder: {
+    color: '#B0B0B0',
+    fontSize: 16,
   },
 });
+
+export default CustomDropdown;

@@ -1,7 +1,15 @@
 import React from 'react';
-import {StyleSheet, Text, View, Image, TouchableOpacity} from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  Image,
+  TouchableOpacity,
+  Dimensions,
+} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 
+const {width, height} = Dimensions.get('screen');
 const HeaderComponent = ({onMenuPress}) => {
   return (
     <View style={styles.header}>
@@ -27,11 +35,11 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   menuIcon: {
-    marginRight: 20,
+    marginRight: width * 0.03,
   },
   headerImage: {
     flex: 1,
-    height: 60,
+    height: height * 0.068,
     resizeMode: 'contain',
   },
 });

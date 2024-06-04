@@ -39,7 +39,6 @@ const ResetPassword = () => {
 
   const handleResetPassword = () => {
     let valid = true;
-    navigation.navigate('LoginPak');
 
     if (!oldPassword) {
       setOldPasswordError('Old Password is required');
@@ -103,27 +102,23 @@ const ResetPassword = () => {
         onClose={() => setAlertVisible(false)}
       />
       <View style={styles.header}>
-        <View style={styles.IconArrow}>
-          <Icon
-            name="keyboard-backspace"
-            type="material-community"
-            color="grey"
-            size={30}
-            style={styles.IconArrow}
-            onPress={() => navigation.goBack()}
-          />
-        </View>
         <View style={styles.headerIconCont}>
+          <View style={styles.IconArrow}>
+            <Icon
+              name="keyboard-backspace"
+              type="material-community"
+              color="#4a5f85"
+              size={28}
+              style={styles.IconArrow}
+              onPress={() => navigation.goBack()}
+            />
+          </View>
           <Image
             source={require('../../assets/images/SplashScreen.png')}
             style={styles.logo}
           />
-          <Image
-            source={require('../../assets/images/A2Z.png')}
-            style={styles.logo}
-          />
         </View>
-        <Text style={styles.headerText}>Reset Password</Text>
+        <Text style={styles.headerText}>Change Password</Text>
         <Text style={styles.headerText2}>Enter your old and new password</Text>
       </View>
       <View style={styles.mainContainer}>
@@ -191,19 +186,13 @@ const ResetPassword = () => {
           <Text style={styles.errorText}>{confirmPasswordError}</Text>
         ) : null}
         <TouchableOpacity style={styles.button} onPress={handleResetPassword}>
-          <Text style={styles.buttonText}>Reset Password</Text>
+          <Text style={styles.buttonText}>Change Password</Text>
         </TouchableOpacity>
-        <View style={styles.orContainer}>
-          <View style={styles.line} />
-          <Text style={styles.orText}>or</Text>
-          <View style={styles.line} />
-        </View>
-        <View style={styles.signUpContainer}>
-          <Text style={styles.signUpText}>Remember your password? </Text>
-          <TouchableOpacity onPress={handleSignIn}>
-            <Text style={styles.signUpButtonText}>Sign In</Text>
-          </TouchableOpacity>
-        </View>
+
+        <Image
+          source={require('../../assets/images/A2Z.png')}
+          style={styles.logo1}
+        />
       </View>
     </View>
   );
@@ -226,19 +215,26 @@ const styles = StyleSheet.create({
   },
   IconArrow: {
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: '#4a5f85',
     borderRadius: 10,
     padding: width * 0.01,
   },
   headerIconCont: {
     width: '100%',
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
   },
   logo: {
-    height: 110,
-    width: 160,
+    height: 100,
+    width: width * 0.46,
+    resizeMode: 'contain',
+    alignSelf: 'center',
+    marginLeft: width * 0.13,
+  },
+  logo1: {
+    height: 100,
+    width: width * 0.43,
+
     resizeMode: 'contain',
     alignSelf: 'center',
   },

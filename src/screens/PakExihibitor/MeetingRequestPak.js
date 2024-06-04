@@ -15,10 +15,7 @@ import AlertMessage from '../../components/AlertMessage';
 
 const {width, height} = Dimensions.get('screen');
 
-const MeetingRequestPak = ({
-  modalVisible,
-  setModalVisible,
-}) => {
+const MeetingRequestPak = ({modalVisible, setModalVisible}) => {
   const [selectedDate, setSelectedDate] = useState('Select Date');
   const [selectedTimeslot, setSelectedTimeslot] = useState('Select Timeslot');
   const [selectedLocation, setSelectedLocation] = useState(
@@ -104,7 +101,6 @@ const MeetingRequestPak = ({
 
   const closeAlert = () => {
     setAlertVisible(false);
-    setModalVisible(false);
   };
 
   return (
@@ -307,6 +303,7 @@ const styles = StyleSheet.create({
     width: '80%',
     backgroundColor: '#0059CF',
     borderWidth: 1,
+    borderColor: '#0059CF',
     padding: 15,
     borderRadius: 50,
     alignSelf: 'center',

@@ -1,5 +1,6 @@
 import {useNavigation, useFocusEffect} from '@react-navigation/native';
 import React, {useCallback} from 'react';
+import {Button} from 'react-native';
 import {
   StyleSheet,
   Text,
@@ -39,6 +40,7 @@ const AppStarterScreen = () => {
 
   return (
     <View style={styles.container}>
+      {/* Header */}
       <View style={styles.header}>
         <Image
           source={require('../assets/images/SplashScreen.png')}
@@ -49,7 +51,7 @@ const AppStarterScreen = () => {
           مؤتمر الاستثمار الباكستاني السعودي 2024
         </Text>
       </View>
-
+      {/* Main Component */}
       <View style={styles.mainContainer}>
         <View style={styles.card}>
           <TouchableOpacity
@@ -88,6 +90,7 @@ const AppStarterScreen = () => {
           </TouchableOpacity>
         </View>
       </View>
+      {/* Footer */}
       <View style={styles.footer}>
         <Image
           source={require('../assets/images/A2Z.png')}

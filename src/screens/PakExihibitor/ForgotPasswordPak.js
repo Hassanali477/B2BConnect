@@ -10,7 +10,7 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
-import { Icon } from 'react-native-elements';
+import {Icon} from 'react-native-elements';
 
 const {width, height} = Dimensions.get('screen');
 
@@ -45,21 +45,18 @@ const ForgotPasswordPak = () => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Icon
-          name="keyboard-backspace"
-          type="material-community"
-          color="grey"
-          size={30}
-          style={styles.IconArrow}
-          onPress={() => navigation.goBack()}
-        />
         <View style={styles.headerIconCont}>
+          <View style={styles.IconArrowCont}>
+            <Icon
+              name="keyboard-backspace"
+              type="material-community"
+              color="#4a5f85"
+              size={30}
+              onPress={() => navigation.goBack()}
+            />
+          </View>
           <Image
             source={require('../../assets/images/SplashScreen.png')}
-            style={styles.logo}
-          />
-          <Image
-            source={require('../../assets/images/A2Z.png')}
             style={styles.logo}
           />
         </View>
@@ -99,6 +96,10 @@ const ForgotPasswordPak = () => {
             <Text style={styles.signUpButtonText}>Sign In</Text>
           </TouchableOpacity>
         </View>
+        <Image
+          source={require('../../assets/images/A2Z.png')}
+          style={styles.logo1}
+        />
       </View>
     </View>
   );
@@ -119,15 +120,28 @@ const styles = StyleSheet.create({
     width: width / 1.2,
     alignItems: 'flex-start',
   },
+  IconArrowCont: {
+    borderWidth: 1,
+    borderColor: '#4a5f85',
+    borderRadius: 10,
+    padding: width * 0.01,
+  },
   headerIconCont: {
     width: '100%',
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    // justifyContent: 'space-between',
     alignItems: 'center',
   },
   logo: {
-    height: 110,
-    width: 160,
+    height: 100,
+    width: width * 0.46,
+    resizeMode: 'contain',
+    alignSelf: 'center',
+    marginLeft: width * 0.12,
+  },
+  logo1: {
+    height: 100,
+    width: width * 0.43,
     resizeMode: 'contain',
     alignSelf: 'center',
   },
@@ -195,7 +209,7 @@ const styles = StyleSheet.create({
   button: {
     width: '100%',
     height: 50,
-    backgroundColor: '#000',
+    backgroundColor: '#4a5f85',
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 5,
@@ -234,7 +248,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   signUpButtonText: {
-    color: '#000',
+    color: '#4a5f85',
     fontSize: 16,
     fontWeight: 'bold',
   },

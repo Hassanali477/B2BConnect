@@ -11,9 +11,14 @@ import {
   KeyboardAvoidingView,
   ScrollView,
 } from 'react-native';
-import {Icon} from 'react-native-elements';
+import {Icon as RNElementsIcon} from 'react-native-elements';
+import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
+import IoniconsIcon from 'react-native-vector-icons/Ionicons';
+
 import AlertMessage from '../../components/AlertMessage'; // Import the AlertMessage component
 import BottomNavigator from '../../components/BottomNavigator';
+import HeaderComponent from '../../components/HeaderComponent';
+import CustomDrawer from '../../components/CustomDrawer';
 
 const {width, height} = Dimensions.get('window');
 
@@ -22,21 +27,22 @@ const ProfilePak = ({navigation}) => {
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [alertType, setAlertType] = useState('');
+  const [drawerVisible, setDrawerVisible] = useState(false);
 
   const [profile, setProfile] = useState({
-    fullName: '',
-    companyName: '',
-    phoneNumber: '',
-    email: '',
-    websiteLink: '',
+    fullName: 'Hassan',
+    companyName: 'A2Z Creatorz',
+    phoneNumber: '03497070872',
+    email: 'hassanmarwat326@gmail.com',
+    websiteLink: 'https://marwat477.insta',
   });
 
   const [updatedProfile, setUpdatedProfile] = useState({
-    fullName: '',
-    companyName: '',
-    phoneNumber: '',
-    email: '',
-    websiteLink: '',
+    fullName: 'Hassan',
+    companyName: 'A2Z Creatorz',
+    phoneNumber: '03497070872',
+    email: 'hassanmarwat326@gmail.com',
+    websiteLink: 'https://marwat477.insta',
   });
 
   const openModal = () => {
@@ -55,7 +61,7 @@ const ProfilePak = ({navigation}) => {
       return;
     }
 
-    setProfile(updatedProfile); // Update profile with updatedProfile data
+    setProfile(updatedProfile);
     setIsModalVisible(false);
     setAlertMessage('Profile updated successfully.');
     setAlertType('success');
@@ -70,20 +76,16 @@ const ProfilePak = ({navigation}) => {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         {/* Header */}
         <View style={styles.headerContainer}>
-          <View style={styles.IconArrow}>
-            <Icon
-              name="keyboard-backspace"
-              type="material-community"
-              color="#000"
-              size={30}
-              onPress={() => navigation.goBack()}
-            />
-          </View>
+          <TouchableOpacity
+            style={styles.menuIcon}
+            onPress={() => setDrawerVisible(!drawerVisible)}>
+            <IoniconsIcon name="menu" size={30} color="#000" />
+          </TouchableOpacity>
           <Image
             source={require('../../assets/images/SplashScreen.png')}
             style={styles.headerImage}
           />
-          <Icon
+          <RNElementsIcon
             name="account-edit"
             type="material-community"
             color="#000"
@@ -122,6 +124,7 @@ const ProfilePak = ({navigation}) => {
             placeholder="Email"
             keyboardType="email-address"
             placeholderTextColor="#000"
+            editable={false}
           />
           <TextInput
             style={[styles.input, {color: '#000'}]}
@@ -132,6 +135,7 @@ const ProfilePak = ({navigation}) => {
             placeholder="Phone Number"
             keyboardType="phone-pad"
             placeholderTextColor="#000"
+            maxLength={15}
           />
           <TextInput
             style={[styles.input, {color: '#000'}]}
@@ -169,11 +173,10 @@ const ProfilePak = ({navigation}) => {
               />
               <View style={styles.modalHeader}>
                 <Text style={styles.modalHeading}>Update Profile</Text>
-                <Icon
-                  name="close"
-                  type="material-community"
-                  color="#000"
-                  size={30}
+                <FontAwesomeIcon
+                  name="times"
+                  size={28}
+                  color={'#0059CF'}
                   onPress={() => setIsModalVisible(false)}
                 />
               </View>
@@ -204,6 +207,7 @@ const ProfilePak = ({navigation}) => {
                 placeholder="Email"
                 keyboardType="email-address"
                 placeholderTextColor="#000"
+                editable={false}
               />
               <TextInput
                 style={styles.input}
@@ -214,6 +218,7 @@ const ProfilePak = ({navigation}) => {
                 placeholder="Phone Number"
                 keyboardType="phone-pad"
                 placeholderTextColor="#000"
+                maxLength={15}
               />
               <TextInput
                 style={styles.input}
@@ -241,6 +246,11 @@ const ProfilePak = ({navigation}) => {
           onClose={() => setAlertVisible(false)}
         />
       </ScrollView>
+      <CustomDrawer
+        visible={drawerVisible}
+        onClose={() => setDrawerVisible(false)}
+        navigation={navigation}
+      />
       <BottomNavigator />
     </KeyboardAvoidingView>
   );
@@ -276,7 +286,7 @@ const styles = StyleSheet.create({
   },
   IconArrow: {
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: '#4a5f85',
     borderRadius: 10,
     padding: width * 0.01,
   },
@@ -349,7 +359,7 @@ const styles = StyleSheet.create({
     width: '90%',
   },
   modalImage: {
-    width: 150,
+    width: 180,
     height: 50,
     resizeMode: 'contain',
     alignSelf: 'center',
