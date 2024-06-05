@@ -11,16 +11,23 @@ import {
   Alert,
 } from 'react-native';
 import CheckBox from '@react-native-community/checkbox';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import AlertMessage from '../../components/AlertMessage';
+import {Icon} from 'react-native-elements';
+import CustomActivityIndicator from '../../components/CustomActivityIndicator';
 
 const {width, height} = Dimensions.get('screen');
 
-const LoginKSA = () => {
+const LoginPak = () => {
   const navigation = useNavigation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const validateEmail = email => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -28,128 +35,180 @@ const LoginKSA = () => {
   };
 
   const handleSignIn = () => {
-    if (!email) {
-      setEmailError('Email is required');
-    } else if (!validateEmail(email)) {
-      setEmailError('Please enter a valid email address');
-    } else {
-      setEmailError('');
-    }
+    let valid = true;
 
-    if (!password) {
-      setPasswordError('Password is required');
-    } else if (password.length < 6) {
-      setPasswordError('Password must be at least 6 characters long');
-    } else {
-      setPasswordError('');
-    }
+    // if (!email) {
+    //   setEmailError('Email is required');
+    //   valid = false;
+    // } else if (!validateEmail(email)) {
+    //   setEmailError('Please enter a valid email address');
+    //   valid = false;
+    // } else {
+    //   setEmailError('');
+    // }
 
-    if (validateEmail(email) && password.length >= 6) {
-      Alert.alert('Login Successful', 'Welcome back!');
-      // Perform login action
+    // if (!password) {
+    //   setPasswordError('Password is required');
+    //   valid = false;
+    // } else if (password.length < 6) {
+    //   setPasswordError('Password must be at least 6 characters long');
+    //   valid = false;
+    // } else {
+    //   setPasswordError('');
+    // }
+
+    if (valid) {
+      setLoading(true); // Add a console.log to check if loading state is set to true
+      setTimeout(() => {
+        setLoading(false);
+        navigation.navigate('DashboardKSA');
+      }, 1000);
     }
   };
-
-  // const handleSignUp = () => {
-  //   navigation.navigate('SignUpKSA'); // Navigate to the SignUp screen
-  // };
 
   const handleForgotPassword = () => {
-    navigation.navigate('ForgotPasswordKSA'); // Navigate to the Forgot Password screen
+    navigation.navigate('ForgotScreenKSA');
   };
-
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.headerIconCont}>
-          <Image
-            source={require('../../assets/images/SplashScreen.png')}
-            style={styles.logo}
-          />
-        </View>
-        <Text style={styles.headerText}>Sign in</Text>
-        <Text style={styles.headerText2}>
-          Welcome back! Please enter your details
-        </Text>
-      </View>
-      <View style={styles.mainContainer}>
-        <View style={styles.textInputHeadingCont}>
-          <Text style={styles.textInputHeading}>KSA DELEGATE</Text>
-          <Image
-            source={require('../../assets/images/SaudiFlag.jpg')}
-            style={styles.imageFlagPak}
-          />
-        </View>
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          placeholderTextColor="#000"
-          value={email}
-          onChangeText={text => setEmail(text)}
-        />
-        {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          placeholderTextColor="#000"
-          value={password}
-          onChangeText={text => setPassword(text)}
-          secureTextEntry
-        />
-        {passwordError ? (
-          <Text style={styles.errorText}>{passwordError}</Text>
-        ) : null}
-        <View style={styles.rememberForgotContainer}>
-          <View style={styles.rememberMe}>
-            <CheckBox
-              value={rememberMe}
-              onValueChange={setRememberMe}
-              tintColors={{true: '#007BFF', false: '#999'}}
-            />
-            <Text style={styles.rememberMeText}>Remember me</Text>
+      {loading && <CustomActivityIndicator />}
+      {!loading && (
+        <>
+          <View style={styles.header}>
+            <View style={styles.headerIconCont}>
+              <View style={styles.IconArrowCont}>
+                <Icon
+                  name="keyboard-backspace"
+                  type="material-community"
+                  color="#4a5f85"
+                  size={30}
+                  onPress={() => navigation.navigate('AppStarter')}
+                />
+              </View>
+              <Image
+                source={require('../../assets/images/SplashScreen.png')}
+                style={styles.logoTop}
+              />
+            </View>
+            <Text style={styles.headerText}>Sign in</Text>
+            <Text style={styles.headerText2}>
+              Welcome back! Please enter your details
+            </Text>
           </View>
-          <TouchableOpacity onPress={handleForgotPassword}>
-            <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-          </TouchableOpacity>
-        </View>
-        <TouchableOpacity style={styles.button} onPress={handleSignIn}>
-          <Text style={styles.buttonText}>Sign In</Text>
-        </TouchableOpacity>
-        <View>
-          <Image
-            source={require('../../assets/images/A2Z.png')}
-            style={[styles.logo, {marginTop: 10}]}
-          />
-        </View>
-      </View>
+          <View style={styles.mainContainer}>
+            <View style={styles.textInputHeadingCont}>
+              <Text style={styles.textInputHeading}>KSA DELEGATES</Text>
+              <Image
+                source={require('../../assets/images/SaudiFlag.jpg')}
+                style={styles.imageFlagPak}
+              />
+            </View>
+            <TextInput
+              style={styles.input}
+              placeholder="Email"
+              placeholderTextColor="#000"
+              value={email}
+              onChangeText={text => setEmail(text)}
+            />
+            {emailError ? (
+              <Text style={styles.errorText}>{emailError}</Text>
+            ) : null}
+            <View style={styles.passwordInputContainer}>
+              <TextInput
+                style={styles.passwordInput}
+                placeholder="Password"
+                placeholderTextColor="#000"
+                value={password}
+                onChangeText={text => setPassword(text)}
+                secureTextEntry={!passwordVisible}
+              />
+              <TouchableOpacity
+                style={styles.eyeIcon}
+                onPress={() => setPasswordVisible(!passwordVisible)}>
+                <FontAwesome
+                  name={passwordVisible ? 'eye' : 'eye-slash'}
+                  size={20}
+                  color="grey"
+                />
+              </TouchableOpacity>
+            </View>
+            {passwordError ? (
+              <Text style={styles.errorText}>{passwordError}</Text>
+            ) : null}
+            <View style={styles.rememberForgotContainer}>
+              <View style={styles.rememberMe}>
+                <CheckBox
+                  value={rememberMe}
+                  onValueChange={setRememberMe}
+                  tintColors={{true: '#007BFF', false: '#999'}}
+                />
+                <Text style={styles.rememberMeText}>Remember me</Text>
+              </View>
+              <TouchableOpacity onPress={handleForgotPassword}>
+                <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+              </TouchableOpacity>
+            </View>
+            <TouchableOpacity style={styles.button} onPress={handleSignIn}>
+              <Text style={styles.buttonText}>Sign In</Text>
+            </TouchableOpacity>
+            <View>
+              <Image
+                source={require('../../assets/images/A2Z.png')}
+                style={styles.logoBottom}
+              />
+            </View>
+            <AlertMessage
+              message="Login Successful. Welcome back!"
+              type="success"
+              visible={showAlert}
+              onClose={() => setShowAlert(false)}
+            />
+          </View>
+        </>
+      )}
     </View>
   );
 };
 
-export default LoginKSA;
+export default LoginPak;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
     width: width,
     height: height,
+  },
+  activityIndicator: {
+    position: 'absolute',
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 999, // Ensure it's above other components
   },
   header: {
     width: width / 1.2,
     alignItems: 'flex-start',
   },
   headerIconCont: {
-    width: '100%',
+    flexDirection: 'row',
     alignItems: 'center',
+    width: '100%',
   },
-  logo: {
+  IconArrowCont: {
+    borderWidth: 1,
+    borderColor: '#4a5f85',
+    borderRadius: 10,
+    padding: width * 0.01,
+  },
+  logoTop: {
     height: 110,
-    width: 170,
+    width: width * 0.46,
     resizeMode: 'contain',
-    alignSelf: 'center',
+    marginLeft: width * 0.12,
   },
   headerText: {
     fontSize: 28,
@@ -192,7 +251,7 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   imageFlagPak: {
-    width: 55,
+    width: width * 0.15,
     height: 20,
     resizeMode: 'contain',
     alignSelf: 'center',
@@ -228,7 +287,6 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#000',
   },
-
   forgotPasswordText: {
     color: '#000',
     fontSize: 14,
@@ -239,7 +297,7 @@ const styles = StyleSheet.create({
   button: {
     width: '100%',
     height: 50,
-    backgroundColor: '#000',
+    backgroundColor: '#4a5f85',
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 5,
@@ -251,35 +309,27 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
-  orContainer: {
+  passwordInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 5,
     marginVertical: 10,
   },
-  line: {
+  passwordInput: {
     flex: 1,
-    height: 2,
-    backgroundColor: '#ccc',
+    height: height * 0.05,
+    color: 'black',
   },
-  orText: {
-    marginHorizontal: 10,
-    fontSize: 16,
-    color: '#000',
+  eyeIcon: {
+    padding: 10,
   },
-  signUpContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 10,
-  },
-  signUpText: {
-    color: '#000',
-    fontSize: 16,
-    alignSelf: 'flex-start',
-    marginLeft: 10,
-  },
-  signUpButtonText: {
-    color: '#000',
-    fontSize: 16,
-    fontWeight: 'bold',
+  logoBottom: {
+    height: height * 0.11,
+    width: width * 0.43,
+    resizeMode: 'contain',
+    alignSelf: 'center',
   },
 });

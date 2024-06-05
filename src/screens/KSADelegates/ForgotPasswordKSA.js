@@ -10,13 +10,18 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
+import {CheckBox, Icon} from 'react-native-elements';
+import AlertMessage from '../../components/AlertMessage';
 
 const {width, height} = Dimensions.get('screen');
 
-const ForgotPasswordKSA = () => {
+const ForgotPasswordPak = () => {
   const navigation = useNavigation();
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+  const [alertType, setAlertType] = useState('');
 
   const validateEmail = email => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -30,28 +35,30 @@ const ForgotPasswordKSA = () => {
       setEmailError('Please enter a valid email address');
     } else {
       setEmailError('');
-      Alert.alert(
-        'Reset Link Sent',
-        'A password reset link has been sent to your email.',
-      );
-      // Perform reset password action
+      setAlertType('success');
+      setAlertMessage('A password reset link has been sent to your email.');
+      setAlertVisible(true);
     }
   };
-
-  const handleSignIn = () => {
-    navigation.navigate('LoginKSA'); // Navigate to the Login screen
+  const closeAlert = () => {
+    setAlertVisible(false);
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <View style={styles.headerIconCont}>
+          <View style={styles.IconArrowCont}>
+            <Icon
+              name="keyboard-backspace"
+              type="material-community"
+              color="#4a5f85"
+              size={30}
+              onPress={() => navigation.goBack()}
+            />
+          </View>
           <Image
             source={require('../../assets/images/SplashScreen.png')}
-            style={styles.logo}
-          />
-          <Image
-            source={require('../../assets/images/A2Z.png')}
             style={styles.logo}
           />
         </View>
@@ -62,7 +69,7 @@ const ForgotPasswordKSA = () => {
       </View>
       <View style={styles.mainContainer}>
         <View style={styles.textInputHeadingCont}>
-          <Text style={styles.textInputHeading}>KSA DELEGATE</Text>
+          <Text style={styles.textInputHeading}>KSA DELEGATES</Text>
           <Image
             source={require('../../assets/images/SaudiFlag.jpg')}
             style={styles.imageFlagPak}
@@ -76,26 +83,26 @@ const ForgotPasswordKSA = () => {
           onChangeText={text => setEmail(text)}
         />
         {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
+
         <TouchableOpacity style={styles.button} onPress={handleResetPassword}>
           <Text style={styles.buttonText}>Reset Password</Text>
         </TouchableOpacity>
-        <View style={styles.orContainer}>
-          <View style={styles.line} />
-          <Text style={styles.orText}>or</Text>
-          <View style={styles.line} />
-        </View>
-        <View style={styles.signUpContainer}>
-          <Text style={styles.signUpText}>Remember your password? </Text>
-          <TouchableOpacity onPress={handleSignIn}>
-            <Text style={styles.signUpButtonText}>Sign In</Text>
-          </TouchableOpacity>
-        </View>
+        <Image
+          source={require('../../assets/images/A2Z.png')}
+          style={styles.logo1}
+        />
       </View>
+      <AlertMessage
+        message={alertMessage}
+        type={alertType}
+        visible={alertVisible}
+        onClose={closeAlert}
+      />
     </View>
   );
 };
 
-export default ForgotPasswordKSA;
+export default ForgotPasswordPak;
 
 const styles = StyleSheet.create({
   container: {
@@ -110,15 +117,28 @@ const styles = StyleSheet.create({
     width: width / 1.2,
     alignItems: 'flex-start',
   },
+  IconArrowCont: {
+    borderWidth: 1,
+    borderColor: '#4a5f85',
+    borderRadius: 10,
+    padding: width * 0.01,
+  },
   headerIconCont: {
     width: '100%',
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    // justifyContent: 'space-between',
     alignItems: 'center',
   },
   logo: {
-    height: 110,
-    width: 160,
+    height: 100,
+    width: width * 0.46,
+    resizeMode: 'contain',
+    alignSelf: 'center',
+    marginLeft: width * 0.12,
+  },
+  logo1: {
+    height: 100,
+    width: width * 0.43,
     resizeMode: 'contain',
     alignSelf: 'center',
   },
@@ -186,12 +206,11 @@ const styles = StyleSheet.create({
   button: {
     width: '100%',
     height: 50,
-    backgroundColor: '#000',
+    backgroundColor: '#4a5f85',
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 5,
     marginTop: 20,
-    marginBottom: 20,
   },
   buttonText: {
     color: '#fff',
@@ -225,8 +244,46 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   signUpButtonText: {
-    color: '#000',
+    color: '#4a5f85',
     fontSize: 16,
+    fontWeight: 'bold',
+  },
+  rememberForgotContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginVertical: 10,
+  },
+  rememberMe: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  rememberMeText: {
+    // marginLeft: 5,
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#000',
+  },
+  forgotPasswordText: {
+    color: '#000',
+    fontSize: 14,
+    fontWeight: '500',
+    width: '100%',
+    textDecorationLine: 'underline',
+  },
+  button: {
+    width: '100%',
+    height: 50,
+    backgroundColor: '#4a5f85',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 5,
+    marginTop: 20,
+    marginBottom: 20,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 18,
     fontWeight: 'bold',
   },
 });

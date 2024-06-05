@@ -18,7 +18,7 @@ import CustomDrawer from '../../components/CustomDrawer';
 
 const {width, height} = Dimensions.get('screen');
 
-const MeetingRequestScreenPak = () => {
+const MeetingRequestScreenKsa = () => {
   const navigation = useNavigation();
   const [selectedTab, setSelectedTab] = useState('received');
   const [showEntries, setShowEntries] = useState(10);
@@ -271,6 +271,7 @@ const MeetingRequestScreenPak = () => {
             style={[styles.tabText, selectedTab === 'sent' && {color: '#fff'}]}>
             Sent Requests
           </Text>
+
         </TouchableOpacity>
       </View>
       <View style={styles.mainHeadCont}>
@@ -310,7 +311,7 @@ const MeetingRequestScreenPak = () => {
   );
 };
 
-export default MeetingRequestScreenPak;
+export default MeetingRequestScreenKsa;
 
 const styles = StyleSheet.create({
   container: {

@@ -82,7 +82,7 @@ const LoginPak = () => {
                   type="material-community"
                   color="#4a5f85"
                   size={30}
-                  onPress={() => navigation.goBack()}
+                  onPress={() => navigation.navigate('AppStarter')}
                 />
               </View>
               <Image

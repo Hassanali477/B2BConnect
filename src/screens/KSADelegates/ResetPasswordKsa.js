@@ -17,7 +17,7 @@ import {Icon} from 'react-native-elements';
 
 const {width, height} = Dimensions.get('screen');
 
-const ResetPassword = () => {
+const ResetPasswordKsa = () => {
   const navigation = useNavigation();
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -114,6 +114,7 @@ const ResetPassword = () => {
             style={styles.logo}
           />
         </View>
+        <Text style={styles.heading}>KSA</Text>
         <Text style={styles.headerText}>Change Password</Text>
         <Text style={styles.headerText2}>Enter your old and new password</Text>
       </View>
@@ -194,7 +195,7 @@ const ResetPassword = () => {
   );
 };
 
-export default ResetPassword;
+export default ResetPasswordKsa;
 
 const styles = StyleSheet.create({
   container: {

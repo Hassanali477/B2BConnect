@@ -1,4 +1,3 @@
-import React, {useCallback, useEffect, useState} from 'react';
 import {
   StyleSheet,
   View,
@@ -13,22 +12,18 @@ import {
   Platform,
   BackHandler,
 } from 'react-native';
-import HeaderComponent from '../../components/HeaderComponent';
-import CustomDropdown from '../../components/CustomDropdown';
-import CustomSelectEntries from '../../components/CustomSelectEntries';
-import MeetingRequestPak from './MeetingRequestPak';
-import CustomDrawer from '../../components/CustomDrawer';
-import {Icon as RNElementsIcon} from 'react-native-elements';
+import React, {useState, useEffect, useCallback} from 'react';
+import CustomSelectEntriesKSA from '../../components/KSADelegates/CustomSelectEntriesKSA';
+import CustomDrawerKSA from '../../components/KSADelegates/CustomDrawerKSA';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import {useFocusEffect, useNavigation} from '@react-navigation/native';
-import BottomNavigator from '../../components/BottomNavigator';
-import {Alert} from 'react-native';
-import {Provider, Button} from 'react-native-paper';
-import AlertMessage from '../../components/AlertMessage';
+import {useNavigation, useFocusEffect} from '@react-navigation/native';
+import BottomNavigatorKSA from '../../components/KSADelegates/BottomNavigatorKSA';
+import HeaderComponentKSA from '../../components/KSADelegates/HeaderComponentKSA';
+import MeetingRequestKsa from './MeetingRequestKsa';
 
 const {width, height} = Dimensions.get('screen');
 
-const DashboardPak = () => {
+const DashboardKSA = () => {
   const navigation = useNavigation();
   const [selectedJob, setSelectedJob] = useState(null);
   const [showEntries, setShowEntries] = useState(10);
@@ -135,7 +130,7 @@ const DashboardPak = () => {
   useFocusEffect(
     useCallback(() => {
       const onBackPress = () => {
-        return true;
+        return true; // Prevent default behavior
       };
       BackHandler.addEventListener('hardwareBackPress', onBackPress);
       return () => {
@@ -143,15 +138,16 @@ const DashboardPak = () => {
       };
     }, []),
   );
-
   return (
     <KeyboardAvoidingView
       style={styles.container}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : -width * 0.1}
       behavior={Platform.OS === 'ios' ? 'height' : 'height'}>
-      <HeaderComponent onMenuPress={() => setDrawerVisible(!drawerVisible)} />
+      <HeaderComponentKSA
+        onMenuPress={() => setDrawerVisible(!drawerVisible)}
+      />
       <View style={styles.headerCont}>
-        <Text style={styles.headerText}>List of KSA DELEGATES</Text>
+        <Text style={styles.headerText}>List of PAK EXHIBITOR</Text>
       </View>
       <View style={styles.headerSubCont}>
         <Text style={styles.headerSubText}>Search Criteria</Text>
@@ -209,7 +205,7 @@ const DashboardPak = () => {
               }}>
               Entries
             </Text>
-            <CustomSelectEntries
+            <CustomSelectEntriesKSA
               data={entriesData}
               selectedValue={showEntries}
               onSelect={setShowEntries}
@@ -302,7 +298,7 @@ const DashboardPak = () => {
       </View>
 
       {modalVisible && (
-        <MeetingRequestPak
+        <MeetingRequestKsa
           onClose={() => setModalVisible(false)}
           modalVisible={modalVisible}
           setModalVisible={setModalVisible}
@@ -374,15 +370,17 @@ const DashboardPak = () => {
         </Modal>
       )}
 
-      <CustomDrawer
+      <CustomDrawerKSA
         visible={drawerVisible}
         onClose={() => setDrawerVisible(false)}
         navigation={navigation}
       />
-      <BottomNavigator />
+      <BottomNavigatorKSA />
     </KeyboardAvoidingView>
   );
 };
+
+export default DashboardKSA;
 
 const styles = StyleSheet.create({
   container: {
@@ -611,5 +609,3 @@ const styles = StyleSheet.create({
     backgroundColor: 'red',
   },
 });
-
-export default DashboardPak;

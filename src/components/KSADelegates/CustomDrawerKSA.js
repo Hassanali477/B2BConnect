@@ -13,7 +13,7 @@ import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 
 const {width, height} = Dimensions.get('screen');
 
-const CustomDrawer = ({visible, onClose, navigation}) => {
+const CustomDrawerKSA = ({visible, onClose, navigation}) => {
   const navigateToScreen = screenName => {
     navigation.navigate(screenName);
     onClose();
@@ -28,30 +28,31 @@ const CustomDrawer = ({visible, onClose, navigation}) => {
               <Text style={styles.drawerTitle}>B2B CONNECT</Text>
             </View>
             <View style={styles.mainContainer}>
-              <TouchableOpacity onPress={() => navigateToScreen('DashboardPak')}>
+              <TouchableOpacity
+                onPress={() => navigateToScreen('DashboardKSA')}>
                 <View style={styles.drawerItem}>
                   <Image
-                    source={require('../assets/icons/groups_24dp.png')}
+                    source={require('../../assets/icons/groups_24dp.png')}
                     style={styles.icon}
                   />
-                  <Text style={styles.drawerItemText}>KSA DELEGATES</Text>
+                  <Text style={styles.drawerItemText}>PAK EXHIBITOR</Text>
                 </View>
               </TouchableOpacity>
               <TouchableOpacity
-                onPress={() => navigateToScreen('MeetingRequestScreen')}>
+                onPress={() => navigateToScreen('MeetingRequestScreenKsa')}>
                 <View style={styles.drawerItem}>
                   <Image
-                    source={require('../assets/icons/event_note_24dp.png')}
+                    source={require('../../assets/icons/event_note_24dp.png')}
                     style={styles.icon}
                   />
                   <Text style={styles.drawerItemText}>Meeting Request</Text>
                 </View>
               </TouchableOpacity>
               <TouchableOpacity
-                onPress={() => navigateToScreen('ConfirmAppointment')}>
+                onPress={() => navigateToScreen('ConfirmAppointmentKsa')}>
                 <View style={styles.drawerItem}>
                   <Image
-                    source={require('../assets/icons/done_outline_24dp.png')}
+                    source={require('../../assets/icons/done_outline_24dp.png')}
                     style={styles.icon}
                   />
                   <Text style={styles.drawerItemText}>
@@ -59,27 +60,26 @@ const CustomDrawer = ({visible, onClose, navigation}) => {
                   </Text>
                 </View>
               </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => navigateToScreen('FeedbackScreen')}>
+              <TouchableOpacity onPress={() => navigateToScreen('FeedbackKsa')}>
                 <View style={styles.drawerItem}>
                   <Image
-                    source={require('../assets/icons/chat_bubble_outline_24dp.png')}
+                    source={require('../../assets/icons/chat_bubble_outline_24dp.png')}
                     style={styles.icon}
                   />
                   <Text style={styles.drawerItemText}>Feedback</Text>
                 </View>
               </TouchableOpacity>
               <TouchableOpacity
-                onPress={() => navigateToScreen('ResetPassword')}>
+                onPress={() => navigateToScreen('ResetPasswordKsa')}>
                 <View style={styles.drawerItem}>
                   <Icon name="key" type="font-awesome" size={26} color="#fff" />
                   <Text style={styles.drawerItemText}>Change Password</Text>
                 </View>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => navigateToScreen('ProfilePak')}>
+              <TouchableOpacity onPress={() => navigateToScreen('ProfileKsa')}>
                 <View style={styles.drawerItem}>
                   <Image
-                    source={require('../assets/icons/person_24dp.png')}
+                    source={require('../../assets/icons/person_24dp.png')}
                     style={styles.icon}
                   />
                   <Text style={styles.drawerItemText}>Profile</Text>
@@ -87,7 +87,7 @@ const CustomDrawer = ({visible, onClose, navigation}) => {
               </TouchableOpacity>
             </View>
             <View style={styles.footerContainer}>
-              <TouchableOpacity onPress={() => navigateToScreen('LoginPak')}>
+              <TouchableOpacity onPress={() => navigateToScreen('LoginKSA')}>
                 <View style={styles.drawerItem1}>
                   <Icon name="log-out" type="entypo" size={24} color="#fff" />
                   <Text style={styles.logoutText}>Logout</Text>
@@ -185,4 +185,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CustomDrawer;
+export default CustomDrawerKSA;

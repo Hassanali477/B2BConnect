@@ -5,17 +5,17 @@ import {
   View,
   Dimensions,
   Modal,
-  Button,
   TouchableOpacity,
   TextInput,
 } from 'react-native';
-import {Icon} from 'react-native-elements';
+import Icon from 'react-native-vector-icons/FontAwesome';
+
+import SelectDropdown from '../../components/PakExhibitor/SelectDropdownPak';
 import AlertMessage from '../../components/AlertMessage';
-import SelectDropdownKsa from '../../components/KSADelegates/SelectDropdownKsa';
 
 const {width, height} = Dimensions.get('screen');
-const MeetingRequestKsa = () => {
-  const [modalVisible, setModalVisible] = useState(false);
+
+const MeetingRequestKsa = ({modalVisible, setModalVisible}) => {
   const [selectedDate, setSelectedDate] = useState('Select Date');
   const [selectedTimeslot, setSelectedTimeslot] = useState('Select Timeslot');
   const [selectedLocation, setSelectedLocation] = useState(
@@ -26,50 +26,57 @@ const MeetingRequestKsa = () => {
   const [alertMessage, setAlertMessage] = useState('');
   const [alertType, setAlertType] = useState('');
 
-  const dates = ['2023-05-01', '2023-05-02', '2023-05-03'];
+  const dates = [
+    '2023-05-01',
+    '2023-05-02',
+    '2023-05-03',
+    '2023-05-03',
+    '2023-05-03',
+  ];
   const timeslots = [
     '10:00 AM - 11:00 AM',
     '11:00 AM - 12:00 PM',
+    '11:00 AM - 12:00 PM',
+    '11:00 AM - 12:00 PM',
     '01:00 PM - 02:00 PM',
   ];
-
   const locations = [
-    'Jeddah Hilton, Jeddah',
-    'InterContinental Jeddah, Jeddah',
-    'Crowne Plaza, Riyadh',
-    'Four Seasons Hotel Riyadh, Riyadh',
-    'Mövenpick Hotel, Riyadh',
-    'Ritz-Carlton, Riyadh',
-    'Le Meridien, Al Khobar',
-    'Sheraton Dammam Hotel, Dammam',
-    'Hilton Garden Inn, Al Khobar',
-    'Sofitel Al Khobar, Al Khobar',
-    'Burj Al Arab, Dubai',
-    'Atlantis The Palm, Dubai',
-    'Jumeirah Beach Hotel, Dubai',
-    'Armani Hotel, Dubai',
-    'The Ritz-Carlton, Dubai',
-    'Waldorf Astoria, Dubai',
-    'Four Seasons Resort Dubai, Dubai',
-    'Address Downtown, Dubai',
-    'Raffles Dubai, Dubai',
-    'Fairmont The Palm, Dubai',
+    'Pearl Continental Hotel, Karachi',
+    'Marriott Hotel, Karachi',
+    'Mövenpick Hotel, Karachi',
+    'Avari Towers, Karachi',
+    'Ramada Plaza, Karachi',
+    'Regent Plaza Hotel & Convention Center, Karachi',
+    'Beach Luxury Hotel, Karachi',
+    'Hotel One, Karachi',
+    'Ambassador Hotel, Karachi',
+    'Dreamworld Resort, Karachi',
+    'Islamabad Serena Hotel, Islamabad',
+    'Pearl Continental Hotel, Lahore',
+    'Nishat Hotel, Lahore',
+    "Faletti's Hotel, Lahore",
+    'Avari Hotel, Lahore',
+    'Pearl Continental Hotel, Rawalpindi',
+    'Ramada by Wyndham, Multan',
+    'Pearl Continental Hotel, Peshawar',
+    'Mövenpick Hotel, Islamabad',
+    'Hotel One, Faisalabad',
+    'The Residency Hotel, Lahore',
+    'Marriott Hotel, Islamabad',
+    'Hotel Crown Plaza, Islamabad',
+    'Royalton Hotel, Faisalabad',
+    'Hotel One, Sialkot',
+    'Best Western Hotel, Islamabad',
+    'Pearl Continental Hotel, Bhurban',
+    'Shangrila Resort, Skardu',
+    'Gilgit Serena Hotel, Gilgit',
+    'Hunza Serena Inn, Hunza',
   ];
 
-  const handleDateSelect = date => {
-    setSelectedDate(date);
-  };
-
-  const handleTimeslotSelect = timeslot => {
-    setSelectedTimeslot(timeslot);
-  };
-
-  const handleLocationSelect = location => {
-    setSelectedLocation(location);
-  };
-  const handleMessageChange = text => {
-    setMessage(text);
-  };
+  const handleDateSelect = date => setSelectedDate(date);
+  const handleTimeslotSelect = timeslot => setSelectedTimeslot(timeslot);
+  const handleLocationSelect = location => setSelectedLocation(location);
+  const handleMessageChange = text => setMessage(text);
 
   const handleSendMessage = () => {
     if (
@@ -80,19 +87,22 @@ const MeetingRequestKsa = () => {
     ) {
       setAlertMessage('Please fill all the fields');
       setAlertType('error');
+      setAlertVisible(true);
     } else {
       setAlertMessage('Meeting request sent successfully!');
       setAlertType('success');
-      setModalVisible(false);
-      setSelectedDate('Select Date'),
-        setSelectedTimeslot('Select Timeslot'),
-        setSelectedLocation('Select Meeting Location'),
-        setMessage('');
+      setAlertVisible(true);
+      setSelectedDate('Select Date');
+      setSelectedTimeslot('Select Timeslot');
+      setSelectedLocation('Select Meeting Location');
+      setMessage('');
     }
-    setAlertVisible(true);
   };
 
-  const closeAlert = () => setAlertVisible(false);
+  const closeAlert = () => {
+    setAlertVisible(false);
+  };
+
   return (
     <View style={styles.container}>
       <AlertMessage
@@ -105,31 +115,27 @@ const MeetingRequestKsa = () => {
         animationType="fade"
         transparent={true}
         visible={modalVisible}
-        onRequestClose={() => {
-          setModalVisible(!modalVisible);
-        }}>
+        onRequestClose={() => setModalVisible(!modalVisible)}>
         <View style={styles.modalBackground}>
           <View style={styles.modalView}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>
-                Meeting Request - Alkaram Textiles
-              </Text>
+              <Text style={styles.modalTitle}>Meeting Request Alkaram Textiles</Text>
               <TouchableOpacity onPress={() => setModalVisible(false)}>
                 <Icon
-                  name="close"
+                  name="times"
                   type="material"
                   size={26}
-                  color={'#3C4B64'}
+                  color={'#0059CF'}
                 />
               </TouchableOpacity>
             </View>
-            <View style={styles.modalSeparator}></View>
+            <View style={styles.modalSeparator} />
             <View style={styles.modalContent}>
               <Text style={styles.modalSubTitle}>Send request for Meeting</Text>
               <View style={styles.dropdownContainer}>
                 <View style={styles.dropdownSection}>
                   <Text style={styles.dropdownHeading}>Select Date</Text>
-                  <SelectDropdownKsa
+                  <SelectDropdown
                     title={'Select Date'}
                     options={dates}
                     selectedValue={selectedDate}
@@ -138,7 +144,7 @@ const MeetingRequestKsa = () => {
                 </View>
                 <View style={styles.dropdownSection}>
                   <Text style={styles.dropdownHeading}>Select Timeslot</Text>
-                  <SelectDropdownKsa
+                  <SelectDropdown
                     title={'Select Timeslot'}
                     options={timeslots}
                     selectedValue={selectedTimeslot}
@@ -147,18 +153,18 @@ const MeetingRequestKsa = () => {
                 </View>
               </View>
             </View>
-            <View style={styles.modalSeparator}></View>
+            <View style={styles.modalSeparator} />
             <Text style={styles.meetingHeading}>Meeting Location</Text>
             <View style={styles.locationContainer}>
               <Text style={styles.locationHeading}>Select Location</Text>
-              <SelectDropdownKsa
+              <SelectDropdown
                 title={'Select Location'}
                 options={locations}
                 selectedValue={selectedLocation}
                 onSelect={handleLocationSelect}
               />
             </View>
-            <View style={styles.separator}></View>
+            <View style={styles.separator} />
             <Text style={styles.messageHeading}>Type Message...</Text>
             <TextInput
               style={styles.messageInput}
@@ -177,9 +183,6 @@ const MeetingRequestKsa = () => {
           </View>
         </View>
       </Modal>
-      <View style={styles.mainContent}>
-        <Button title="Show Modal KSA" onPress={() => setModalVisible(true)} />
-      </View>
     </View>
   );
 };
@@ -216,7 +219,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     color: '#3C4B64',
     fontWeight: '600',
-    fontSize: 19,
+    fontSize: 20,
   },
   modalSeparator: {
     borderBottomWidth: 1,
@@ -225,6 +228,13 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     width: '100%',
+  },
+  mainContent: {
+    flex: 1,
+    width: width,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
   },
   modalSubTitle: {
     color: '#3C4B64',
@@ -248,17 +258,9 @@ const styles = StyleSheet.create({
     color: '#3C4B64',
     marginLeft: 5,
   },
-  mainContent: {
-    flex: 1,
-    width: width,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-  },
   meetingHeading: {
     fontWeight: '600',
-    fontSize: 22,
+    fontSize: 20,
     color: '#3C4B64',
     width: '94%',
     marginLeft: 10,
@@ -299,8 +301,9 @@ const styles = StyleSheet.create({
   },
   sendButton: {
     width: '80%',
-    backgroundColor: 'rgba(0,0,0,0.1)',
+    backgroundColor: '#0059CF',
     borderWidth: 1,
+    borderColor: '#0059CF',
     padding: 15,
     borderRadius: 50,
     alignSelf: 'center',
@@ -308,7 +311,7 @@ const styles = StyleSheet.create({
     marginTop: 15,
   },
   sendButtonText: {
-    color: '#3C4B64',
+    color: '#fff',
     fontWeight: 'bold',
   },
 });
