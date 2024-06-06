@@ -20,6 +20,8 @@ import RNFS from 'react-native-fs';
 import {PermissionsAndroid} from 'react-native';
 import AlertMessage from '../../components/AlertMessage';
 import {KeyboardAvoidingView} from 'react-native';
+import CustomDrawerKSA from '../../components/KSADelegates/CustomDrawerKSA';
+import BottomNavigatorKSA from '../../components/KSADelegates/BottomNavigatorKSA';
 
 const {width, height} = Dimensions.get('screen');
 
@@ -232,12 +234,12 @@ const ConfirmAppointmentKsa = () => {
         </ScrollView>
       </View>
 
-      <CustomDrawer
+      <CustomDrawerKSA
         visible={drawerVisible}
         onClose={() => setDrawerVisible(false)}
         navigation={navigation}
       />
-      <BottomNavigator />
+      <BottomNavigatorKSA />
     </KeyboardAvoidingView>
   );
 };

@@ -20,7 +20,6 @@ const BottomNavigatorKSA = () => {
   useEffect(() => {
     const currentRoute =
       navigation.getState().routes[navigation.getState().index].name;
-    setSelectedTab(currentRoute);
   }, [isFocused, navigation]);
 
   const navigateToScreen = screenName => {
@@ -33,14 +32,14 @@ const BottomNavigatorKSA = () => {
       <TouchableOpacity
         style={[
           styles.tab,
-          selectedTab === 'DashboardKsa' && styles.selectedTab,
+          selectedTab == 'DashboardKSA' && styles.selectedTab,
         ]}
-        onPress={() => navigateToScreen('DashboardKsa')}>
+        onPress={() => navigateToScreen('DashboardKSA')}>
         <Icon
           name="home"
           type="feather"
           size={30}
-          color={selectedTab === 'DashboardKsa' ? '#fff' : '#ccc'}
+          color={selectedTab == 'DashboardKSA' ? '#fff' : '#ccc'}
         />
       </TouchableOpacity>
       <TouchableOpacity

@@ -19,6 +19,8 @@ import AlertMessage from '../../components/AlertMessage'; // Import the AlertMes
 import BottomNavigator from '../../components/BottomNavigator';
 import HeaderComponent from '../../components/HeaderComponent';
 import CustomDrawer from '../../components/CustomDrawer';
+import CustomDrawerKSA from '../../components/KSADelegates/CustomDrawerKSA';
+import BottomNavigatorKSA from '../../components/KSADelegates/BottomNavigatorKSA';
 
 const {width, height} = Dimensions.get('window');
 
@@ -246,12 +248,12 @@ const ProfileKsa = ({navigation}) => {
           onClose={() => setAlertVisible(false)}
         />
       </ScrollView>
-      <CustomDrawer
+      <CustomDrawerKSA
         visible={drawerVisible}
         onClose={() => setDrawerVisible(false)}
         navigation={navigation}
       />
-      <BottomNavigator />
+      <BottomNavigatorKSA />
     </KeyboardAvoidingView>
   );
 };

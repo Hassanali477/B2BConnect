@@ -15,6 +15,8 @@ import CustomSelectEntries from '../../components/CustomSelectEntries';
 import {useNavigation} from '@react-navigation/native';
 import BottomNavigator from '../../components/BottomNavigator';
 import CustomDrawer from '../../components/CustomDrawer';
+import CustomDrawerKSA from '../../components/KSADelegates/CustomDrawerKSA';
+import BottomNavigatorKSA from '../../components/KSADelegates/BottomNavigatorKSA';
 
 const {width, height} = Dimensions.get('screen');
 
@@ -271,7 +273,6 @@ const MeetingRequestScreenKsa = () => {
             style={[styles.tabText, selectedTab === 'sent' && {color: '#fff'}]}>
             Sent Requests
           </Text>
-
         </TouchableOpacity>
       </View>
       <View style={styles.mainHeadCont}>
@@ -301,12 +302,12 @@ const MeetingRequestScreenKsa = () => {
       {selectedTab === 'received'
         ? renderReceivedRequests()
         : renderSentRequests()}
-      <CustomDrawer
+      <CustomDrawerKSA
         visible={drawerVisible}
         onClose={() => setDrawerVisible(false)}
         navigation={navigation}
       />
-      <BottomNavigator />
+      <BottomNavigatorKSA />
     </KeyboardAvoidingView>
   );
 };
@@ -366,7 +367,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginRight: 5,
     color: 'black',
-    marginLeft:2
+    marginLeft: 2,
   },
   searchInput2: {
     width: '100%',

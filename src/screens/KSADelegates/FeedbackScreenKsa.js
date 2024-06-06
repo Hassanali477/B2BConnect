@@ -14,6 +14,8 @@ import HeaderComponent from '../../components/HeaderComponent';
 import CustomDrawer from '../../components/CustomDrawer';
 import BottomNavigator from '../../components/BottomNavigator';
 import AlertMessage from '../../components/AlertMessage';
+import CustomDrawerKSA from '../../components/KSADelegates/CustomDrawerKSA';
+import BottomNavigatorKSA from '../../components/KSADelegates/BottomNavigatorKSA';
 
 const {width, height} = Dimensions.get('screen');
 
@@ -139,11 +141,11 @@ const FeedbackScreenKsa = () => {
           <Text style={styles.submitButtonText}>Submit</Text>
         </TouchableOpacity>
       </ScrollView>
-      <CustomDrawer
+      <CustomDrawerKSA
         visible={drawerVisible}
         onClose={() => setDrawerVisible(false)}
       />
-      <BottomNavigator />
+      <BottomNavigatorKSA />
       <AlertMessage
         message={alertMessage}
         type={alertType}
