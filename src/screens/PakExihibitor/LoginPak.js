@@ -58,7 +58,7 @@ const LoginPak = () => {
     // }
 
     if (valid) {
-      setLoading(true); // Add a console.log to check if loading state is set to true
+      setLoading(true);
       setTimeout(() => {
         setLoading(false);
         navigation.navigate('DashboardPak');

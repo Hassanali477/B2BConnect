@@ -22,9 +22,6 @@ import {Icon as RNElementsIcon} from 'react-native-elements';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import BottomNavigator from '../../components/BottomNavigator';
-import {Alert} from 'react-native';
-import {Provider, Button} from 'react-native-paper';
-import AlertMessage from '../../components/AlertMessage';
 
 const {width, height} = Dimensions.get('screen');
 

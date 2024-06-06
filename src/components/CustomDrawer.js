@@ -28,7 +28,8 @@ const CustomDrawer = ({visible, onClose, navigation}) => {
               <Text style={styles.drawerTitle}>B2B CONNECT</Text>
             </View>
             <View style={styles.mainContainer}>
-              <TouchableOpacity onPress={() => navigateToScreen('DashboardPak')}>
+              <TouchableOpacity
+                onPress={() => navigateToScreen('DashboardPak')}>
                 <View style={styles.drawerItem}>
                   <Image
                     source={require('../assets/icons/groups_24dp.png')}

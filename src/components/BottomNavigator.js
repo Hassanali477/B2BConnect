@@ -1,15 +1,10 @@
-import React, { useEffect } from 'react';
-import {
-  View,
-  TouchableOpacity,
-  StyleSheet,
-  Dimensions,
-} from 'react-native';
-import { useNavigation, useIsFocused } from '@react-navigation/native';
-import { Icon } from 'react-native-elements';
-import { Image } from 'react-native';
+import React, {useEffect} from 'react';
+import {View, TouchableOpacity, StyleSheet, Dimensions} from 'react-native';
+import {useNavigation, useIsFocused} from '@react-navigation/native';
+import {Icon} from 'react-native-elements';
+import {Image} from 'react-native';
 
-const { width } = Dimensions.get('window');
+const {width} = Dimensions.get('window');
 
 const BottomNavigator = () => {
   const navigation = useNavigation();
@@ -18,11 +13,12 @@ const BottomNavigator = () => {
   const [selectedTab, setSelectedTab] = React.useState('DashboardPak');
 
   useEffect(() => {
-    const currentRoute = navigation.getState().routes[navigation.getState().index].name;
+    const currentRoute =
+      navigation.getState().routes[navigation.getState().index].name;
     setSelectedTab(currentRoute);
   }, [isFocused, navigation]);
 
-  const navigateToScreen = (screenName) => {
+  const navigateToScreen = screenName => {
     setSelectedTab(screenName);
     navigation.navigate(screenName);
   };
@@ -30,38 +26,75 @@ const BottomNavigator = () => {
   return (
     <View style={styles.container}>
       <TouchableOpacity
-        style={[styles.tab, selectedTab === 'DashboardPak' && styles.selectedTab]}
+        style={[
+          styles.tab,
+          selectedTab === 'DashboardPak' && styles.selectedTab,
+        ]}
         onPress={() => navigateToScreen('DashboardPak')}>
-        <Icon name="home" type="feather" size={30} color={selectedTab === 'DashboardPak' ? '#fff' : '#ccc'} />
+        <Icon
+          name="home"
+          type="feather"
+          size={30}
+          color={selectedTab === 'DashboardPak' ? '#fff' : '#ccc'}
+        />
       </TouchableOpacity>
       <TouchableOpacity
-        style={[styles.tab, selectedTab === 'MeetingRequestScreen' && styles.selectedTab]}
+        style={[
+          styles.tab,
+          selectedTab === 'MeetingRequestScreen' && styles.selectedTab,
+        ]}
         onPress={() => navigateToScreen('MeetingRequestScreen')}>
         <Image
           source={require('../assets/icons/event_note_24dp.png')}
-          style={[styles.icon, selectedTab === 'MeetingRequestScreen' ? styles.selectedIcon : styles.iconDefault]}
+          style={[
+            styles.icon,
+            selectedTab === 'MeetingRequestScreen'
+              ? styles.selectedIcon
+              : styles.iconDefault,
+          ]}
         />
       </TouchableOpacity>
       <TouchableOpacity
-        style={[styles.tab, selectedTab === 'ConfirmAppointment' && styles.selectedTab]}
+        style={[
+          styles.tab,
+          selectedTab === 'ConfirmAppointment' && styles.selectedTab,
+        ]}
         onPress={() => navigateToScreen('ConfirmAppointment')}>
         <Image
           source={require('../assets/icons/done_outline_24dp.png')}
-          style={[styles.icon, selectedTab === 'ConfirmAppointment' ? styles.selectedIcon : styles.iconDefault]}
+          style={[
+            styles.icon,
+            selectedTab === 'ConfirmAppointment'
+              ? styles.selectedIcon
+              : styles.iconDefault,
+          ]}
         />
       </TouchableOpacity>
       <TouchableOpacity
-        style={[styles.tab, selectedTab === 'FeedbackScreen' && styles.selectedTab]}
+        style={[
+          styles.tab,
+          selectedTab === 'FeedbackScreen' && styles.selectedTab,
+        ]}
         onPress={() => navigateToScreen('FeedbackScreen')}>
         <Image
           source={require('../assets/icons/chat_bubble_outline_24dp.png')}
-          style={[styles.icon, selectedTab === 'FeedbackScreen' ? styles.selectedIcon : styles.iconDefault]}
+          style={[
+            styles.icon,
+            selectedTab === 'FeedbackScreen'
+              ? styles.selectedIcon
+              : styles.iconDefault,
+          ]}
         />
       </TouchableOpacity>
       <TouchableOpacity
         style={[styles.tab, selectedTab === 'ProfilePak' && styles.selectedTab]}
         onPress={() => navigateToScreen('ProfilePak')}>
-        <Icon name="user" type="feather" size={30} color={selectedTab === 'ProfilePak' ? '#fff' : '#ccc'} />
+        <Icon
+          name="user"
+          type="feather"
+          size={30}
+          color={selectedTab === 'ProfilePak' ? '#fff' : '#ccc'}
+        />
       </TouchableOpacity>
     </View>
   );

@@ -15,7 +15,7 @@ const BottomNavigatorKSA = () => {
   const navigation = useNavigation();
   const isFocused = useIsFocused();
 
-  const [selectedTab, setSelectedTab] = React.useState('DashboardPak');
+  const [selectedTab, setSelectedTab] = React.useState('DashboardKSA');
 
   useEffect(() => {
     const currentRoute =
