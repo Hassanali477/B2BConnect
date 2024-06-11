@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React from 'react';
 import {Image} from 'react-native';
 import {
@@ -15,6 +16,7 @@ const {width, height} = Dimensions.get('screen');
 
 const CustomDrawerKSA = ({visible, onClose, navigation}) => {
   const navigateToScreen = screenName => {
+    AsyncStorage.clear();
     navigation.navigate(screenName);
     onClose();
   };

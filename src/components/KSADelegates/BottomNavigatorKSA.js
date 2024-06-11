@@ -20,6 +20,7 @@ const BottomNavigatorKSA = () => {
   useEffect(() => {
     const currentRoute =
       navigation.getState().routes[navigation.getState().index].name;
+    setSelectedTab(currentRoute);
   }, [isFocused, navigation]);
 
   const navigateToScreen = screenName => {

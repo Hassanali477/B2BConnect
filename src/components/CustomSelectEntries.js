@@ -20,9 +20,12 @@ const CustomSelectEntries = ({
 
   const handleSelect = item => {
     setIsOpen(false);
-    onSelect(item);
-    const filteredData = delegatesData.slice(0, item); // Take first 'item' entries
-    setFilteredData(filteredData);
+    const filteredData = delegatesData.slice(0, parseInt(item));
+    var obj = {
+      buyers: filteredData,
+    };
+    setFilteredData(obj);
+    console.log(item, 'checking item');
   };
 
   return (
@@ -60,7 +63,7 @@ const styles = StyleSheet.create({
   },
   selectedOption: {
     flexDirection: 'row',
-    alignItems: 'center', 
+    alignItems: 'center',
     padding: 6,
     borderRadius: 5,
     borderWidth: 1,

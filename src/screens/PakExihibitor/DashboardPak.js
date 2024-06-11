@@ -22,6 +22,10 @@ import {Icon as RNElementsIcon} from 'react-native-elements';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import BottomNavigator from '../../components/BottomNavigator';
+import axios from 'axios';
+import Api_Base_Url from '../../api';
+import AlertMessage from '../../components/AlertMessage';
+import CustomActivityIndicator from '../../components/CustomActivityIndicator';
 
 const {width, height} = Dimensions.get('screen');
 
@@ -38,65 +42,110 @@ const DashboardPak = () => {
   const [modalVisible1, setModalVisible1] = useState(false);
   const [selectedUserData, setSelectedUserData] = useState(null);
   const [alertVisible, setAlertVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [apiData, setApiData] = useState(null);
 
-  const jobData = [
-    {label: 'All Sector', value: 'all sector'},
-    {label: 'Developer', value: 'developer'},
-    {label: 'Designer', value: 'designer'},
-    {label: 'Manager', value: 'manager'},
-    {label: 'Analyst', value: 'analyst'},
-    {label: 'React Developer', value: 'react developer'},
-    {label: 'Node JS', value: 'node js'},
-  ];
+  // const jobData = [
+  //   {label: 'All Sector', value: 'all sector'},
+  //   {label: 'Agriculture', value: 'agriculture'},
+  //   {label: 'Aviation', value: 'aviation'},
+  //   {
+  //     label:
+  //       'Contracting , Construction Solutions , Property Development , Retail',
+  //     value:
+  //       'Contracting , Construction Solutions , Property Development , Retail',
+  //   },
+  //   {label: 'Energy', value: 'energy'},
+  //   {label: 'Exploration and Mining', value: 'exploration and mining'},
+  //   {label: 'Finance', value: 'finance'},
+  //   {label: 'Food and Constructions', value: 'food and constructions'},
+  //   {label: 'HR', value: 'hr'},
+  //   {label: 'IT', value: 'it'},
+  //   {
+  //     label: 'Logistics services , Construction Multi assets',
+  //     value: 'Logistics services , Construction Multi assets',
+  //   },
+  //   {label: 'Marine', value: 'marine'},
+  //   {label: 'Petrochemical', value: 'petrochemical'},
+  //   {label: 'Telecommunication', value: 'telecommunication'},
+  // ];
 
   const entriesData = [10, 25, 50];
 
-  const generateDummyData = () => {
-    const dummyData = [];
-    for (let i = 1; i <= 60; i++) {
-      dummyData.push({
-        id: i,
-        name: `Delegate ${i}`,
-        company: `Company ${i}`,
-        sector:
-          i % 6 === 0
-            ? 'Node JS'
-            : i % 5 === 0
-            ? 'React Developer'
-            : i % 4 === 0
-            ? 'Analyst'
-            : i % 3 === 0
-            ? 'Manager'
-            : i % 2 === 0
-            ? 'Designer'
-            : 'Developer',
-        website: `www.company${i}.com`,
-        email: `delegate${i}@company${i}.com`,
-        mobile: `${Math.floor(Math.random() * 900000000) + 100000000}`,
-        location: i % 2 === 0 ? 'Riyadh' : i % 3 === 0 ? 'Jeddah' : 'Mecca',
-      });
-    }
-    return dummyData;
-  };
+  // const generateDummyData = () => {
+  //   const dummyData = [];
+  //   for (let i = 1; i <= 60; i++) {
+  //     dummyData.push({
+  //       id: i,
+  //       name: `Delegate ${i}`,
+  //       company: `Company ${i}`,
+  //       sector:
+  //         i % 6 === 0
+  //           ? 'Node JS'
+  //           : i % 5 === 0
+  //           ? 'React Developer'
+  //           : i % 4 === 0
+  //           ? 'Analyst'
+  //           : i % 3 === 0
+  //           ? 'Manager'
+  //           : i % 2 === 0
+  //           ? 'Designer'
+  //           : 'Developer',
+  //       website: `www.company${i}.com`,
+  //       email: `delegate${i}@company${i}.com`,
+  //       mobile: `${Math.floor(Math.random() * 900000000) + 100000000}`,
+  //       location: i % 2 === 0 ? 'Riyadh' : i % 3 === 0 ? 'Jeddah' : 'Mecca',
+  //     });
+  //   }
+  //   return dummyData;
+  // };
 
-  const delegatesData = generateDummyData();
+  const fetchDelegatesData = async () => {
+    // setLoading(true);
+    try {
+      const response = await axios.get(`${Api_Base_Url}KSADelegate`, {
+        params: {
+          user_id: 1742,
+        },
+      });
+      const data = await response.data;
+      setLoading(false);
+      setFilteredData(data);
+      setApiData(data);
+    } catch (error) {
+      console.error('Error fetching delegates data:', error);
+      setLoading(false);
+    }
+  };
+  // const delegatesData = fetchDelegatesData();
+  useEffect(() => {
+    fetchDelegatesData();
+  }, []);
 
   const handleSelectJob = item => {
     setSelectedJob(item);
+    console.log(item, 'item valueeee');
     setDropdownVisible(false);
-    if (item.value === 'all sector') {
-      setFilteredData(delegatesData);
-    } else {
-      const filteredData = delegatesData.filter(
-        delegate => delegate.sector.toLowerCase() === item.value.toLowerCase(),
-      );
-      setFilteredData(filteredData);
-    }
+    // const filtered = filteredData?.buyers?.filter(delegate => {
+    //   delegate?.industry?.toLowerCase() === item?.toLowerCase();
+    //   console.log(delegate, 'checking delegates ');
+    // });
+    // var obj = {
+    //   buyers: filtered,
+    // };
+    // setFilteredData(obj);
+    const filtered = apiData?.buyers?.filter(delegate =>
+      delegate?.industry?.toLowerCase()?.includes(item?.toLowerCase()),
+    );
+    var obj = {
+      buyers: filtered,
+    };
+    setFilteredData(obj);
   };
 
-  useEffect(() => {
-    setFilteredData(delegatesData);
-  }, []);
+  // useEffect(() => {
+  //   setFilteredData(delegatesData);
+  // }, []);
 
   const handleSearch = (query, key) => {
     switch (key) {
@@ -108,20 +157,24 @@ const DashboardPak = () => {
         break;
     }
     if (query === '') {
-      setFilteredData(delegatesData);
+      // setFilteredData(delegatesData);
+      fetchDelegatesData();
     } else {
-      const filtered = delegatesData.filter(
+      const filtered = apiData?.buyers?.filter(
         item =>
-          item.name?.toLowerCase()?.includes(query?.toLowerCase()) ||
-          item.id?.toString()?.includes(query) ||
-          item.company?.toLowerCase()?.includes(query?.toLowerCase()) ||
-          item.sector?.toLowerCase()?.includes(query?.toLowerCase()) ||
-          item.website?.toLowerCase()?.includes(query?.toLowerCase()) ||
-          item.email?.toLowerCase()?.includes(query?.toLowerCase()) ||
-          item.mobile?.toLowerCase()?.includes(query) ||
-          item.location?.toLowerCase()?.includes(query?.toLowerCase()),
+          item?.id?.toString()?.includes(query) ||
+          item?.contact_name?.toLowerCase()?.includes(query?.toLowerCase()) ||
+          item?.company_name?.toLowerCase()?.includes(query?.toLowerCase()) ||
+          item?.industry?.toLowerCase()?.includes(query?.toLowerCase()) ||
+          item?.website?.toLowerCase()?.includes(query?.toLowerCase()) ||
+          item?.email?.toLowerCase()?.includes(query?.toLowerCase()) ||
+          item?.phone?.toLowerCase()?.includes(query) ||
+          item?.country?.toLowerCase()?.includes(query?.toLowerCase()),
       );
-      setFilteredData(filtered);
+      var obj = {
+        buyers: filtered,
+      };
+      setFilteredData(obj);
     }
   };
   const handleAboutPress = userData => {
@@ -158,22 +211,22 @@ const DashboardPak = () => {
               style={styles.dropdown}
               onPress={() => setDropdownVisible(!dropdownVisible)}>
               <Text style={styles.text}>
-                {selectedJob ? selectedJob.label : 'All Sectors ...'}
+                {selectedJob ? selectedJob : 'All Sectors ...'}
               </Text>
               <Icon name="angle-down" size={24} color="#000" />
             </TouchableOpacity>
             {dropdownVisible && (
               <View style={styles.dropdownListContainer}>
                 <FlatList
-                  data={jobData}
-                  renderItem={({item}) => (
+                  data={apiData?.industries}
+                  renderItem={({item, index}) => (
                     <TouchableOpacity
                       style={styles.dropdownItem}
                       onPress={() => handleSelectJob(item)}>
-                      <Text style={styles.text}>{item.label}</Text>
+                      <Text style={styles.text}>{item}</Text>
                     </TouchableOpacity>
                   )}
-                  keyExtractor={item => item.value}
+                  keyExtractor={index => index}
                 />
               </View>
             )}
@@ -210,8 +263,8 @@ const DashboardPak = () => {
               data={entriesData}
               selectedValue={showEntries}
               onSelect={setShowEntries}
-              delegatesData={delegatesData}
-              setFilteredData={setFilteredData}
+              delegatesData={apiData?.buyers}
+              setFilteredData={(item) => setFilteredData(item)}
             />
           </View>
         </View>
@@ -236,7 +289,7 @@ const DashboardPak = () => {
           }}>
           <View>
             <View style={styles.headerRow}>
-              <Text style={[styles.headerCell, {width: 20}]}>ID</Text>
+              <Text style={[styles.headerCell, {width: 40}]}>ID</Text>
               <Text style={styles.headerCell}>Name</Text>
               <Text style={styles.headerCell}>Company</Text>
               <Text style={styles.headerCell}>Sector</Text>
@@ -250,49 +303,59 @@ const DashboardPak = () => {
             <ScrollView
               style={{height: height * 0.4}}
               showsVerticalScrollIndicator={false}>
-              {filteredData.map(item => (
-                <View key={item.id} style={styles.row}>
-                  <Text
-                    style={[styles.headerCell, {width: 20, color: '#4a5f85'}]}>
-                    {item.id}
-                  </Text>
-                  <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                    {item.name}
-                  </Text>
-                  <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                    {item.company}
-                  </Text>
-                  <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                    {item.sector}
-                  </Text>
-                  <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                    {item.website}
-                  </Text>
-                  <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                    {item.email}
-                  </Text>
-                  <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                    {item.mobile}
-                  </Text>
-                  <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                    {item.location}
-                  </Text>
-                  <View style={styles.headerCell}>
-                    <TouchableOpacity
-                      style={styles.meetingButton}
-                      onPress={() => handleAboutPress(item)}>
-                      <Text style={styles.meetingButtonText}>About</Text>
-                    </TouchableOpacity>
-                  </View>
-                  <View style={styles.headerCell}>
-                    <TouchableOpacity
-                      style={styles.meetingButton}
-                      onPress={() => setModalVisible(true)}>
-                      <Text style={styles.meetingButtonText}>Request</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              ))}
+              {loading === true ? (
+                <CustomActivityIndicator />
+              ) : (
+                Array.isArray(filteredData?.buyers) &&
+                filteredData?.buyers?.map((item, index) => {
+                  return (
+                    <View key={item.id} style={styles.row}>
+                      <Text
+                        style={[
+                          styles.headerCell,
+                          {width: 40, color: '#4a5f85'},
+                        ]}>
+                        {index + 1}
+                      </Text>
+                      <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
+                        {item.contact_name}
+                      </Text>
+                      <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
+                        {item.company_name}
+                      </Text>
+                      <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
+                        {item.industry}
+                      </Text>
+                      <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
+                        {item.website}
+                      </Text>
+                      <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
+                        {item.email}
+                      </Text>
+                      <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
+                        {item.phone}
+                      </Text>
+                      <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
+                        {item.country}
+                      </Text>
+                      <View style={styles.headerCell}>
+                        <TouchableOpacity
+                          style={styles.meetingButton}
+                          onPress={() => handleAboutPress(item)}>
+                          <Text style={styles.meetingButtonText}>About</Text>
+                        </TouchableOpacity>
+                      </View>
+                      <View style={styles.headerCell}>
+                        <TouchableOpacity
+                          style={styles.meetingButton}
+                          onPress={() => setModalVisible(true)}>
+                          <Text style={styles.meetingButtonText}>Request</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  );
+                })
+              )}
             </ScrollView>
           </View>
         </ScrollView>
@@ -325,7 +388,7 @@ const DashboardPak = () => {
                     <View style={styles.cardItem}>
                       <Text style={styles.cardLabel}>Name:</Text>
                       <Text style={styles.cardValue}>
-                        {selectedUserData.name}
+                        {selectedUserData.contact_name}
                       </Text>
                     </View>
                     <View style={styles.cardItem}>
@@ -337,25 +400,25 @@ const DashboardPak = () => {
                     <View style={styles.cardItem}>
                       <Text style={styles.cardLabel}>Company:</Text>
                       <Text style={styles.cardValue}>
-                        {selectedUserData.company}
+                        {selectedUserData.company_name}
                       </Text>
                     </View>
                     <View style={styles.cardItem}>
                       <Text style={styles.cardLabel}>Sector:</Text>
                       <Text style={styles.cardValue}>
-                        {selectedUserData.sector}
+                        {selectedUserData.industry}
                       </Text>
                     </View>
                     <View style={styles.cardItem}>
                       <Text style={styles.cardLabel}>Mobile:</Text>
                       <Text style={styles.cardValue}>
-                        {selectedUserData.mobile}
+                        {selectedUserData.phone}
                       </Text>
                     </View>
                     <View style={styles.cardItem}>
                       <Text style={styles.cardLabel}>Location:</Text>
                       <Text style={styles.cardValue}>
-                        {selectedUserData.location}
+                        {selectedUserData.country}
                       </Text>
                     </View>
                   </>

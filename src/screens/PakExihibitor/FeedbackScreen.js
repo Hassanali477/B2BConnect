@@ -14,6 +14,7 @@ import HeaderComponent from '../../components/HeaderComponent';
 import CustomDrawer from '../../components/CustomDrawer';
 import BottomNavigator from '../../components/BottomNavigator';
 import AlertMessage from '../../components/AlertMessage';
+import { useNavigation } from '@react-navigation/native';
 
 const { width, height } = Dimensions.get('screen');
 
@@ -57,11 +58,6 @@ const FeedbackScreen = () => {
 
   const handleSubmit = () => {
     if (validateForm()) {
-      console.log('Number of Visitors:', numberOfVisitors);
-      console.log('Number of Companies:', numberOfCompanies);
-      console.log('Number of Orders:', numberOfBooked);
-      console.log('Orders Booked:', ordersBooked);
-      console.log('Comments:', comments);
       setAlertType('success');
       setAlertMessage('Feedback submitted successfully!');
       setAlertVisible(true);
@@ -70,7 +66,7 @@ const FeedbackScreen = () => {
       setAlertVisible(true);
     }
   };
-
+  const navigation = useNavigation()
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -142,6 +138,7 @@ const FeedbackScreen = () => {
       <CustomDrawer
         visible={drawerVisible}
         onClose={() => setDrawerVisible(false)}
+        navigation={navigation}
       />
       <BottomNavigator />
       <AlertMessage

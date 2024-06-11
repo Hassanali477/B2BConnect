@@ -14,58 +14,116 @@ import {
 import {Icon as RNElementsIcon} from 'react-native-elements';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import IoniconsIcon from 'react-native-vector-icons/Ionicons';
-
 import AlertMessage from '../../components/AlertMessage'; // Import the AlertMessage component
 import BottomNavigator from '../../components/BottomNavigator';
-import HeaderComponent from '../../components/HeaderComponent';
 import CustomDrawer from '../../components/CustomDrawer';
+// Redux
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios'; // Ensure axios is imported
+import Api_Base_Url from '../../api/index';
+import {connect} from 'react-redux';
+import * as userActions from '../../redux/actions/user';
+import {bindActionCreators} from 'redux';
 
 const {width, height} = Dimensions.get('window');
 
-const ProfilePak = ({navigation}) => {
+const ProfilePak = props => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [alertType, setAlertType] = useState('');
   const [drawerVisible, setDrawerVisible] = useState(false);
 
-  const [profile, setProfile] = useState({
-    fullName: 'Hassan',
-    companyName: 'A2Z Creatorz',
-    phoneNumber: '03497070872',
-    email: 'hassanmarwat326@gmail.com',
-    websiteLink: 'https://marwat477.insta',
-  });
+  const {userDataFetch, userAdditionalDataFetch} = props.userData?.user;
 
-  const [updatedProfile, setUpdatedProfile] = useState({
-    fullName: 'Hassan',
-    companyName: 'A2Z Creatorz',
-    phoneNumber: '03497070872',
-    email: 'hassanmarwat326@gmail.com',
-    websiteLink: 'https://marwat477.insta',
-  });
-
+  const [fullName, setFullName] = useState(userDataFetch?.name);
+  const [companyName, setCompanyName] = useState(
+    userAdditionalDataFetch?.company_name,
+  );
+  const [phoneNumber, setPhoneNumber] = useState(
+    userAdditionalDataFetch?.phone,
+  );
+  const [email, setEmail] = useState(userDataFetch?.email);
+  const [websiteLink, setWebsiteLink] = useState(
+    userAdditionalDataFetch?.website,
+  );
+  console.log(props.userData.user, 'checking data')
+  const [updatedFullName, setUpdatedFullName] = useState('');
+  const [updatedCompanyName, setUpdatedCompanyName] = useState('');
+  const [updatedPhoneNumber, setUpdatedPhoneNumber] = useState('');
+  const [updatedWebsiteLink, setUpdatedWebsiteLink] = useState('');
   const openModal = () => {
     setIsModalVisible(true);
-    setUpdatedProfile(profile);
+    setUpdatedFullName(fullName);
+    setUpdatedCompanyName(companyName);
+    setUpdatedPhoneNumber(phoneNumber);
+    setUpdatedWebsiteLink(websiteLink);
   };
 
-  const updateProfile = () => {
-    const {fullName, companyName, phoneNumber, email, websiteLink} =
-      updatedProfile;
+  const validateInputs = () => {
+    if (!updatedFullName.trim()) {
+      setAlertMessage('Full Name is required.');
+      return false;
+    }
+    if (!updatedCompanyName.trim()) {
+      setAlertMessage('Company Name is required.');
+      return false;
+    }
+    if (!updatedPhoneNumber.trim()) {
+      setAlertMessage('Phone Number must be between 10 to 15 digits.');
+      return false;
+    }
+    if (!updatedWebsiteLink.trim()) {
+      setAlertMessage('Invalid Website URL.');
+      return false;
+    }
+    return true;
+  };
 
-    if (!fullName || !companyName || !phoneNumber || !email || !websiteLink) {
-      setAlertMessage('All fields are required.');
-      setAlertType('error');
-      setAlertVisible(true);
+  const updateProfile = async () => {
+    if (!validateInputs()) {
       return;
     }
-
-    setProfile(updatedProfile);
-    setIsModalVisible(false);
-    setAlertMessage('Profile updated successfully.');
-    setAlertType('success');
-    setAlertVisible(true);
+    try {
+      const updateData = {
+        contact_name: updatedFullName,
+        category: 'required',
+        phone: updatedPhoneNumber,
+        country_code: 'required',
+        country: 'required',
+        website: updatedWebsiteLink,
+        company_name: updatedCompanyName,
+        is_pasha_member: 1,
+        services_offered: 'services_offered',
+        about_us: 'about_us',
+      };
+      const response = await axios.put(
+        `${Api_Base_Url}updateProfile/1742`,
+        updateData,
+      );
+      if (response.status === 200) {
+        props.actions.user(response.data.user);
+        setFullName(updatedFullName);
+        setCompanyName(updatedCompanyName);
+        setPhoneNumber(updatedPhoneNumber);
+        setWebsiteLink(updatedWebsiteLink);
+        setAlertMessage('Profile updated successfully.');
+        setAlertType('success');
+        setAlertVisible(true);
+        setIsModalVisible(false);
+      } else {
+        setAlertMessage(response.data.message || 'Failed to update profile.');
+        setAlertType('error');
+        setAlertVisible(true);
+      }
+    } catch (error) {
+      setAlertMessage(
+        error.response?.data?.message ||
+          'An error occurred while updating the profile.',
+      );
+      setAlertType('error');
+      setAlertVisible(true);
+    }
   };
 
   return (
@@ -99,28 +157,21 @@ const ProfilePak = ({navigation}) => {
           <Text style={styles.profileTitle}>My Profile</Text>
           <TextInput
             style={[styles.input, {color: '#000'}]}
-            value={profile.fullName}
-            onChangeText={text =>
-              setUpdatedProfile({...updatedProfile, fullName: text})
-            }
+            value={fullName}
             placeholder="Full Name"
             placeholderTextColor="#000"
+            editable={false}
           />
           <TextInput
             style={[styles.input, {color: '#000'}]}
-            value={profile.companyName}
-            onChangeText={text =>
-              setUpdatedProfile({...updatedProfile, companyName: text})
-            }
+            value={companyName}
             placeholder="Company Name"
             placeholderTextColor="#000"
+            editable={false}
           />
           <TextInput
             style={[styles.input, {color: '#000'}]}
-            value={profile.email}
-            onChangeText={text =>
-              setUpdatedProfile({...updatedProfile, email: text})
-            }
+            value={email}
             placeholder="Email"
             keyboardType="email-address"
             placeholderTextColor="#000"
@@ -128,24 +179,19 @@ const ProfilePak = ({navigation}) => {
           />
           <TextInput
             style={[styles.input, {color: '#000'}]}
-            value={profile.phoneNumber}
-            onChangeText={text =>
-              setUpdatedProfile({...updatedProfile, phoneNumber: text})
-            }
+            value={phoneNumber}
             placeholder="Phone Number"
             keyboardType="phone-pad"
             placeholderTextColor="#000"
-            maxLength={15}
+            editable={false}
           />
           <TextInput
             style={[styles.input, {color: '#000'}]}
-            value={profile.websiteLink}
-            onChangeText={text =>
-              setUpdatedProfile({...updatedProfile, websiteLink: text})
-            }
+            value={websiteLink}
             placeholder="Website Link"
             keyboardType="url"
             placeholderTextColor="#000"
+            editable={false}
           />
         </View>
 
@@ -182,39 +228,22 @@ const ProfilePak = ({navigation}) => {
               </View>
               <TextInput
                 style={styles.input}
-                value={updatedProfile.fullName}
-                onChangeText={text =>
-                  setUpdatedProfile({...updatedProfile, fullName: text})
-                }
+                value={updatedFullName}
+                onChangeText={text => setUpdatedFullName(text)}
                 placeholder="Full Name"
                 placeholderTextColor="#000"
               />
               <TextInput
                 style={styles.input}
-                value={updatedProfile.companyName}
-                onChangeText={text =>
-                  setUpdatedProfile({...updatedProfile, companyName: text})
-                }
+                value={updatedCompanyName}
+                onChangeText={text => setUpdatedCompanyName(text)}
                 placeholder="Company Name"
                 placeholderTextColor="#000"
               />
               <TextInput
                 style={styles.input}
-                value={updatedProfile.email}
-                onChangeText={text =>
-                  setUpdatedProfile({...updatedProfile, email: text})
-                }
-                placeholder="Email"
-                keyboardType="email-address"
-                placeholderTextColor="#000"
-                editable={false}
-              />
-              <TextInput
-                style={styles.input}
-                value={updatedProfile.phoneNumber}
-                onChangeText={text =>
-                  setUpdatedProfile({...updatedProfile, phoneNumber: text})
-                }
+                value={updatedPhoneNumber}
+                onChangeText={text => setUpdatedPhoneNumber(text)}
                 placeholder="Phone Number"
                 keyboardType="phone-pad"
                 placeholderTextColor="#000"
@@ -222,10 +251,8 @@ const ProfilePak = ({navigation}) => {
               />
               <TextInput
                 style={styles.input}
-                value={updatedProfile.websiteLink}
-                onChangeText={text =>
-                  setUpdatedProfile({...updatedProfile, websiteLink: text})
-                }
+                value={updatedWebsiteLink}
+                onChangeText={text => setUpdatedWebsiteLink(text)}
                 placeholder="Website Link"
                 keyboardType="url"
                 placeholderTextColor="#000"
@@ -249,7 +276,7 @@ const ProfilePak = ({navigation}) => {
       <CustomDrawer
         visible={drawerVisible}
         onClose={() => setDrawerVisible(false)}
-        navigation={navigation}
+        navigation={props.navigation}
       />
       <BottomNavigator />
     </KeyboardAvoidingView>
@@ -379,4 +406,12 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ProfilePak;
+const mapStateToProps = state => ({
+  userData: state.userData,
+});
+
+const ActionCreators = Object.assign({}, userActions);
+const mapDispatchToProps = dispatch => ({
+  actions: bindActionCreators(ActionCreators, dispatch),
+});
+export default connect(mapStateToProps, mapDispatchToProps)(ProfilePak);
