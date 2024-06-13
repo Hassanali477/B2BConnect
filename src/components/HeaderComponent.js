@@ -10,7 +10,7 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 
 const {width, height} = Dimensions.get('screen');
-const HeaderComponent = ({onMenuPress}) => {
+const HeaderComponent = ({onMenuPress, toggleDrawer}) => {
   return (
     <View style={styles.header}>
       <TouchableOpacity style={styles.menuIcon} onPress={onMenuPress}>

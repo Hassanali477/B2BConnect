@@ -6,7 +6,7 @@ import {
   Text,
   Dimensions,
 } from 'react-native';
-import {Icon} from 'react-native-elements'; // Import Icon from react-native-elements
+import {Icon} from 'react-native-elements';
 
 const {width, height} = Dimensions.get('screen');
 const CustomSelectEntries = ({
@@ -20,6 +20,7 @@ const CustomSelectEntries = ({
 
   const handleSelect = item => {
     setIsOpen(false);
+    onSelect(item); // Pass the selected value to the parent component
     const filteredData = delegatesData.slice(0, parseInt(item));
     var obj = {
       buyers: filteredData,

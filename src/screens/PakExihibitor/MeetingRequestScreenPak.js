@@ -365,7 +365,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginRight: 5,
     color: 'black',
-    marginLeft:2
+    marginLeft: 2,
   },
   searchInput2: {
     width: '100%',

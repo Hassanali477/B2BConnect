@@ -44,64 +44,13 @@ const DashboardPak = () => {
   const [alertVisible, setAlertVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [apiData, setApiData] = useState(null);
-
-  // const jobData = [
-  //   {label: 'All Sector', value: 'all sector'},
-  //   {label: 'Agriculture', value: 'agriculture'},
-  //   {label: 'Aviation', value: 'aviation'},
-  //   {
-  //     label:
-  //       'Contracting , Construction Solutions , Property Development , Retail',
-  //     value:
-  //       'Contracting , Construction Solutions , Property Development , Retail',
-  //   },
-  //   {label: 'Energy', value: 'energy'},
-  //   {label: 'Exploration and Mining', value: 'exploration and mining'},
-  //   {label: 'Finance', value: 'finance'},
-  //   {label: 'Food and Constructions', value: 'food and constructions'},
-  //   {label: 'HR', value: 'hr'},
-  //   {label: 'IT', value: 'it'},
-  //   {
-  //     label: 'Logistics services , Construction Multi assets',
-  //     value: 'Logistics services , Construction Multi assets',
-  //   },
-  //   {label: 'Marine', value: 'marine'},
-  //   {label: 'Petrochemical', value: 'petrochemical'},
-  //   {label: 'Telecommunication', value: 'telecommunication'},
-  // ];
+  const [selectedRow, setSelectedRow] = useState(null);
+  const [isFilterApplied, setIsFilterApplied] = useState(false);
+  const [isSearchApplied, setIsSearchApplied] = useState(false);
 
   const entriesData = [10, 25, 50];
 
-  // const generateDummyData = () => {
-  //   const dummyData = [];
-  //   for (let i = 1; i <= 60; i++) {
-  //     dummyData.push({
-  //       id: i,
-  //       name: `Delegate ${i}`,
-  //       company: `Company ${i}`,
-  //       sector:
-  //         i % 6 === 0
-  //           ? 'Node JS'
-  //           : i % 5 === 0
-  //           ? 'React Developer'
-  //           : i % 4 === 0
-  //           ? 'Analyst'
-  //           : i % 3 === 0
-  //           ? 'Manager'
-  //           : i % 2 === 0
-  //           ? 'Designer'
-  //           : 'Developer',
-  //       website: `www.company${i}.com`,
-  //       email: `delegate${i}@company${i}.com`,
-  //       mobile: `${Math.floor(Math.random() * 900000000) + 100000000}`,
-  //       location: i % 2 === 0 ? 'Riyadh' : i % 3 === 0 ? 'Jeddah' : 'Mecca',
-  //     });
-  //   }
-  //   return dummyData;
-  // };
-
   const fetchDelegatesData = async () => {
-    // setLoading(true);
     try {
       const response = await axios.get(`${Api_Base_Url}KSADelegate`, {
         params: {
@@ -117,48 +66,55 @@ const DashboardPak = () => {
       setLoading(false);
     }
   };
-  // const delegatesData = fetchDelegatesData();
   useEffect(() => {
     fetchDelegatesData();
+    setIsFilterApplied(false);
+    setIsSearchApplied(false);
   }, []);
 
   const handleSelectJob = item => {
     setSelectedJob(item);
-    console.log(item, 'item valueeee');
     setDropdownVisible(false);
-    // const filtered = filteredData?.buyers?.filter(delegate => {
-    //   delegate?.industry?.toLowerCase() === item?.toLowerCase();
-    //   console.log(delegate, 'checking delegates ');
-    // });
-    // var obj = {
-    //   buyers: filtered,
-    // };
-    // setFilteredData(obj);
-    const filtered = apiData?.buyers?.filter(delegate =>
-      delegate?.industry?.toLowerCase()?.includes(item?.toLowerCase()),
-    );
-    var obj = {
-      buyers: filtered,
-    };
-    setFilteredData(obj);
+    filterData(item);
+    setIsFilterApplied(true);
   };
 
-  // useEffect(() => {
-  //   setFilteredData(delegatesData);
-  // }, []);
+  const filterData = item => {
+    if (item === 'All Sectors') {
+      setFilteredData(apiData);
+    } else {
+      const filtered = apiData?.buyers?.filter(delegate =>
+        delegate?.industry?.toLowerCase()?.includes(item?.toLowerCase()),
+      );
+      var obj = {
+        buyers: filtered,
+      };
+      setFilteredData(obj);
+    }
+  };
+  const handleRemoveFilter = () => {
+    setSelectedJob(null);
+    setSearchQuery('');
+    setSearchTextInput('');
+    filterData('All Sectors');
+    setIsFilterApplied(false); // Reset filter applied flag
+    setIsSearchApplied(false); // Reset search applied flag
+  };
 
   const handleSearch = (query, key) => {
     switch (key) {
       case 'Keyword':
         setSearchQuery(query);
+        setIsSearchApplied(true);
         break;
       case 'Search':
         setSearchTextInput(query);
+        setIsSearchApplied(true);
         break;
     }
     if (query === '') {
-      // setFilteredData(delegatesData);
       fetchDelegatesData();
+      setIsSearchApplied(false);
     } else {
       const filtered = apiData?.buyers?.filter(
         item =>
@@ -204,42 +160,40 @@ const DashboardPak = () => {
         <Text style={styles.headerText}>List of KSA DELEGATES</Text>
       </View>
       <View style={styles.headerSubCont}>
-        <Text style={styles.headerSubText}>Search Criteria</Text>
-        <View style={styles.headerSubTextInput}>
-          <View style={styles.dropdownContainer}>
+        <View style={styles.headerTextSearch}>
+          <Text style={styles.headerSubText}>Search Criteria</Text>
+          {(isFilterApplied || isSearchApplied) && (
             <TouchableOpacity
-              style={styles.dropdown}
-              onPress={() => setDropdownVisible(!dropdownVisible)}>
-              <Text style={styles.text}>
-                {selectedJob ? selectedJob : 'All Sectors ...'}
-              </Text>
-              <Icon name="angle-down" size={24} color="#000" />
+              style={styles.removeFilterButton}
+              onPress={handleRemoveFilter}>
+              <Text style={styles.removeFilterButtonText}>Remove Filter</Text>
             </TouchableOpacity>
-            {dropdownVisible && (
-              <View style={styles.dropdownListContainer}>
-                <FlatList
-                  data={apiData?.industries}
-                  renderItem={({item, index}) => (
-                    <TouchableOpacity
-                      style={styles.dropdownItem}
-                      onPress={() => handleSelectJob(item)}>
-                      <Text style={styles.text}>{item}</Text>
-                    </TouchableOpacity>
-                  )}
-                  keyExtractor={index => index}
-                />
-              </View>
-            )}
-          </View>
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Enter Keyword"
-            placeholderTextColor={'#000'}
-            value={searchQuery}
-            onChangeText={text => handleSearch(text, 'Keyword')}
-          />
+          )}
+        </View>
+        <View style={styles.dropdownContainer}>
+          <TouchableOpacity
+            style={styles.dropdown}
+            onPress={() => setDropdownVisible(!dropdownVisible)}>
+            <Text style={styles.text}>{selectedJob || 'All Sectors'}</Text>
+            <Icon name="angle-down" size={24} color="#000" />
+          </TouchableOpacity>
+          {dropdownVisible && (
+            <View style={styles.dropdownListContainer}>
+              <ScrollView contentContainerStyle={styles.scrollViewContainer}>
+                {[...apiData?.industries, 'All Sectors'].map((item, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.dropdownItem}
+                    onPress={() => handleSelectJob(item)}>
+                    <Text style={styles.text}>{item}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          )}
         </View>
       </View>
+
       <View style={styles.mainHeadCont}>
         <View style={{width: '45%'}}>
           <View
@@ -264,7 +218,7 @@ const DashboardPak = () => {
               selectedValue={showEntries}
               onSelect={setShowEntries}
               delegatesData={apiData?.buyers}
-              setFilteredData={(item) => setFilteredData(item)}
+              setFilteredData={item => setFilteredData(item)}
             />
           </View>
         </View>
@@ -278,6 +232,20 @@ const DashboardPak = () => {
           />
         </View>
       </View>
+      {/* <View
+        style={{
+          alignItems: 'flex-start',
+          width: '90%',
+          marginTop: 10,
+        }}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Enter Keyword"
+          placeholderTextColor={'#000'}
+          value={searchQuery}
+          onChangeText={text => handleSearch(text, 'Keyword')}
+        />
+      </View> */}
 
       <View style={styles.tableContainer}>
         <ScrollView
@@ -348,7 +316,10 @@ const DashboardPak = () => {
                       <View style={styles.headerCell}>
                         <TouchableOpacity
                           style={styles.meetingButton}
-                          onPress={() => setModalVisible(true)}>
+                          onPress={() => {
+                            setModalVisible(true);
+                            setSelectedRow(item);
+                          }}>
                           <Text style={styles.meetingButtonText}>Request</Text>
                         </TouchableOpacity>
                       </View>
@@ -366,6 +337,7 @@ const DashboardPak = () => {
           onClose={() => setModalVisible(false)}
           modalVisible={modalVisible}
           setModalVisible={setModalVisible}
+          selectedRow={selectedRow}
         />
       )}
       {modalVisible1 && (
@@ -473,17 +445,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     zIndex: 999,
   },
+  headerTextSearch: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   headerSubText: {
     color: 'black',
     fontSize: 18,
     fontWeight: 'bold',
-  },
-  headerSubTextInput: {
-    flexDirection: 'row',
-    width: '100%',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 10,
   },
   searchInput: {
     width: '45%',
@@ -495,9 +466,10 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   dropdownContainer: {
-    width: '45%',
+    width: '100%',
     position: 'relative',
     zIndex: 999,
+    marginTop: 10,
   },
   dropdown: {
     flexDirection: 'row',
@@ -510,25 +482,27 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   text: {
+    fontSize: 15,
     color: '#000',
   },
   icon: {
     marginLeft: 10,
   },
   dropdownListContainer: {
-    position: 'absolute',
-    top: 50,
+    // position: 'absolute',
+    // top: 50,
     width: '100%',
     borderWidth: 1,
     borderColor: '#ccc',
     backgroundColor: '#fff',
     zIndex: 999,
+    maxHeight: 180,
   },
-  dropdownList: {
-    maxHeight: 200,
+  scrollViewContent: {
+    paddingBottom: 10, // Adjust this value according to your need
   },
   dropdownItem: {
-    padding: 10,
+    padding: 6,
   },
   mainHeadCont: {
     width: width / 1.16,
@@ -548,7 +522,7 @@ const styles = StyleSheet.create({
   tableContainer: {
     width: '95%',
     backgroundColor: '#fff',
-    marginTop: width * 0.06,
+    marginTop: width * 0.03,
     borderWidth: 1,
     borderRadius: 10,
     overflow: 'hidden',
@@ -669,6 +643,19 @@ const styles = StyleSheet.create({
   },
   exitButton: {
     backgroundColor: 'red',
+  },
+  removeFilterButton: {
+    backgroundColor: '#DD2C00',
+    paddingVertical: 5,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    textAlign: 'center',
+  },
+  removeFilterButtonText: {
+    color: '#ccc',
+    fontSize: 14,
+    fontWeight: '500',
+    alignSelf: 'center',
   },
 });
 

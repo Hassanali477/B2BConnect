@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   Image,
   StyleSheet,
@@ -21,9 +21,10 @@ import CustomDrawer from '../../components/CustomDrawer';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios'; // Ensure axios is imported
 import Api_Base_Url from '../../api/index';
-import {connect} from 'react-redux';
+import {connect, useSelector} from 'react-redux';
 import * as userActions from '../../redux/actions/user';
 import {bindActionCreators} from 'redux';
+import CustomActivityIndicator from '../../components/CustomActivityIndicator';
 
 const {width, height} = Dimensions.get('window');
 
@@ -33,21 +34,15 @@ const ProfilePak = props => {
   const [alertMessage, setAlertMessage] = useState('');
   const [alertType, setAlertType] = useState('');
   const [drawerVisible, setDrawerVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const {userDataFetch, userAdditionalDataFetch} = props.userData?.user;
+  const user = useSelector(state => state?.userData?.user);
 
-  const [fullName, setFullName] = useState(userDataFetch?.name);
-  const [companyName, setCompanyName] = useState(
-    userAdditionalDataFetch?.company_name,
-  );
-  const [phoneNumber, setPhoneNumber] = useState(
-    userAdditionalDataFetch?.phone,
-  );
-  const [email, setEmail] = useState(userDataFetch?.email);
-  const [websiteLink, setWebsiteLink] = useState(
-    userAdditionalDataFetch?.website,
-  );
-  console.log(props.userData.user, 'checking data')
+  const [fullName, setFullName] = useState();
+  const [companyName, setCompanyName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [email, setEmail] = useState('');
+  const [websiteLink, setWebsiteLink] = useState('');
   const [updatedFullName, setUpdatedFullName] = useState('');
   const [updatedCompanyName, setUpdatedCompanyName] = useState('');
   const [updatedPhoneNumber, setUpdatedPhoneNumber] = useState('');
@@ -126,6 +121,19 @@ const ProfilePak = props => {
     }
   };
 
+  const setData = () => {
+    setLoading(true);
+    setFullName(user?.userDataFetch?.name);
+    setCompanyName(user?.userAdditionalDataFetch?.company_name);
+    setEmail(user?.userDataFetch?.email);
+    setPhoneNumber(user?.userAdditionalDataFetch?.phone);
+    setWebsiteLink(user?.userAdditionalDataFetch?.website);
+    setLoading(false);
+  };
+  useEffect(() => {
+    setData();
+  }, []);
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -152,48 +160,51 @@ const ProfilePak = props => {
           />
         </View>
 
-        {/* Profile Section */}
-        <View style={styles.card}>
-          <Text style={styles.profileTitle}>My Profile</Text>
-          <TextInput
-            style={[styles.input, {color: '#000'}]}
-            value={fullName}
-            placeholder="Full Name"
-            placeholderTextColor="#000"
-            editable={false}
-          />
-          <TextInput
-            style={[styles.input, {color: '#000'}]}
-            value={companyName}
-            placeholder="Company Name"
-            placeholderTextColor="#000"
-            editable={false}
-          />
-          <TextInput
-            style={[styles.input, {color: '#000'}]}
-            value={email}
-            placeholder="Email"
-            keyboardType="email-address"
-            placeholderTextColor="#000"
-            editable={false}
-          />
-          <TextInput
-            style={[styles.input, {color: '#000'}]}
-            value={phoneNumber}
-            placeholder="Phone Number"
-            keyboardType="phone-pad"
-            placeholderTextColor="#000"
-            editable={false}
-          />
-          <TextInput
-            style={[styles.input, {color: '#000'}]}
-            value={websiteLink}
-            placeholder="Website Link"
-            keyboardType="url"
-            placeholderTextColor="#000"
-            editable={false}
-          />
-        </View>
+        {/*Profile Section */}
+        {loading && <CustomActivityIndicator />}
+        {!loading && (
+          <View style={styles.card}>
+            <Text style={styles.profileTitle}>My Profile</Text>
+            <TextInput
+              style={[styles.input, {color: '#000'}]}
+              value={fullName}
+              placeholder="Full Name"
+              placeholderTextColor="#000"
+              editable={false}
+            />
+            <TextInput
+              style={[styles.input, {color: '#000'}]}
+              value={companyName}
+              placeholder="Company Name"
+              placeholderTextColor="#000"
+              editable={false}
+            />
+            <TextInput
+              style={[styles.input, {color: '#000'}]}
+              value={email}
+              placeholder="Email"
+              keyboardType="email-address"
+              placeholderTextColor="#000"
+              editable={false}
+            />
+            <TextInput
+              style={[styles.input, {color: '#000'}]}
+              value={phoneNumber}
+              placeholder="Phone Number"
+              keyboardType="phone-pad"
+              placeholderTextColor="#000"
+              editable={false}
+            />
+            <TextInput
+              style={[styles.input, {color: '#000'}]}
+              value={websiteLink}
+              placeholder="Website Link"
+              keyboardType="url"
+              placeholderTextColor="#000"
+              editable={false}
+            />
+          </View>
+        )}
 
         {/* Update Button */}
         <TouchableOpacity
