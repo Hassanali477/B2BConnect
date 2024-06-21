@@ -33,6 +33,7 @@ const ConfirmAppointment = () => {
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [alertType, setAlertType] = useState('');
+  const [noResultsFound, setNoResultsFound] = useState(false);
 
   const handleDownloadPDF = async () => {
     try {
@@ -147,6 +148,7 @@ const ConfirmAppointment = () => {
 
   const handleSearch = text => {
     setSearchQuery(text);
+    setNoResultsFound(false);
     const filtered = appointments.filter(item =>
       Object.values(item).some(
         val =>
@@ -155,6 +157,7 @@ const ConfirmAppointment = () => {
       ),
     );
     setFilteredAppointments(filtered);
+    setNoResultsFound(filtered.length === 0);
   };
 
   const showAlertMessage = (type, message) => {
@@ -227,6 +230,9 @@ const ConfirmAppointment = () => {
                   <Text style={styles.cell}>{item.city}</Text>
                 </View>
               ))}
+              <View style={styles.noResultsContainer}>
+                <Text style={styles.noResultsText}>No results found.</Text>
+              </View>
             </ScrollView>
           </View>
         </ScrollView>
@@ -342,6 +348,17 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     color: '#000',
     textAlign: 'center',
+  },
+  noResultsContainer: {
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 20, // Adjust as needed
+  },
+  noResultsText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#555', // Adjust the color as needed
   },
 });
 

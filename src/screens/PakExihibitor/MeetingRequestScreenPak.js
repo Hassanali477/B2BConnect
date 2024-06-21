@@ -15,6 +15,12 @@ import CustomSelectEntries from '../../components/CustomSelectEntries';
 import {useNavigation} from '@react-navigation/native';
 import BottomNavigator from '../../components/BottomNavigator';
 import CustomDrawer from '../../components/CustomDrawer';
+import {connect, useSelector} from 'react-redux';
+import * as userActions from '../../redux/actions/user';
+import {bindActionCreators} from 'redux';
+import axios from 'axios';
+import Api_Base_Url from '../../api';
+import AlertMessage from '../../components/AlertMessage';
 
 const {width, height} = Dimensions.get('screen');
 
@@ -25,68 +31,99 @@ const MeetingRequestScreenPak = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredData, setFilteredData] = useState([]);
   const [drawerVisible, setDrawerVisible] = useState(false);
-
+  const [noResults, setNoResults] = useState(false);
+  const [receivedRequests, setReceivedRequests] = useState([]);
+  const [sentRequests, setSentRequests] = useState([]);
+  const [alertMessage, setAlertMessage] = useState(false);
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [loading, setLoading] = useState(true); // Add loading state
   const entriesData = [10, 25, 50];
 
-  const generateDummyData = () => {
-    const dummyData = [];
-    for (let i = 1; i <= 60; i++) {
-      dummyData.push({
-        id: i,
-        name: `Delegate ${i}`,
-        company: `Company ${i}`,
-        sector:
-          i % 6 === 0
-            ? 'Node JS'
-            : i % 5 === 0
-            ? 'React Developer'
-            : i % 4 === 0
-            ? 'Analyst'
-            : i % 3 === 0
-            ? 'Manager'
-            : i % 2 === 0
-            ? 'Designer'
-            : 'Developer',
-        website: `www.company${i}.com`,
-        email: `delegate${i}@company${i}.com`,
-        mobile: `${Math.floor(Math.random() * 900000000) + 100000000}`,
-        location: i % 2 === 0 ? 'Riyadh' : i % 3 === 0 ? 'Jeddah' : 'Mecca',
-        address: `Address ${i}`,
-        requestedDate: `2024-06-${i < 10 ? `0${i}` : i}`,
-        requestedTime: `${i % 12 || 12}:00 ${i % 2 === 0 ? 'PM' : 'AM'}`,
-        newTime: `${(i % 12) + 1}:00 ${i % 2 === 0 ? 'PM' : 'AM'}`,
-      });
-    }
-    return dummyData;
-  };
-
-  const delegatesData = generateDummyData();
+  const user = useSelector(state => state?.userData);
+  console.log(user, 'checking user id');
 
   useEffect(() => {
-    setFilteredData(delegatesData);
+    if (user && user?.userData && user?.userData?.id) {
+      fetchDelegatesData();
+    } else {
+      console.error('User ID is undefined');
+      setLoading(false);
+    }
   }, []);
 
+  const fetchDelegatesData = async key => {
+    setLoading(true);
+    console.log(user?.userData?.id, 'checking data');
+    try {
+      const response = await axios.get(`${Api_Base_Url}showMeetings`, {
+        payload: user?.userData?.id,
+      });
+      console.log(response, 'response3434');
+      const {received_requests, sent_requests} = response.data;
+      if (key === undefined) {
+        setReceivedRequests(received_requests);
+        setSentRequests(sent_requests);
+      } else if (key === 'sent') {
+        setSentRequests(sent_requests);
+        setFilteredData(sent_requests);
+      } else {
+        setReceivedRequests(received_requests);
+        setFilteredData(received_requests);
+      }
+    } catch (error) {
+      console.error('Error fetching delegates data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
   const handleSearch = query => {
     setSearchQuery(query);
     if (query === '') {
-      setFilteredData(delegatesData);
+      setFilteredData(
+        selectedTab === 'received' ? receivedRequests : sentRequests,
+      );
+      setNoResults(false);
     } else {
-      const filtered = delegatesData.filter(
+      const filtered = (
+        selectedTab === 'received' ? receivedRequests : sentRequests
+      ).filter(
         item =>
-          item.name?.toLowerCase()?.includes(query?.toLowerCase()) ||
+          item.buyer.contact_name
+            ?.toLowerCase()
+            ?.includes(query?.toLowerCase()) ||
           item.id?.toString()?.includes(query) ||
-          item.company?.toLowerCase()?.includes(query?.toLowerCase()) ||
-          item.sector?.toLowerCase()?.includes(query?.toLowerCase()) ||
-          item.website?.toLowerCase()?.includes(query?.toLowerCase()) ||
-          item.email?.toLowerCase()?.includes(query?.toLowerCase()) ||
-          item.mobile?.toLowerCase()?.includes(query) ||
+          item.buyer.company_name
+            ?.toLowerCase()
+            ?.includes(query?.toLowerCase()) ||
+          item.buyer.industry?.toLowerCase()?.includes(query?.toLowerCase()) ||
+          item.buyer.website?.toLowerCase()?.includes(query?.toLowerCase()) ||
+          item.buyer.email?.toLowerCase()?.includes(query?.toLowerCase()) ||
+          item.buyer.phone?.toLowerCase()?.includes(query) ||
           item.location?.toLowerCase()?.includes(query?.toLowerCase()) ||
-          item.address?.toLowerCase()?.includes(query?.toLowerCase()) ||
-          item.requestedDate?.toLowerCase()?.includes(query?.toLowerCase()) ||
-          item.requestedTime?.toLowerCase()?.includes(query?.toLowerCase()) ||
-          item.newTime?.toLowerCase()?.includes(query?.toLowerCase()),
+          item.date?.toLowerCase()?.includes(query?.toLowerCase()) ||
+          item.time?.toLowerCase()?.includes(query?.toLowerCase()),
       );
       setFilteredData(filtered);
+      setNoResults(filtered.length === 0);
+    }
+  };
+
+  const onRemoveMeeting = async (meetingID, key) => {
+    try {
+      const response = await axios.delete(
+        `${Api_Base_Url}meetingRevoke/` + meetingID,
+      );
+      if (response.status === 200) {
+        fetchDelegatesData(key);
+        setAlertMessage('Meeting deleted successfully!');
+        setAlertVisible(true);
+      }
+    } catch (error) {
+      setAlertMessage('Error revoking meeting');
+      setAlertVisible(true);
+      console.error('Error fetching delegates data:', error.message);
+      console.error('Error response data:', error.response?.data);
+      console.error('Error response status:', error.response?.status);
     }
   };
 
@@ -127,31 +164,31 @@ const MeetingRequestScreenPak = () => {
                 <View key={item.id} style={styles.row}>
                   <Text
                     style={[styles.headerCell, {width: 20, color: '#4a5f85'}]}>
-                    {item.id}
+                    {item.buyer.id}
                   </Text>
                   <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                    {item.name}
+                    {item.buyer.contact_name}
                   </Text>
                   <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                    {item.company}
+                    {item.buyer.company_name}
                   </Text>
                   <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                    {item.sector}
+                    {item.buyer.industry}
                   </Text>
                   <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                    {item.mobile}
+                    {item.buyer.phone}
                   </Text>
                   <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                    {item.email}
+                    {item.buyer.email}
                   </Text>
                   <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                    {item.address}
+                    {item.buyer.address}
                   </Text>
                   <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                    {item.requestedDate}
+                    {item.date}
                   </Text>
                   <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                    {item.requestedTime}
+                    {item.time}
                   </Text>
                   <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
                     {item.newTime}
@@ -163,6 +200,11 @@ const MeetingRequestScreenPak = () => {
                   </View>
                 </View>
               ))
+            )}
+            {noResults && (
+              <View style={styles.noResultsContainer}>
+                <Text style={styles.noResultsText}>No results found.</Text>
+              </View>
             )}
           </ScrollView>
         </View>
@@ -181,7 +223,6 @@ const MeetingRequestScreenPak = () => {
         }}>
         <View>
           <View style={styles.headerRow}>
-            <Text style={[styles.headerCell, {width: 20}]}>ID</Text>
             <Text style={styles.headerCell}>Sector</Text>
             <Text style={styles.headerCell}>Phone</Text>
             <Text style={styles.headerCell}>Email</Text>
@@ -203,38 +244,41 @@ const MeetingRequestScreenPak = () => {
             ) : (
               filteredData.map(item => (
                 <View key={item.id} style={styles.row}>
-                  <Text
-                    style={[styles.headerCell, {width: 20, color: '#4a5f85'}]}>
-                    {item.id}
+                  <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
+                    {item.buyer.industry}
                   </Text>
                   <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                    {item.sector}
+                    {item.buyer.phone}
                   </Text>
                   <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                    {item.mobile}
-                  </Text>
-                  <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                    {item.email}
+                    {item.buyer.email}
                   </Text>
                   <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
                     {item.location}
                   </Text>
                   <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                    {item.newTime}
+                    {item.time}
                   </Text>
                   <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                    {item.requestedDate}
+                    {item.date}
                   </Text>
                   <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                    {selectedTab === 'received' ? 'Pending' : 'Requested'}
+                    {item.is_approved === 1 ? 'Approved' : 'Pending'}
                   </Text>
                   <View style={styles.headerCell}>
-                    <TouchableOpacity style={styles.meetingButton}>
+                    <TouchableOpacity
+                      style={styles.meetingButton}
+                      onPress={() => onRemoveMeeting(item?.id, 'sent')}>
                       <Text style={styles.meetingButtonText}>Revoke</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
               ))
+            )}
+            {noResults && (
+              <View style={styles.noResultsContainer}>
+                <Text style={styles.noResultsText}>No results found.</Text>
+              </View>
             )}
           </ScrollView>
         </View>
@@ -254,7 +298,10 @@ const MeetingRequestScreenPak = () => {
       <View style={styles.tabContainer}>
         <TouchableOpacity
           style={[styles.tab, selectedTab === 'received' && styles.activeTab]}
-          onPress={() => setSelectedTab('received')}>
+          onPress={() => {
+            setSelectedTab('received');
+            setFilteredData(receivedRequests);
+          }}>
           <Text
             style={[
               styles.tabText,
@@ -266,7 +313,10 @@ const MeetingRequestScreenPak = () => {
 
         <TouchableOpacity
           style={[styles.tab, selectedTab === 'sent' && styles.activeTab]}
-          onPress={() => setSelectedTab('sent')}>
+          onPress={() => {
+            setSelectedTab('sent');
+            setFilteredData(sentRequests);
+          }}>
           <Text
             style={[styles.tabText, selectedTab === 'sent' && {color: '#fff'}]}>
             Sent Requests
@@ -282,7 +332,7 @@ const MeetingRequestScreenPak = () => {
               data={entriesData}
               selectedValue={showEntries}
               onSelect={setShowEntries}
-              delegatesData={delegatesData}
+              delegatesData={filteredData}
               setFilteredData={setFilteredData}
             />
           </View>
@@ -300,6 +350,11 @@ const MeetingRequestScreenPak = () => {
       {selectedTab === 'received'
         ? renderReceivedRequests()
         : renderSentRequests()}
+      <AlertMessage
+        visible={alertVisible}
+        message={alertMessage}
+        onClose={() => setAlertVisible(false)}
+      />
       <CustomDrawer
         visible={drawerVisible}
         onClose={() => setDrawerVisible(false)}
@@ -310,7 +365,17 @@ const MeetingRequestScreenPak = () => {
   );
 };
 
-export default MeetingRequestScreenPak;
+const mapStateToProps = state => ({
+  user: state.user,
+});
+
+const mapDispatchToProps = dispatch =>
+  bindActionCreators(userActions, dispatch);
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(MeetingRequestScreenPak);
 
 const styles = StyleSheet.create({
   container: {
@@ -427,5 +492,13 @@ const styles = StyleSheet.create({
   },
   noDataText: {
     fontSize: 16,
+  },
+  noResultsContainer: {
+    width: '100%',
+    alignItems: 'center',
+  },
+  noResultsText: {
+    fontSize: 16,
+    color: '#555',
   },
 });

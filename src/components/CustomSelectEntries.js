@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -6,34 +6,36 @@ import {
   Text,
   Dimensions,
 } from 'react-native';
-import {Icon} from 'react-native-elements';
+import { Icon } from 'react-native-elements';
 
-const {width, height} = Dimensions.get('screen');
+const { width } = Dimensions.get('screen');
+
 const CustomSelectEntries = ({
   data,
   selectedValue,
   onSelect,
-  delegatesData,
+  delegatesData, // Ensure to pass the delegatesData from the parent
   setFilteredData,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  const handleSelect = item => {
+  const handleSelect = (item) => {
     setIsOpen(false);
     onSelect(item); // Pass the selected value to the parent component
+    // Filter the delegatesData based on the selected item
     const filteredData = delegatesData.slice(0, parseInt(item));
     var obj = {
       buyers: filteredData,
     };
-    setFilteredData(obj);
-    console.log(item, 'checking item');
+    setFilteredData(obj); // Pass filtered data back to parent
   };
 
   return (
     <View style={styles.container}>
       <TouchableOpacity
         style={[styles.selectedOption, isOpen && styles.open]}
-        onPress={() => setIsOpen(!isOpen)}>
+        onPress={() => setIsOpen(!isOpen)}
+      >
         <Text style={styles.optionText}>{selectedValue}</Text>
         <Icon
           name="keyboard-arrow-down"
@@ -44,11 +46,12 @@ const CustomSelectEntries = ({
       </TouchableOpacity>
       {isOpen && (
         <View style={styles.optionsContainer}>
-          {data.map(item => (
+          {data.map((item) => (
             <TouchableOpacity
               key={item}
               style={styles.option}
-              onPress={() => handleSelect(item)}>
+              onPress={() => handleSelect(item)}
+            >
               <Text style={styles.optionText}>{item}</Text>
             </TouchableOpacity>
           ))}

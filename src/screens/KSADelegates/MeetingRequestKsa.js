@@ -119,7 +119,9 @@ const MeetingRequestKsa = ({modalVisible, setModalVisible}) => {
         <View style={styles.modalBackground}>
           <View style={styles.modalView}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Meeting Request Alkaram Textiles</Text>
+              <Text style={styles.modalTitle}>
+                Meeting Request Alkaram Textiles
+              </Text>
               <TouchableOpacity onPress={() => setModalVisible(false)}>
                 <Icon
                   name="times"

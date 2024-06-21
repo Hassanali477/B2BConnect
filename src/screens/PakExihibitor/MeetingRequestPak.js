@@ -95,7 +95,7 @@ const MeetingRequestPak = ({modalVisible, setModalVisible, selectedRow}) => {
       setAlertVisible(true);
     } else {
       const data = {
-        user_id: user?.userDataFetch?.id,
+        user_id: user?.userData?.id,
         exporter_id: '180',
         requested_by: '180',
         buyer_id: selectedRow.id,

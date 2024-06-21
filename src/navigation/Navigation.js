@@ -24,6 +24,7 @@ import ConfirmAppointmentKsa from '../screens/KSADelegates/ConfirmAppointmentKsa
 import FeedbackScreenKsa from '../screens/KSADelegates/FeedbackScreenKsa';
 import ResetPasswordKsa from '../screens/KSADelegates/ResetPasswordKsa';
 import ProfileKsa from '../screens/KSADelegates/ProfileKsa';
+import StateLifeDemo from '../screens/StateLifeDemo';
 
 const Stack = createStackNavigator();
 
@@ -37,8 +38,9 @@ const Navigation = () => {
         screenOptions={{
           headerShown: false,
         }}>
+        <Stack.Screen name="StateLife" component={StateLifeDemo} />
         {/* Pak Exhibitor */}
-        <Stack.Screen name="SplashScreen" component={SplashScreen} />
+        {/* <Stack.Screen name="SplashScreen" component={SplashScreen} />
         <Stack.Screen name="AppStarter" component={AppStarterScreen} />
         <Stack.Screen name="LoginPak" component={LoginPak} />
         <Stack.Screen name="ForgotPasswordPak" component={ForgotPasswordPak} />
@@ -57,7 +59,7 @@ const Navigation = () => {
         <Stack.Screen name="MeetingRequestPak" component={MeetingRequestPak} />
 
         {/* KSA Exhibitor */}
-        <Stack.Screen name="LoginKSA" component={LoginKSA} />
+        {/* <Stack.Screen name="LoginKSA" component={LoginKSA} />
         <Stack.Screen name="ForgotScreenKSA" component={ForgotPasswordKSA} />
         <Stack.Screen name="DashboardKSA" component={DashboardKSA} />
         <Stack.Screen
@@ -70,7 +72,7 @@ const Navigation = () => {
         />
         <Stack.Screen name="FeedbackKsa" component={FeedbackScreenKsa} />
         <Stack.Screen name="ProfileKsa" component={ProfileKsa} />
-        <Stack.Screen name="ResetPasswordKsa" component={ResetPasswordKsa} />
+        <Stack.Screen name="ResetPasswordKsa" component={ResetPasswordKsa} />  */}
       </Stack.Navigator>
     </NavigationContainer>
   );

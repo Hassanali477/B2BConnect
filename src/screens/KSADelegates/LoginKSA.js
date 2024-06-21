@@ -1,5 +1,5 @@
 import {useNavigation} from '@react-navigation/native';
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   StyleSheet,
   Text,
@@ -15,10 +15,16 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import AlertMessage from '../../components/AlertMessage';
 import {Icon} from 'react-native-elements';
 import CustomActivityIndicator from '../../components/CustomActivityIndicator';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {connect} from 'react-redux';
+import * as userActions from '../../redux/actions/user';
+import {bindActionCreators} from 'redux';
+import axios from 'axios';
+import Api_Base_Url from '../../api/index';
 
 const {width, height} = Dimensions.get('screen');
 
-const LoginPak = () => {
+const LoginKSA = props => {
   const navigation = useNavigation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -29,46 +35,120 @@ const LoginPak = () => {
   const [showAlert, setShowAlert] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    const loadRememberedCredentials = async () => {
+      try {
+        const rememberedCredentials = await AsyncStorage.getItem(
+          '@usercredentials',
+        );
+        console.log('Retrieved user credentials:', rememberedCredentials);
+        if (rememberedCredentials) {
+          const {email, password, remember} = JSON.parse(rememberedCredentials);
+          setEmail(email);
+          setPassword(password);
+          setRememberMe(remember);
+        }
+      } catch (error) {
+        console.error('Failed to load remembered credentials', error);
+      }
+    };
+
+    loadRememberedCredentials();
+  }, []);
+
   const validateEmail = email => {
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return regex.test(email);
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(String(email).toLowerCase());
   };
 
-  const handleSignIn = () => {
+  const validateInputs = () => {
     let valid = true;
+    if (!email) {
+      setEmailError('Email is required');
+      valid = false;
+    } else if (!validateEmail(email)) {
+      setEmailError('Please enter a valid email address');
+      valid = false;
+    } else {
+      setEmailError('');
+    }
 
-    // if (!email) {
-    //   setEmailError('Email is required');
-    //   valid = false;
-    // } else if (!validateEmail(email)) {
-    //   setEmailError('Please enter a valid email address');
-    //   valid = false;
-    // } else {
-    //   setEmailError('');
-    // }
+    if (!password) {
+      setPasswordError('Password is required');
+      valid = false;
+    } else if (password.length < 6) {
+      setPasswordError('Password must be at least 6 characters long');
+      valid = false;
+    } else {
+      setPasswordError('');
+    }
 
-    // if (!password) {
-    //   setPasswordError('Password is required');
-    //   valid = false;
-    // } else if (password.length < 6) {
-    //   setPasswordError('Password must be at least 6 characters long');
-    //   valid = false;
-    // } else {
-    //   setPasswordError('');
-    // }
+    return valid;
+  };
 
-    if (valid) {
-      setLoading(true); // Add a console.log to check if loading state is set to true
-      setTimeout(() => {
+  const apiCall = async userData => {
+    try {
+      const response = await axios.post(`${Api_Base_Url}loginAPI`, userData);
+      return response;
+    } catch (error) {
+      console.error('API call failed', error);
+      throw error;
+    }
+  };
+
+  const handleSignIn = async () => {
+    if (!validateInputs()) {
+      return;
+    }
+    setLoading(true);
+
+    try {
+      const userCredentialsLogin = {
+        email: email,
+        password: password,
+      };
+
+      const response = await apiCall(userCredentialsLogin);
+
+      if (response.data.status) {
+        console.log('Login successfully', response.data);
+        const {userData, userAdditionalData} = response.data;
+        const {actions} = props;
+
+        if (rememberMe) {
+          await AsyncStorage.setItem(
+            '@usercredentials',
+            JSON.stringify({
+              email: email,
+              password: password,
+              type: 'KSADelegate',
+            }),
+          );
+        } else {
+          await AsyncStorage.removeItem('@usercredentials');
+        }
+
+        var obj = {userData, userAdditionalData};
+        actions.user(obj);
+        props.navigation.navigate('DashboardKSA');
         setLoading(false);
-        navigation.navigate('DashboardKSA');
-      }, 1000);
+      } else {
+        console.error(
+          'Login failed: Unexpected response status',
+          response.status,
+        );
+      }
+    } catch (error) {
+      console.error('Login failed', error);
+      setEmailError('Incorrect email and password.');
+      setLoading(false);
     }
   };
 
   const handleForgotPassword = () => {
     navigation.navigate('ForgotScreenKSA');
   };
+
   return (
     <View style={styles.container}>
       {loading && <CustomActivityIndicator />}
@@ -97,7 +177,7 @@ const LoginPak = () => {
           </View>
           <View style={styles.mainContainer}>
             <View style={styles.textInputHeadingCont}>
-              <Text style={styles.textInputHeading}>KSA DELEGATES</Text>
+              <Text style={styles.textInputHeading}>KSA DELEGATE</Text>
               <Image
                 source={require('../../assets/images/SaudiFlag.jpg')}
                 style={styles.imageFlagPak}
@@ -149,8 +229,11 @@ const LoginPak = () => {
               </TouchableOpacity>
             </View>
             <TouchableOpacity style={styles.button} onPress={handleSignIn}>
-              <Text style={styles.buttonText}>Sign In</Text>
+              <Text style={styles.buttonText} disabled={loading}>
+                Sign In
+              </Text>
             </TouchableOpacity>
+            {loading ? <Text>Loading...</Text> : null}
             <View>
               <Image
                 source={require('../../assets/images/A2Z.png')}
@@ -170,7 +253,15 @@ const LoginPak = () => {
   );
 };
 
-export default LoginPak;
+const mapStateToProps = state => ({
+  userData: state.userData,
+});
+
+const ActionCreators = Object.assign({}, userActions);
+const mapDispatchToProps = dispatch => ({
+  actions: bindActionCreators(ActionCreators, dispatch),
+});
+export default connect(mapStateToProps, mapDispatchToProps)(LoginKSA);
 
 const styles = StyleSheet.create({
   container: {

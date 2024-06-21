@@ -17,11 +17,9 @@ import IoniconsIcon from 'react-native-vector-icons/Ionicons';
 import AlertMessage from '../../components/AlertMessage'; // Import the AlertMessage component
 import BottomNavigator from '../../components/BottomNavigator';
 import CustomDrawer from '../../components/CustomDrawer';
-// Redux
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios'; // Ensure axios is imported
 import Api_Base_Url from '../../api/index';
-import {connect, useSelector} from 'react-redux';
+import {connect, useDispatch, useSelector} from 'react-redux';
 import * as userActions from '../../redux/actions/user';
 import {bindActionCreators} from 'redux';
 import CustomActivityIndicator from '../../components/CustomActivityIndicator';
@@ -29,6 +27,7 @@ import CustomActivityIndicator from '../../components/CustomActivityIndicator';
 const {width, height} = Dimensions.get('window');
 
 const ProfilePak = props => {
+  const dispatch = useDispatch();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
@@ -37,7 +36,7 @@ const ProfilePak = props => {
   const [loading, setLoading] = useState(false);
 
   const user = useSelector(state => state?.userData?.user);
-
+  console.log(props, 'checking data');
   const [fullName, setFullName] = useState();
   const [companyName, setCompanyName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -97,7 +96,8 @@ const ProfilePak = props => {
         updateData,
       );
       if (response.status === 200) {
-        props.actions.user(response.data.user);
+        // props.actions.user(response.data.user);
+        dispatch(user(response.data.user));
         setFullName(updatedFullName);
         setCompanyName(updatedCompanyName);
         setPhoneNumber(updatedPhoneNumber);
@@ -123,11 +123,11 @@ const ProfilePak = props => {
 
   const setData = () => {
     setLoading(true);
-    setFullName(user?.userDataFetch?.name);
-    setCompanyName(user?.userAdditionalDataFetch?.company_name);
-    setEmail(user?.userDataFetch?.email);
-    setPhoneNumber(user?.userAdditionalDataFetch?.phone);
-    setWebsiteLink(user?.userAdditionalDataFetch?.website);
+    setFullName(user?.userData?.name);
+    setCompanyName(user?.userAdditionalData?.company_name);
+    setEmail(user?.userData?.email);
+    setPhoneNumber(user?.userAdditionalData?.phone);
+    setWebsiteLink(user?.userAdditionalData?.website);
     setLoading(false);
   };
   useEffect(() => {

@@ -4,14 +4,14 @@ import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios'; // Ensure axios is imported
 import Api_Base_Url from '../api';
-import {connect} from 'react-redux';
+import {connect, useDispatch} from 'react-redux';
 import * as userActions from '../redux/actions/user';
 import {bindActionCreators} from 'redux';
 import CustomActivityIndicator from '../components/CustomActivityIndicator';
-
-const SplashScreen = ({actions}) => {
+import { user } from '../redux/actions/user';
+const SplashScreen = () => {
   const navigation = useNavigation();
-  const [loading, setLoading] = useState();
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const checkUserCredentials = async () => {
@@ -31,11 +31,10 @@ const SplashScreen = ({actions}) => {
               );
               if (response.status === 200) {
                 console.log('Login successful', response.data);
-                const userDataFetch = response.data.userData;
-                const userAdditionalDataFetch =
-                  response.data.userAdditionalData;
-                var obj = {userDataFetch, userAdditionalDataFetch};
-                actions.user(obj); // Using the correct action
+                const userData = response.data.userData;
+                const userAdditionalData = response.data.userAdditionalData;
+                var obj = {userData, userAdditionalData};
+                dispatch(user(obj));
                 if (type === 'PakExhibitor') {
                   await AsyncStorage?.setItem(
                     '@usercredentials',
@@ -80,7 +79,7 @@ const SplashScreen = ({actions}) => {
     checkUserCredentials();
 
     return () => {};
-  }, [navigation, actions]);
+  }, [navigation]);
 
   return (
     <View style={styles.container}>

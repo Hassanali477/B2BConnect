@@ -47,7 +47,8 @@ const DashboardPak = () => {
   const [selectedRow, setSelectedRow] = useState(null);
   const [isFilterApplied, setIsFilterApplied] = useState(false);
   const [isSearchApplied, setIsSearchApplied] = useState(false);
-
+  const [noResultsFound, setNoResultsFound] = useState(false);
+  const [showAlert, setAlertMessage] = useState(false);
   const entriesData = [10, 25, 50];
 
   const fetchDelegatesData = async () => {
@@ -61,6 +62,7 @@ const DashboardPak = () => {
       setLoading(false);
       setFilteredData(data);
       setApiData(data);
+      setNoResultsFound(false);
     } catch (error) {
       console.error('Error fetching delegates data:', error);
       setLoading(false);
@@ -70,6 +72,7 @@ const DashboardPak = () => {
     fetchDelegatesData();
     setIsFilterApplied(false);
     setIsSearchApplied(false);
+    setNoResultsFound(false);
   }, []);
 
   const handleSelectJob = item => {
@@ -82,6 +85,7 @@ const DashboardPak = () => {
   const filterData = item => {
     if (item === 'All Sectors') {
       setFilteredData(apiData);
+      setNoResultsFound(false);
     } else {
       const filtered = apiData?.buyers?.filter(delegate =>
         delegate?.industry?.toLowerCase()?.includes(item?.toLowerCase()),
@@ -90,6 +94,8 @@ const DashboardPak = () => {
         buyers: filtered,
       };
       setFilteredData(obj);
+      setNoResultsFound(filtered.length === 0);
+      setAlertMessage(filterData.length === 0);
     }
   };
   const handleRemoveFilter = () => {
@@ -99,6 +105,8 @@ const DashboardPak = () => {
     filterData('All Sectors');
     setIsFilterApplied(false); // Reset filter applied flag
     setIsSearchApplied(false); // Reset search applied flag
+    setNoResultsFound(false);
+    setAlertMessage(false);
   };
 
   const handleSearch = (query, key) => {
@@ -131,6 +139,8 @@ const DashboardPak = () => {
         buyers: filtered,
       };
       setFilteredData(obj);
+      setNoResultsFound(filtered.length === 0);
+      setAlertMessage(filtered.length === 0);
     }
   };
   const handleAboutPress = userData => {
@@ -179,8 +189,8 @@ const DashboardPak = () => {
           </TouchableOpacity>
           {dropdownVisible && (
             <View style={styles.dropdownListContainer}>
-              <ScrollView contentContainerStyle={styles.scrollViewContainer}>
-                {[...apiData?.industries, 'All Sectors'].map((item, index) => (
+              <ScrollView>
+                {apiData?.industries.map((item, index) => (
                   <TouchableOpacity
                     key={index}
                     style={styles.dropdownItem}
@@ -273,59 +283,69 @@ const DashboardPak = () => {
               showsVerticalScrollIndicator={false}>
               {loading === true ? (
                 <CustomActivityIndicator />
+              ) : Array.isArray(filteredData?.buyers) &&
+                filteredData?.buyers?.length > 0 ? (
+                <ScrollView
+                  style={{height: height * 0.4}}
+                  showsVerticalScrollIndicator={false}>
+                  {filteredData?.buyers?.map((item, index) => {
+                    return (
+                      <View key={item.id} style={styles.row}>
+                        <Text
+                          style={[
+                            styles.headerCell,
+                            {width: 40, color: '#4a5f85'},
+                          ]}>
+                          {index + 1}
+                        </Text>
+                        <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
+                          {item.contact_name}
+                        </Text>
+                        <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
+                          {item.company_name}
+                        </Text>
+                        <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
+                          {item.industry}
+                        </Text>
+                        <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
+                          {item.website}
+                        </Text>
+                        <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
+                          {item.email}
+                        </Text>
+                        <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
+                          {item.phone}
+                        </Text>
+                        <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
+                          {item.country}
+                        </Text>
+                        <View style={styles.headerCell}>
+                          <TouchableOpacity
+                            style={styles.meetingButton}
+                            onPress={() => handleAboutPress(item)}>
+                            <Text style={styles.meetingButtonText}>About</Text>
+                          </TouchableOpacity>
+                        </View>
+                        <View style={styles.headerCell}>
+                          <TouchableOpacity
+                            style={styles.meetingButton}
+                            onPress={() => {
+                              setModalVisible(true);
+                              setSelectedRow(item);
+                            }}>
+                            <Text style={styles.meetingButtonText}>
+                              Request
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    );
+                  })}
+                </ScrollView>
               ) : (
-                Array.isArray(filteredData?.buyers) &&
-                filteredData?.buyers?.map((item, index) => {
-                  return (
-                    <View key={item.id} style={styles.row}>
-                      <Text
-                        style={[
-                          styles.headerCell,
-                          {width: 40, color: '#4a5f85'},
-                        ]}>
-                        {index + 1}
-                      </Text>
-                      <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                        {item.contact_name}
-                      </Text>
-                      <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                        {item.company_name}
-                      </Text>
-                      <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                        {item.industry}
-                      </Text>
-                      <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                        {item.website}
-                      </Text>
-                      <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                        {item.email}
-                      </Text>
-                      <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                        {item.phone}
-                      </Text>
-                      <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                        {item.country}
-                      </Text>
-                      <View style={styles.headerCell}>
-                        <TouchableOpacity
-                          style={styles.meetingButton}
-                          onPress={() => handleAboutPress(item)}>
-                          <Text style={styles.meetingButtonText}>About</Text>
-                        </TouchableOpacity>
-                      </View>
-                      <View style={styles.headerCell}>
-                        <TouchableOpacity
-                          style={styles.meetingButton}
-                          onPress={() => {
-                            setModalVisible(true);
-                            setSelectedRow(item);
-                          }}>
-                          <Text style={styles.meetingButtonText}>Request</Text>
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-                  );
-                })
+                <View style={styles.noResultsContainer}>
+                  <Text style={styles.noResultsText}></Text>
+                </View>
               )}
             </ScrollView>
           </View>
@@ -405,7 +425,11 @@ const DashboardPak = () => {
           </View>
         </Modal>
       )}
-
+      <AlertMessage
+        message="No results found for your search query."
+        visible={alertVisible}
+        onClose={() => setAlertMessage(false)}
+      />
       <CustomDrawer
         visible={drawerVisible}
         onClose={() => setDrawerVisible(false)}
@@ -656,6 +680,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     alignSelf: 'center',
+  },
+  noResultsContainer: {
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 20, // Adjust as needed
+  },
+  noResultsText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#555', // Adjust the color as needed
   },
 });
 

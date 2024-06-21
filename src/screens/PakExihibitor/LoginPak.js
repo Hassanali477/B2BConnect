@@ -16,16 +16,17 @@ import AlertMessage from '../../components/AlertMessage';
 import {Icon} from 'react-native-elements';
 import CustomActivityIndicator from '../../components/CustomActivityIndicator';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {connect} from 'react-redux';
+import {connect, useSelector} from 'react-redux';
 import * as userActions from '../../redux/actions/user';
 import {bindActionCreators} from 'redux';
 import axios from 'axios';
 import Api_Base_Url from '../../api';
 import api from '../../api';
-
+import {useDispatch} from 'react-redux';
 const {width, height} = Dimensions.get('screen');
-
+import {user} from '../../redux/actions/user';
 const LoginPak = props => {
+  const dispatch = useDispatch();
   const navigation = useNavigation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -53,7 +54,6 @@ const LoginPak = props => {
         console.error('Failed to load remembered credentials', error);
       }
     };
-
     loadRememberedCredentials();
   }, []);
 
@@ -114,8 +114,6 @@ const LoginPak = props => {
       if (response.data.status) {
         console.log('Login successfully', response.data);
         const {userData, userAdditionalData} = response.data;
-        const {actions} = props;
-
         if (rememberMe) {
           await AsyncStorage.setItem(
             '@usercredentials',
@@ -128,9 +126,8 @@ const LoginPak = props => {
         } else {
           await AsyncStorage.removeItem('@usercredentials');
         }
-
         var obj = {userData, userAdditionalData};
-        actions.user(obj);
+        dispatch(user(obj));
         props.navigation.navigate('DashboardPak');
         setLoading(false);
       } else {
