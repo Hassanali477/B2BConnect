@@ -40,10 +40,9 @@ const MeetingRequestScreenPak = () => {
   const entriesData = [10, 25, 50];
 
   const user = useSelector(state => state?.userData);
-  console.log(user, 'checking user id');
 
   useEffect(() => {
-    if (user && user?.userData && user?.userData?.id) {
+    if (user && user?.user?.userData && user?.user?.userData?.id) {
       fetchDelegatesData();
     } else {
       console.error('User ID is undefined');
@@ -53,12 +52,10 @@ const MeetingRequestScreenPak = () => {
 
   const fetchDelegatesData = async key => {
     setLoading(true);
-    console.log(user?.userData?.id, 'checking data');
     try {
       const response = await axios.get(`${Api_Base_Url}showMeetings`, {
-        payload: user?.userData?.id,
+        params: {user_id: user?.user?.userData?.id},
       });
-      console.log(response, 'response3434');
       const {received_requests, sent_requests} = response.data;
       if (key === undefined) {
         setReceivedRequests(received_requests);
@@ -147,7 +144,6 @@ const MeetingRequestScreenPak = () => {
             <Text style={styles.headerCell}>Address</Text>
             <Text style={styles.headerCell}>Requested Date</Text>
             <Text style={styles.headerCell}>Requested Time</Text>
-            <Text style={styles.headerCell}>New Time</Text>
             <Text style={styles.headerCell}>Action</Text>
           </View>
           <ScrollView
@@ -182,7 +178,7 @@ const MeetingRequestScreenPak = () => {
                     {item.buyer.email}
                   </Text>
                   <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                    {item.buyer.address}
+                    {item.location}
                   </Text>
                   <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
                     {item.date}
@@ -190,9 +186,7 @@ const MeetingRequestScreenPak = () => {
                   <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
                     {item.time}
                   </Text>
-                  <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                    {item.newTime}
-                  </Text>
+
                   <View style={styles.headerCell}>
                     <TouchableOpacity style={styles.meetingButton}>
                       <Text style={styles.meetingButtonText}>Revoke</Text>

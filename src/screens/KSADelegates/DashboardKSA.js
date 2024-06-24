@@ -1,3 +1,4 @@
+import React, {useCallback, useEffect, useState} from 'react';
 import {
   StyleSheet,
   View,
@@ -12,14 +13,25 @@ import {
   Platform,
   BackHandler,
 } from 'react-native';
-import React, {useState, useEffect, useCallback} from 'react';
-import CustomSelectEntriesKSA from '../../components/KSADelegates/CustomSelectEntriesKSA';
-import CustomDrawerKSA from '../../components/KSADelegates/CustomDrawerKSA';
+import HeaderComponent from '../../components/HeaderComponent';
+import CustomDropdown from '../../components/CustomDropdown';
+import CustomSelectEntries from '../../components/CustomSelectEntries';
+import MeetingRequestPak from '../KSADelegates/MeetingRequestKsa';
+import CustomDrawer from '../../components/CustomDrawer';
+import {Icon as RNElementsIcon} from 'react-native-elements';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import {useNavigation, useFocusEffect} from '@react-navigation/native';
+import {useFocusEffect, useNavigation} from '@react-navigation/native';
+import BottomNavigator from '../../components/BottomNavigator';
+import axios from 'axios';
+import Api_Base_Url from '../../api';
+import AlertMessage from '../../components/AlertMessage';
+import CustomActivityIndicator from '../../components/CustomActivityIndicator';
+import {connect, useSelector} from 'react-redux';
+import * as userActions from '../../redux/actions/user';
+import {bindActionCreators} from 'redux';
+import MeetingRequestKsa from '../KSADelegates/MeetingRequestKsa';
+import CustomDrawerKSA from '../../components/KSADelegates/CustomDrawerKSA';
 import BottomNavigatorKSA from '../../components/KSADelegates/BottomNavigatorKSA';
-import HeaderComponentKSA from '../../components/KSADelegates/HeaderComponentKSA';
-import MeetingRequestKsa from './MeetingRequestKsa';
 
 const {width, height} = Dimensions.get('screen');
 
@@ -36,90 +48,107 @@ const DashboardKSA = () => {
   const [modalVisible1, setModalVisible1] = useState(false);
   const [selectedUserData, setSelectedUserData] = useState(null);
   const [alertVisible, setAlertVisible] = useState(false);
-
-  const jobData = [
-    {label: 'All Sector', value: 'all sector'},
-    {label: 'Developer', value: 'developer'},
-    {label: 'Designer', value: 'designer'},
-    {label: 'Manager', value: 'manager'},
-    {label: 'Analyst', value: 'analyst'},
-    {label: 'React Developer', value: 'react developer'},
-    {label: 'Node JS', value: 'node js'},
-  ];
-
+  const [loading, setLoading] = useState(false);
+  const [apiData, setApiData] = useState(null);
+  const [selectedRow, setSelectedRow] = useState(null);
+  const [isFilterApplied, setIsFilterApplied] = useState(false);
+  const [isSearchApplied, setIsSearchApplied] = useState(false);
+  const [noResultsFound, setNoResultsFound] = useState(false);
+  const [showAlert, setAlertMessage] = useState(false);
   const entriesData = [10, 25, 50];
 
-  const generateDummyData = () => {
-    const dummyData = [];
-    for (let i = 1; i <= 60; i++) {
-      dummyData.push({
-        id: i,
-        name: `Delegate ${i}`,
-        company: `Company ${i}`,
-        sector:
-          i % 6 === 0
-            ? 'Node JS'
-            : i % 5 === 0
-            ? 'React Developer'
-            : i % 4 === 0
-            ? 'Analyst'
-            : i % 3 === 0
-            ? 'Manager'
-            : i % 2 === 0
-            ? 'Designer'
-            : 'Developer',
-        website: `www.company${i}.com`,
-        email: `delegate${i}@company${i}.com`,
-        mobile: `${Math.floor(Math.random() * 900000000) + 100000000}`,
-        location: i % 2 === 0 ? 'Riyadh' : i % 3 === 0 ? 'Jeddah' : 'Mecca',
+  const user = useSelector(state => state?.userData?.user);
+  console.log(user, 'checking user id');
+  const fetchDelegatesData = async () => {
+    try {
+      const response = await axios.get(`${Api_Base_Url}PAKExhibitor`, {
+        params: {
+          user_id: user?.userData?.id,
+        },
       });
+      const data = await response.data;
+      setLoading(false);
+      setFilteredData(data);
+      setApiData(data);
+      setNoResultsFound(false);
+    } catch (error) {
+      console.error('Error fetching delegates data:', error);
+      setLoading(false);
     }
-    return dummyData;
   };
-
-  const delegatesData = generateDummyData();
+  useEffect(() => {
+    fetchDelegatesData();
+    setIsFilterApplied(false);
+    setIsSearchApplied(false);
+    setNoResultsFound(false);
+  }, []);
 
   const handleSelectJob = item => {
     setSelectedJob(item);
     setDropdownVisible(false);
-    if (item.value === 'all sector') {
-      setFilteredData(delegatesData);
-    } else {
-      const filteredData = delegatesData.filter(
-        delegate => delegate.sector.toLowerCase() === item.value.toLowerCase(),
-      );
-      setFilteredData(filteredData);
-    }
+    filterData(item);
+    setIsFilterApplied(true);
   };
 
-  useEffect(() => {
-    setFilteredData(delegatesData);
-  }, []);
+  const filterData = item => {
+    if (item === 'All Sectors') {
+      setFilteredData(apiData);
+      setNoResultsFound(false);
+    } else {
+      const filtered = apiData?.exporters?.filter(delegate =>
+        delegate?.industry?.toLowerCase()?.includes(item?.toLowerCase()),
+      );
+      var obj = {
+        exporters: filtered,
+      };
+      setFilteredData(obj);
+      setNoResultsFound(filtered.length === 0);
+      setAlertMessage(filterData.length === 0);
+    }
+  };
+  const handleRemoveFilter = () => {
+    setSelectedJob(null);
+    setSearchQuery('');
+    setSearchTextInput('');
+    filterData('All Sectors');
+    setIsFilterApplied(false); // Reset filter applied flag
+    setIsSearchApplied(false); // Reset search applied flag
+    setNoResultsFound(false);
+    setAlertMessage(false);
+  };
 
   const handleSearch = (query, key) => {
     switch (key) {
       case 'Keyword':
         setSearchQuery(query);
+        setIsSearchApplied(true);
         break;
       case 'Search':
         setSearchTextInput(query);
+        setIsSearchApplied(true);
         break;
     }
     if (query === '') {
-      setFilteredData(delegatesData);
+      fetchDelegatesData();
+      setIsSearchApplied(false);
     } else {
-      const filtered = delegatesData.filter(
+      const filtered = apiData?.exporters?.filter(
         item =>
-          item.name?.toLowerCase()?.includes(query?.toLowerCase()) ||
-          item.id?.toString()?.includes(query) ||
-          item.company?.toLowerCase()?.includes(query?.toLowerCase()) ||
-          item.sector?.toLowerCase()?.includes(query?.toLowerCase()) ||
-          item.website?.toLowerCase()?.includes(query?.toLowerCase()) ||
-          item.email?.toLowerCase()?.includes(query?.toLowerCase()) ||
-          item.mobile?.toLowerCase()?.includes(query) ||
-          item.location?.toLowerCase()?.includes(query?.toLowerCase()),
+          item?.id?.toString()?.includes(query) ||
+          item?.contact_name?.toLowerCase()?.includes(query?.toLowerCase()) ||
+          item?.company_name?.toLowerCase()?.includes(query?.toLowerCase()) ||
+          item?.industry?.toLowerCase()?.includes(query?.toLowerCase()) ||
+          item?.website?.toLowerCase()?.includes(query?.toLowerCase()) ||
+          item?.email?.toLowerCase()?.includes(query?.toLowerCase()) ||
+          item?.phone?.toLowerCase()?.includes(query) ||
+          item?.country?.toLowerCase()?.includes(query?.toLowerCase()),
       );
-      setFilteredData(filtered);
+      var obj = {
+        exporters: filtered,
+      };
+      setFilteredData(obj);
+      setNoResultsFound(filtered.length === 0);
+      setAlertMessage(filtered.length === 0);
     }
   };
   const handleAboutPress = userData => {
@@ -130,7 +159,7 @@ const DashboardKSA = () => {
   useFocusEffect(
     useCallback(() => {
       const onBackPress = () => {
-        return true; // Prevent default behavior
+        return true;
       };
       BackHandler.addEventListener('hardwareBackPress', onBackPress);
       return () => {
@@ -138,54 +167,51 @@ const DashboardKSA = () => {
       };
     }, []),
   );
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : -width * 0.1}
       behavior={Platform.OS === 'ios' ? 'height' : 'height'}>
-      <HeaderComponentKSA
-        onMenuPress={() => setDrawerVisible(!drawerVisible)}
-      />
+      <HeaderComponent onMenuPress={() => setDrawerVisible(!drawerVisible)} />
       <View style={styles.headerCont}>
         <Text style={styles.headerText}>List of PAK EXHIBITOR</Text>
       </View>
       <View style={styles.headerSubCont}>
-        <Text style={styles.headerSubText}>Search Criteria</Text>
-        <View style={styles.headerSubTextInput}>
-          <View style={styles.dropdownContainer}>
+        <View style={styles.headerTextSearch}>
+          <Text style={styles.headerSubText}>Search Criteria</Text>
+          {(isFilterApplied || isSearchApplied) && (
             <TouchableOpacity
-              style={styles.dropdown}
-              onPress={() => setDropdownVisible(!dropdownVisible)}>
-              <Text style={styles.text}>
-                {selectedJob ? selectedJob.label : 'All Sectors ...'}
-              </Text>
-              <Icon name="angle-down" size={24} color="#000" />
+              style={styles.removeFilterButton}
+              onPress={handleRemoveFilter}>
+              <Text style={styles.removeFilterButtonText}>Remove Filter</Text>
             </TouchableOpacity>
-            {dropdownVisible && (
-              <View style={styles.dropdownListContainer}>
-                <FlatList
-                  data={jobData}
-                  renderItem={({item}) => (
-                    <TouchableOpacity
-                      style={styles.dropdownItem}
-                      onPress={() => handleSelectJob(item)}>
-                      <Text style={styles.text}>{item.label}</Text>
-                    </TouchableOpacity>
-                  )}
-                  keyExtractor={item => item.value}
-                />
-              </View>
-            )}
-          </View>
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Enter Keyword"
-            placeholderTextColor={'#000'}
-            value={searchQuery}
-            onChangeText={text => handleSearch(text, 'Keyword')}
-          />
+          )}
+        </View>
+        <View style={styles.dropdownContainer}>
+          <TouchableOpacity
+            style={styles.dropdown}
+            onPress={() => setDropdownVisible(!dropdownVisible)}>
+            <Text style={styles.text}>{selectedJob || 'All Sectors'}</Text>
+            <Icon name="angle-down" size={24} color="#000" />
+          </TouchableOpacity>
+          {dropdownVisible && (
+            <View style={styles.dropdownListContainer}>
+              <ScrollView>
+                {apiData?.industries.map((item, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.dropdownItem}
+                    onPress={() => handleSelectJob(item)}>
+                    <Text style={styles.text}>{item}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          )}
         </View>
       </View>
+
       <View style={styles.mainHeadCont}>
         <View style={{width: '45%'}}>
           <View
@@ -205,12 +231,12 @@ const DashboardKSA = () => {
               }}>
               Entries
             </Text>
-            <CustomSelectEntriesKSA
+            <CustomSelectEntries
               data={entriesData}
               selectedValue={showEntries}
               onSelect={setShowEntries}
-              delegatesData={delegatesData}
-              setFilteredData={setFilteredData}
+              delegatesData={apiData?.exporters}
+              setFilteredData={item => setFilteredData(item)}
             />
           </View>
         </View>
@@ -224,6 +250,20 @@ const DashboardKSA = () => {
           />
         </View>
       </View>
+      {/* <View
+        style={{
+          alignItems: 'flex-start',
+          width: '90%',
+          marginTop: 10,
+        }}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Enter Keyword"
+          placeholderTextColor={'#000'}
+          value={searchQuery}
+          onChangeText={text => handleSearch(text, 'Keyword')}
+        />
+      </View> */}
 
       <View style={styles.tableContainer}>
         <ScrollView
@@ -235,7 +275,7 @@ const DashboardKSA = () => {
           }}>
           <View>
             <View style={styles.headerRow}>
-              <Text style={[styles.headerCell, {width: 20}]}>ID</Text>
+              <Text style={[styles.headerCell, {width: 40}]}>ID</Text>
               <Text style={styles.headerCell}>Name</Text>
               <Text style={styles.headerCell}>Company</Text>
               <Text style={styles.headerCell}>Sector</Text>
@@ -249,49 +289,72 @@ const DashboardKSA = () => {
             <ScrollView
               style={{height: height * 0.4}}
               showsVerticalScrollIndicator={false}>
-              {filteredData.map(item => (
-                <View key={item.id} style={styles.row}>
-                  <Text
-                    style={[styles.headerCell, {width: 20, color: '#4a5f85'}]}>
-                    {item.id}
-                  </Text>
-                  <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                    {item.name}
-                  </Text>
-                  <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                    {item.company}
-                  </Text>
-                  <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                    {item.sector}
-                  </Text>
-                  <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                    {item.website}
-                  </Text>
-                  <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                    {item.email}
-                  </Text>
-                  <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                    {item.mobile}
-                  </Text>
-                  <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                    {item.location}
-                  </Text>
-                  <View style={styles.headerCell}>
-                    <TouchableOpacity
-                      style={styles.meetingButton}
-                      onPress={() => handleAboutPress(item)}>
-                      <Text style={styles.meetingButtonText}>About</Text>
-                    </TouchableOpacity>
-                  </View>
-                  <View style={styles.headerCell}>
-                    <TouchableOpacity
-                      style={styles.meetingButton}
-                      onPress={() => setModalVisible(true)}>
-                      <Text style={styles.meetingButtonText}>Request</Text>
-                    </TouchableOpacity>
-                  </View>
+              {loading === true ? (
+                <CustomActivityIndicator />
+              ) : Array.isArray(filteredData?.exporters) &&
+                filteredData?.exporters?.length > 0 ? (
+                <ScrollView
+                  style={{height: height * 0.4}}
+                  showsVerticalScrollIndicator={false}>
+                  {filteredData?.exporters?.map((item, index) => {
+                    return (
+                      <View key={item.id} style={styles.row}>
+                        <Text
+                          style={[
+                            styles.headerCell,
+                            {width: 40, color: '#4a5f85'},
+                          ]}>
+                          {index + 1}
+                        </Text>
+                        <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
+                          {item.contact_name}
+                        </Text>
+                        <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
+                          {item.company_name}
+                        </Text>
+                        <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
+                          {item.industry}
+                        </Text>
+                        <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
+                          {item.website}
+                        </Text>
+                        <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
+                          {item.email}
+                        </Text>
+                        <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
+                          {item.phone}
+                        </Text>
+                        <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
+                          {item.country}
+                        </Text>
+                        <View style={styles.headerCell}>
+                          <TouchableOpacity
+                            style={styles.meetingButton}
+                            onPress={() => handleAboutPress(item)}>
+                            <Text style={styles.meetingButtonText}>About</Text>
+                          </TouchableOpacity>
+                        </View>
+                        <View style={styles.headerCell}>
+                          <TouchableOpacity
+                            style={styles.meetingButton}
+                            onPress={() => {
+                              setModalVisible(true);
+                              setSelectedRow(item);
+                            }}>
+                            <Text style={styles.meetingButtonText}>
+                              Request
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    );
+                  })}
+                </ScrollView>
+              ) : (
+                <View style={styles.noResultsContainer}>
+                  <Text style={styles.noResultsText}></Text>
                 </View>
-              ))}
+              )}
             </ScrollView>
           </View>
         </ScrollView>
@@ -302,6 +365,7 @@ const DashboardKSA = () => {
           onClose={() => setModalVisible(false)}
           modalVisible={modalVisible}
           setModalVisible={setModalVisible}
+          selectedRow={selectedRow}
         />
       )}
       {modalVisible1 && (
@@ -324,7 +388,7 @@ const DashboardKSA = () => {
                     <View style={styles.cardItem}>
                       <Text style={styles.cardLabel}>Name:</Text>
                       <Text style={styles.cardValue}>
-                        {selectedUserData.name}
+                        {selectedUserData.contact_name}
                       </Text>
                     </View>
                     <View style={styles.cardItem}>
@@ -336,25 +400,25 @@ const DashboardKSA = () => {
                     <View style={styles.cardItem}>
                       <Text style={styles.cardLabel}>Company:</Text>
                       <Text style={styles.cardValue}>
-                        {selectedUserData.company}
+                        {selectedUserData.company_name}
                       </Text>
                     </View>
                     <View style={styles.cardItem}>
                       <Text style={styles.cardLabel}>Sector:</Text>
                       <Text style={styles.cardValue}>
-                        {selectedUserData.sector}
+                        {selectedUserData.industry}
                       </Text>
                     </View>
                     <View style={styles.cardItem}>
                       <Text style={styles.cardLabel}>Mobile:</Text>
                       <Text style={styles.cardValue}>
-                        {selectedUserData.mobile}
+                        {selectedUserData.phone}
                       </Text>
                     </View>
                     <View style={styles.cardItem}>
                       <Text style={styles.cardLabel}>Location:</Text>
                       <Text style={styles.cardValue}>
-                        {selectedUserData.location}
+                        {selectedUserData.country}
                       </Text>
                     </View>
                   </>
@@ -369,7 +433,11 @@ const DashboardKSA = () => {
           </View>
         </Modal>
       )}
-
+      <AlertMessage
+        message="No results found for your search query."
+        visible={alertVisible}
+        onClose={() => setAlertMessage(false)}
+      />
       <CustomDrawerKSA
         visible={drawerVisible}
         onClose={() => setDrawerVisible(false)}
@@ -379,8 +447,6 @@ const DashboardKSA = () => {
     </KeyboardAvoidingView>
   );
 };
-
-export default DashboardKSA;
 
 const styles = StyleSheet.create({
   container: {
@@ -411,17 +477,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     zIndex: 999,
   },
+  headerTextSearch: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   headerSubText: {
     color: 'black',
     fontSize: 18,
     fontWeight: 'bold',
-  },
-  headerSubTextInput: {
-    flexDirection: 'row',
-    width: '100%',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 10,
   },
   searchInput: {
     width: '45%',
@@ -433,9 +498,10 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   dropdownContainer: {
-    width: '45%',
+    width: '100%',
     position: 'relative',
     zIndex: 999,
+    marginTop: 10,
   },
   dropdown: {
     flexDirection: 'row',
@@ -448,25 +514,27 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   text: {
+    fontSize: 15,
     color: '#000',
   },
   icon: {
     marginLeft: 10,
   },
   dropdownListContainer: {
-    position: 'absolute',
-    top: 50,
+    // position: 'absolute',
+    // top: 50,
     width: '100%',
     borderWidth: 1,
     borderColor: '#ccc',
     backgroundColor: '#fff',
     zIndex: 999,
+    maxHeight: 180,
   },
-  dropdownList: {
-    maxHeight: 200,
+  scrollViewContent: {
+    paddingBottom: 10, // Adjust this value according to your need
   },
   dropdownItem: {
-    padding: 10,
+    padding: 6,
   },
   mainHeadCont: {
     width: width / 1.16,
@@ -486,7 +554,7 @@ const styles = StyleSheet.create({
   tableContainer: {
     width: '95%',
     backgroundColor: '#fff',
-    marginTop: width * 0.06,
+    marginTop: width * 0.03,
     borderWidth: 1,
     borderRadius: 10,
     overflow: 'hidden',
@@ -608,4 +676,37 @@ const styles = StyleSheet.create({
   exitButton: {
     backgroundColor: 'red',
   },
+  removeFilterButton: {
+    backgroundColor: '#DD2C00',
+    paddingVertical: 5,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    textAlign: 'center',
+  },
+  removeFilterButtonText: {
+    color: '#ccc',
+    fontSize: 14,
+    fontWeight: '500',
+    alignSelf: 'center',
+  },
+  noResultsContainer: {
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 20, // Adjust as needed
+  },
+  noResultsText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#555', // Adjust the color as needed
+  },
 });
+
+const mapStateToProps = state => ({
+  user: state.user,
+});
+
+const mapDispatchToProps = dispatch =>
+  bindActionCreators(userActions, dispatch);
+
+export default connect(mapStateToProps, mapDispatchToProps)(DashboardKSA);

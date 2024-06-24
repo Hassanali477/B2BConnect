@@ -26,6 +26,9 @@ import axios from 'axios';
 import Api_Base_Url from '../../api';
 import AlertMessage from '../../components/AlertMessage';
 import CustomActivityIndicator from '../../components/CustomActivityIndicator';
+import {connect, useSelector} from 'react-redux';
+import * as userActions from '../../redux/actions/user';
+import {bindActionCreators} from 'redux';
 
 const {width, height} = Dimensions.get('screen');
 
@@ -51,11 +54,12 @@ const DashboardPak = () => {
   const [showAlert, setAlertMessage] = useState(false);
   const entriesData = [10, 25, 50];
 
+  const user = useSelector(state => state?.userData?.user);
   const fetchDelegatesData = async () => {
     try {
       const response = await axios.get(`${Api_Base_Url}KSADelegate`, {
         params: {
-          user_id: 1742,
+          user_id: user?.userData?.id,
         },
       });
       const data = await response.data;
@@ -694,4 +698,11 @@ const styles = StyleSheet.create({
   },
 });
 
-export default DashboardPak;
+const mapStateToProps = state => ({
+  user: state.user,
+});
+
+const mapDispatchToProps = dispatch =>
+  bindActionCreators(userActions, dispatch);
+
+export default connect(mapStateToProps, mapDispatchToProps)(DashboardPak);

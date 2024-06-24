@@ -38,22 +38,20 @@ const MeetingRequestScreenKsa = () => {
   const [alertVisible, setAlertVisible] = useState(false);
   const entriesData = [10, 25, 50];
 
-  const user = useSelector(state => state?.userData?.user);
+  const user = useSelector(state => state?.userData);
   useEffect(() => {
-    if (user && user?.userDataFetch && user?.userDataFetch?.id) {
+    if (user && user?.user?.userData && user?.user?.userData?.id) {
       fetchDelegatesData();
     } else {
       console.error('User ID is undefined');
+      setLoading(false);
     }
-  }, [user]);
+  }, []);
 
   const fetchDelegatesData = async key => {
     try {
-      console.log(user_id, 'checking id');
       const response = await axios.get(`${Api_Base_Url}showMeetings`, {
-        params: {
-          user_id: user?.userDataFetch?.id,
-        },
+        params: {user_id: user?.user?.userData?.id},
       });
       const {received_requests, sent_requests} = response.data;
       if (key === undefined) {
@@ -135,7 +133,7 @@ const MeetingRequestScreenKsa = () => {
         }}>
         <View>
           <View style={styles.headerRow}>
-            <Text style={[styles.headerCell, {width: 20}]}>ID</Text>
+            <Text style={[styles.headerCell, {width: 40}]}>ID</Text>
             <Text style={styles.headerCell}>Name</Text>
             <Text style={styles.headerCell}>Company</Text>
             <Text style={styles.headerCell}>Sector</Text>
@@ -144,7 +142,6 @@ const MeetingRequestScreenKsa = () => {
             <Text style={styles.headerCell}>Address</Text>
             <Text style={styles.headerCell}>Requested Date</Text>
             <Text style={styles.headerCell}>Requested Time</Text>
-            <Text style={styles.headerCell}>New Time</Text>
             <Text style={styles.headerCell}>Action</Text>
           </View>
           <ScrollView
@@ -158,28 +155,28 @@ const MeetingRequestScreenKsa = () => {
               </View>
             ) : (
               filteredData.map(item => (
-                <View key={item.id} style={styles.row}>
+                <View key={item?.id} style={styles.row}>
                   <Text
-                    style={[styles.headerCell, {width: 20, color: '#4a5f85'}]}>
-                    {item.id}
+                    style={[styles.headerCell, {width: 40, color: '#4a5f85'}]}>
+                    {item?.exporter?.id}
                   </Text>
                   <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                    {item.exporter.contact_name}
+                    {item?.exporter?.contact_name}
                   </Text>
                   <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                    {item.exporter.company_name}
+                    {item?.exporter?.company_name}
                   </Text>
                   <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                    {item.exporter.industry}
+                    {item?.exporter?.industry}
                   </Text>
                   <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                    {item.exporter.phone}
+                    {item?.exporter?.phone}
                   </Text>
                   <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                    {item.exporter.email}
+                    {item?.exporter?.email}
                   </Text>
                   <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                    {item.exporter.address}
+                    {item?.exporter?.address}
                   </Text>
                   <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
                     {item.date}
@@ -187,9 +184,7 @@ const MeetingRequestScreenKsa = () => {
                   <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
                     {item.time}
                   </Text>
-                  <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                    {item.newTime}
-                  </Text>
+
                   <View style={styles.headerCell}>
                     <TouchableOpacity style={styles.meetingButton}>
                       <Text style={styles.meetingButtonText}>Revoke</Text>
@@ -240,15 +235,15 @@ const MeetingRequestScreenKsa = () => {
               </View>
             ) : (
               filteredData.map(item => (
-                <View key={item.id} style={styles.row}>
+                <View key={item?.id} style={styles.row}>
                   <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                    {item.exporter.industry}
+                    {item?.exporter?.industry}
                   </Text>
                   <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                    {item.exporter.phone}
+                    {item?.exporter?.phone}
                   </Text>
                   <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                    {item.exporter.email}
+                    {item?.exporter?.email}
                   </Text>
                   <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
                     {item.location}

@@ -12,10 +12,14 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 
 import SelectDropdown from '../../components/PakExhibitor/SelectDropdownPak';
 import AlertMessage from '../../components/AlertMessage';
+import axios from 'axios'; // Ensure axios is imported
+import {connect, useSelector} from 'react-redux';
+import * as userActions from '../../redux/actions/user';
+import {bindActionCreators} from 'redux';
 
 const {width, height} = Dimensions.get('screen');
 
-const MeetingRequestKsa = ({modalVisible, setModalVisible}) => {
+const MeetingRequestKsa = ({modalVisible, setModalVisible, selectedRow}) => {
   const [selectedDate, setSelectedDate] = useState('Select Date');
   const [selectedTimeslot, setSelectedTimeslot] = useState('Select Timeslot');
   const [selectedLocation, setSelectedLocation] = useState(
@@ -42,9 +46,9 @@ const MeetingRequestKsa = ({modalVisible, setModalVisible}) => {
   ];
   const locations = [
     'Pearl Continental Hotel, Karachi',
+    'Avari Towers, Karachi',
     'Marriott Hotel, Karachi',
     'Mövenpick Hotel, Karachi',
-    'Avari Towers, Karachi',
     'Ramada Plaza, Karachi',
     'Regent Plaza Hotel & Convention Center, Karachi',
     'Beach Luxury Hotel, Karachi',
@@ -78,7 +82,9 @@ const MeetingRequestKsa = ({modalVisible, setModalVisible}) => {
   const handleLocationSelect = location => setSelectedLocation(location);
   const handleMessageChange = text => setMessage(text);
 
-  const handleSendMessage = () => {
+  const user = useSelector(state => state?.userData?.user);
+  console.log(user?.userData?.buyer_exporter_id, 'checking buyer id');
+  const handleSendMessage = async () => {
     if (
       selectedDate === 'Select Date' ||
       selectedTimeslot === 'Select Timeslot' ||
@@ -89,13 +95,42 @@ const MeetingRequestKsa = ({modalVisible, setModalVisible}) => {
       setAlertType('error');
       setAlertVisible(true);
     } else {
-      setAlertMessage('Meeting request sent successfully!');
-      setAlertType('success');
-      setAlertVisible(true);
-      setSelectedDate('Select Date');
-      setSelectedTimeslot('Select Timeslot');
-      setSelectedLocation('Select Meeting Location');
-      setMessage('');
+      const data = {
+        user_id: user?.userData?.id,
+        buyer_id: user?.userData?.buyer_exporter_id,
+        requested_by: user?.userData?.buyer_exporter_id,
+        exporter_id: selectedRow.id,
+        exporter_email: selectedRow.email,
+        date: selectedDate,
+        time: selectedTimeslot,
+        location: selectedLocation,
+        other_location: null,
+        message: message,
+      };
+      try {
+        const response = await axios.post(
+          `${Api_Base_Url}meetingRequestExporter`,
+          data,
+        );
+        if (response.status === 200) {
+          setAlertMessage('Meeting request sent successfully!');
+          setAlertType('success');
+          setAlertVisible(true);
+          setSelectedDate('Select Date');
+          setSelectedTimeslot('Select Timeslot');
+          setSelectedLocation('Select Meeting Location');
+          setMessage('');
+        } else {
+          console.log(response.data, 'checking response response response');
+          setAlertMessage('Failed to send meeting request. Please try again.');
+          setAlertType('error');
+          setAlertVisible(true);
+        }
+      } catch (error) {
+        setAlertMessage('Failed to send meeting request. Please try again.');
+        setAlertType('error');
+        setAlertVisible(true);
+      }
     }
   };
 
@@ -188,8 +223,15 @@ const MeetingRequestKsa = ({modalVisible, setModalVisible}) => {
     </View>
   );
 };
+const mapStateToProps = state => ({
+  userData: state.userData,
+});
 
-export default MeetingRequestKsa;
+const ActionCreators = Object.assign({}, userActions);
+const mapDispatchToProps = dispatch => ({
+  actions: bindActionCreators(ActionCreators, dispatch),
+});
+export default connect(mapStateToProps, mapDispatchToProps)(MeetingRequestKsa);
 
 const styles = StyleSheet.create({
   container: {
