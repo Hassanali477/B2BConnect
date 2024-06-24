@@ -96,8 +96,8 @@ const MeetingRequestPak = ({modalVisible, setModalVisible, selectedRow}) => {
     } else {
       const data = {
         user_id: user?.userData?.id,
-        exporter_id: '180',
-        requested_by: '180',
+        exporter_id: user?.userData?.buyer_exporter_id,
+        requested_by: user?.userData?.buyer_exporter_id,
         buyer_id: selectedRow.id,
         buyer_email: selectedRow.email,
         date: selectedDate,

@@ -156,11 +156,11 @@ const MeetingRequestScreenPak = () => {
                 </Text>
               </View>
             ) : (
-              filteredData.map(item => (
+              filteredData.map((item, index) => (
                 <View key={item.id} style={styles.row}>
                   <Text
                     style={[styles.headerCell, {width: 20, color: '#4a5f85'}]}>
-                    {item.buyer.id}
+                    {index + 1}
                   </Text>
                   <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
                     {item.buyer.contact_name}

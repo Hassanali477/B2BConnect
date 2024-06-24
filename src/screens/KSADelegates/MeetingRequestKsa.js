@@ -9,13 +9,13 @@ import {
   TextInput,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-
-import SelectDropdown from '../../components/PakExhibitor/SelectDropdownPak';
 import AlertMessage from '../../components/AlertMessage';
+import Api_Base_Url from '../../api';
 import axios from 'axios'; // Ensure axios is imported
 import {connect, useSelector} from 'react-redux';
 import * as userActions from '../../redux/actions/user';
 import {bindActionCreators} from 'redux';
+import SelectDropdownKsa from '../../components/KSADelegates/SelectDropdownKsa';
 
 const {width, height} = Dimensions.get('screen');
 
@@ -46,9 +46,9 @@ const MeetingRequestKsa = ({modalVisible, setModalVisible, selectedRow}) => {
   ];
   const locations = [
     'Pearl Continental Hotel, Karachi',
-    'Avari Towers, Karachi',
     'Marriott Hotel, Karachi',
     'Mövenpick Hotel, Karachi',
+    'Avari Towers, Karachi',
     'Ramada Plaza, Karachi',
     'Regent Plaza Hotel & Convention Center, Karachi',
     'Beach Luxury Hotel, Karachi',
@@ -83,7 +83,6 @@ const MeetingRequestKsa = ({modalVisible, setModalVisible, selectedRow}) => {
   const handleMessageChange = text => setMessage(text);
 
   const user = useSelector(state => state?.userData?.user);
-  console.log(user?.userData?.buyer_exporter_id, 'checking buyer id');
   const handleSendMessage = async () => {
     if (
       selectedDate === 'Select Date' ||
@@ -107,6 +106,7 @@ const MeetingRequestKsa = ({modalVisible, setModalVisible, selectedRow}) => {
         other_location: null,
         message: message,
       };
+
       try {
         const response = await axios.post(
           `${Api_Base_Url}meetingRequestExporter`,
@@ -121,7 +121,6 @@ const MeetingRequestKsa = ({modalVisible, setModalVisible, selectedRow}) => {
           setSelectedLocation('Select Meeting Location');
           setMessage('');
         } else {
-          console.log(response.data, 'checking response response response');
           setAlertMessage('Failed to send meeting request. Please try again.');
           setAlertType('error');
           setAlertVisible(true);
@@ -155,7 +154,7 @@ const MeetingRequestKsa = ({modalVisible, setModalVisible, selectedRow}) => {
           <View style={styles.modalView}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>
-                Meeting Request Alkaram Textiles
+                Meeting Request - Alkaram Textiles
               </Text>
               <TouchableOpacity onPress={() => setModalVisible(false)}>
                 <Icon
@@ -172,7 +171,7 @@ const MeetingRequestKsa = ({modalVisible, setModalVisible, selectedRow}) => {
               <View style={styles.dropdownContainer}>
                 <View style={styles.dropdownSection}>
                   <Text style={styles.dropdownHeading}>Select Date</Text>
-                  <SelectDropdown
+                  <SelectDropdownKsa
                     title={'Select Date'}
                     options={dates}
                     selectedValue={selectedDate}
@@ -181,7 +180,7 @@ const MeetingRequestKsa = ({modalVisible, setModalVisible, selectedRow}) => {
                 </View>
                 <View style={styles.dropdownSection}>
                   <Text style={styles.dropdownHeading}>Select Timeslot</Text>
-                  <SelectDropdown
+                  <SelectDropdownKsa
                     title={'Select Timeslot'}
                     options={timeslots}
                     selectedValue={selectedTimeslot}
@@ -194,7 +193,7 @@ const MeetingRequestKsa = ({modalVisible, setModalVisible, selectedRow}) => {
             <Text style={styles.meetingHeading}>Meeting Location</Text>
             <View style={styles.locationContainer}>
               <Text style={styles.locationHeading}>Select Location</Text>
-              <SelectDropdown
+              <SelectDropdownKsa
                 title={'Select Location'}
                 options={locations}
                 selectedValue={selectedLocation}

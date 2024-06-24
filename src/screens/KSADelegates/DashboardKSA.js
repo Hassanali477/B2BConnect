@@ -58,7 +58,6 @@ const DashboardKSA = () => {
   const entriesData = [10, 25, 50];
 
   const user = useSelector(state => state?.userData?.user);
-  console.log(user, 'checking user id');
   const fetchDelegatesData = async () => {
     try {
       const response = await axios.get(`${Api_Base_Url}PAKExhibitor`, {
@@ -377,7 +376,7 @@ const DashboardKSA = () => {
           <View style={styles.modalContainer}>
             <View style={styles.modalContent}>
               <View style={styles.header}>
-                <Text style={styles.modalHeading}>Buyer Details</Text>
+                <Text style={styles.modalHeading}>Exporter Details</Text>
                 <TouchableOpacity onPress={() => setModalVisible1(false)}>
                   <Icon name="times" size={28} color="#0059CF" />
                 </TouchableOpacity>

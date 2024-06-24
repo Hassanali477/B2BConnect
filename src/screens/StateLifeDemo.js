@@ -79,7 +79,7 @@ const StateLifeDemo = () => {
       <ImageBackground
         source={require('../assets/images/State-Life-Background.jpeg')}
         resizeMode="cover"
-        style={{width: width, height: height * 0.5}}>
+        style={styles.backgroundImage}>
         <View style={styles.logoContainer}>
           <Image
             source={require('../assets/images/appLogo.png')}
@@ -145,19 +145,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#fff',
   },
+  backgroundImage: {
+    width: width,
+    height: height * 0.5,
+  },
   logoContainer: {
     alignItems: 'center',
     justifyContent: 'center',
   },
   logo: {
-    position: 'absolute',
-    top: -10,
-    left: 10,
-    right: 0,
-    bottom: 0,
     width: width * 0.45,
     height: height * 0.15,
     resizeMode: 'contain',
+    alignSelf:'flex-start',
+    marginLeft: width * 0.05,
   },
   headingContainer: {
     alignItems: 'center',
@@ -216,22 +217,21 @@ const styles = StyleSheet.create({
   gradientText: {
     fontSize: 17,
     textAlign: 'center',
-    background: 'linear-gradient(#0158BE, #0372D3, #079AF4)',
-    WebkitBackgroundClip: 'text',
     color: '#0158BE',
     letterSpacing: 0.5,
   },
   footer: {
-    position: 'absolute',
-    bottom: 40,
+    width: '100%',
     alignItems: 'center',
+    paddingBottom: 20,
+    marginTop: width * 0.05,
   },
   footerText: {
     fontSize: 18,
     color: '#000',
     textAlign: 'center',
     fontWeight: '500',
-    textDecorationLine:'underline'
+    textDecorationLine: 'underline',
   },
 });
 
