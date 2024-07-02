@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   Image,
   StyleSheet,
@@ -10,66 +10,161 @@ import {
   Modal,
   KeyboardAvoidingView,
   ScrollView,
+  Platform,
+  ActivityIndicator,
 } from 'react-native';
 import {Icon as RNElementsIcon} from 'react-native-elements';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import IoniconsIcon from 'react-native-vector-icons/Ionicons';
-
 import AlertMessage from '../../components/AlertMessage'; // Import the AlertMessage component
-import BottomNavigator from '../../components/BottomNavigator';
-import HeaderComponent from '../../components/HeaderComponent';
-import CustomDrawer from '../../components/CustomDrawer';
+// import BottomNavigator from '../../components/BottomNavigator';
+// import CustomDrawer from '../../components/CustomDrawer';
+import axios from 'axios'; // Ensure axios is imported
+import Api_Base_Url from '../../api/index';
+import {connect, useDispatch, useSelector} from 'react-redux';
+import * as userActions from '../../redux/actions/user';
+import {bindActionCreators} from 'redux';
+import CustomActivityIndicator from '../../components/CustomActivityIndicator';
 import CustomDrawerKSA from '../../components/KSADelegates/CustomDrawerKSA';
 import BottomNavigatorKSA from '../../components/KSADelegates/BottomNavigatorKSA';
 
 const {width, height} = Dimensions.get('window');
 
-const ProfileKsa = ({navigation}) => {
+const ProfileKsa = props => {
+  const dispatch = useDispatch();
+
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [alertType, setAlertType] = useState('');
   const [drawerVisible, setDrawerVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const [profile, setProfile] = useState({
-    fullName: 'Hassan',
-    companyName: 'A2Z Creatorz',
-    phoneNumber: '03497070872',
-    email: 'hassanmarwat326@gmail.com',
-    websiteLink: 'https://marwat477.insta',
-  });
+  const user = useSelector(state => state?.userData?.user);
 
-  const [updatedProfile, setUpdatedProfile] = useState({
-    fullName: 'Hassan',
-    companyName: 'A2Z Creatorz',
-    phoneNumber: '03497070872',
-    email: 'hassanmarwat326@gmail.com',
-    websiteLink: 'https://marwat477.insta',
-  });
+  const [fullName, setFullName] = useState('');
+  const [companyName, setCompanyName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [email, setEmail] = useState('');
+  const [websiteLink, setWebsiteLink] = useState('');
+  const [updatedFullName, setUpdatedFullName] = useState('');
+  const [updatedCompanyName, setUpdatedCompanyName] = useState('');
+  const [updatedPhoneNumber, setUpdatedPhoneNumber] = useState('');
+  const [updatedWebsiteLink, setUpdatedWebsiteLink] = useState('');
 
   const openModal = () => {
     setIsModalVisible(true);
-    setUpdatedProfile(profile);
+    setUpdatedFullName(fullName);
+    setUpdatedCompanyName(companyName);
+    setUpdatedPhoneNumber(phoneNumber);
+    setUpdatedWebsiteLink(websiteLink);
   };
 
-  const updateProfile = () => {
-    const {fullName, companyName, phoneNumber, email, websiteLink} =
-      updatedProfile;
-
-    if (!fullName || !companyName || !phoneNumber || !email || !websiteLink) {
-      setAlertMessage('All fields are required.');
+  const validateInputs = () => {
+    if (!updatedFullName.trim()) {
+      setAlertMessage('Full Name is required.');
       setAlertType('error');
       setAlertVisible(true);
-      return;
+      return false;
     }
-
-    setProfile(updatedProfile);
-    setIsModalVisible(false);
-    setAlertMessage('Profile updated successfully.');
-    setAlertType('success');
-    setAlertVisible(true);
+    if (!updatedCompanyName.trim()) {
+      setAlertMessage('Company Name is required.');
+      setAlertType('error');
+      setAlertVisible(true);
+      return false;
+    }
+    if (
+      !updatedPhoneNumber.trim() ||
+      updatedPhoneNumber.length < 10 ||
+      updatedPhoneNumber.length > 15
+    ) {
+      setAlertMessage('Phone Number must be between 10 to 15 digits.');
+      setAlertType('error');
+      setAlertVisible(true);
+      return false;
+    }
+    if (!updatedWebsiteLink.trim()) {
+      setAlertMessage('Invalid Website URL.');
+      setAlertType('error');
+      setAlertVisible(true);
+      return false;
+    }
+    return true;
   };
 
+  const updateProfile = async () => {
+    if (!validateInputs()) {
+      return;
+    }
+    try {
+      setLoading(true);
+      const updateData = {
+        contact_name: updatedFullName,
+        category: 'Hello',
+        phone: updatedPhoneNumber,
+        country_code: '+92',
+        country: 'Pakistan',
+        website: updatedWebsiteLink,
+        company_name: updatedCompanyName,
+        is_pasha_member: 1,
+        services_offered: 'services_offered',
+        about_us: 'about_us',
+      };
+      const userId = user?.userData?.id;
+      const response = await axios.put(
+        `${Api_Base_Url}updateProfile/${userId}`,
+        updateData,
+      );
+      if (response.status === 200) {
+        console.log(response.data, 'checking user data');
+        setFullName(updatedFullName);
+        setCompanyName(updatedCompanyName);
+        setPhoneNumber(updatedPhoneNumber);
+        setWebsiteLink(updatedWebsiteLink);
+        user.userAdditionalData.company_name =
+          response?.data?.buyer.company_name;
+        user.userAdditionalData.phone = response?.data?.buyer.phone;
+        user.userAdditionalData.website = response?.data?.buyer.website;
+        user.userAdditionalData.contact_name =
+          response?.data?.buyer.contact_name;
+        user.userData.name = response?.data?.buyer?.contact_name;
+        dispatch(userActions.user(user));
+
+        setAlertMessage('Profile updated successfully.');
+        setAlertType('success');
+        setAlertVisible(true);
+      } else {
+        setAlertMessage(response?.data?.message || 'Failed to update profile.');
+        setAlertType('error');
+        setAlertVisible(true);
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      setAlertMessage(
+        error?.response?.data?.message ||
+          'An error occurred while updating the profile.',
+      );
+      setAlertType('error');
+      setAlertVisible(true);
+    } finally {
+      setLoading(false);
+      setIsModalVisible(false);
+    }
+  };
+
+  const setData = () => {
+    if (user) {
+      setFullName(user?.userData?.name || '');
+      setCompanyName(user?.userAdditionalData?.company_name || '');
+      setEmail(user?.userData?.email || '');
+      setPhoneNumber(user?.userAdditionalData?.phone || '');
+      setWebsiteLink(user?.userAdditionalData?.website || '');
+    }
+  };
+
+  useEffect(() => {
+    setData();
+  }, [user]);
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -96,33 +191,26 @@ const ProfileKsa = ({navigation}) => {
           />
         </View>
 
-        {/* Profile Section */}
+        {/*Profile Section */}
         <View style={styles.card}>
           <Text style={styles.profileTitle}>My Profile</Text>
           <TextInput
             style={[styles.input, {color: '#000'}]}
-            value={profile.fullName}
-            onChangeText={text =>
-              setUpdatedProfile({...updatedProfile, fullName: text})
-            }
+            value={fullName}
             placeholder="Full Name"
             placeholderTextColor="#000"
+            editable={false}
           />
           <TextInput
             style={[styles.input, {color: '#000'}]}
-            value={profile.companyName}
-            onChangeText={text =>
-              setUpdatedProfile({...updatedProfile, companyName: text})
-            }
+            value={companyName}
             placeholder="Company Name"
             placeholderTextColor="#000"
+            editable={false}
           />
           <TextInput
             style={[styles.input, {color: '#000'}]}
-            value={profile.email}
-            onChangeText={text =>
-              setUpdatedProfile({...updatedProfile, email: text})
-            }
+            value={email}
             placeholder="Email"
             keyboardType="email-address"
             placeholderTextColor="#000"
@@ -130,35 +218,28 @@ const ProfileKsa = ({navigation}) => {
           />
           <TextInput
             style={[styles.input, {color: '#000'}]}
-            value={profile.phoneNumber}
-            onChangeText={text =>
-              setUpdatedProfile({...updatedProfile, phoneNumber: text})
-            }
+            value={phoneNumber}
             placeholder="Phone Number"
             keyboardType="phone-pad"
             placeholderTextColor="#000"
-            maxLength={15}
+            editable={false}
           />
           <TextInput
             style={[styles.input, {color: '#000'}]}
-            value={profile.websiteLink}
-            onChangeText={text =>
-              setUpdatedProfile({...updatedProfile, websiteLink: text})
-            }
+            value={websiteLink}
             placeholder="Website Link"
             keyboardType="url"
             placeholderTextColor="#000"
+            editable={false}
           />
         </View>
-
-        {/* Update Button */}
         <TouchableOpacity
           style={[styles.updateButton, {marginTop: width * 0.1}]}
           onPress={openModal}>
           <Text style={styles.updateButtonText}>Edit Profile</Text>
         </TouchableOpacity>
-
-        {/* Modal for editing profile */}
+        {loading && <ActivityIndicator />}
+        {!loading}
         <Modal
           animationType="fade"
           transparent={true}
@@ -184,39 +265,22 @@ const ProfileKsa = ({navigation}) => {
               </View>
               <TextInput
                 style={styles.input}
-                value={updatedProfile.fullName}
-                onChangeText={text =>
-                  setUpdatedProfile({...updatedProfile, fullName: text})
-                }
+                value={updatedFullName}
+                onChangeText={text => setUpdatedFullName(text)}
                 placeholder="Full Name"
                 placeholderTextColor="#000"
               />
               <TextInput
                 style={styles.input}
-                value={updatedProfile.companyName}
-                onChangeText={text =>
-                  setUpdatedProfile({...updatedProfile, companyName: text})
-                }
+                value={updatedCompanyName}
+                onChangeText={text => setUpdatedCompanyName(text)}
                 placeholder="Company Name"
                 placeholderTextColor="#000"
               />
               <TextInput
                 style={styles.input}
-                value={updatedProfile.email}
-                onChangeText={text =>
-                  setUpdatedProfile({...updatedProfile, email: text})
-                }
-                placeholder="Email"
-                keyboardType="email-address"
-                placeholderTextColor="#000"
-                editable={false}
-              />
-              <TextInput
-                style={styles.input}
-                value={updatedProfile.phoneNumber}
-                onChangeText={text =>
-                  setUpdatedProfile({...updatedProfile, phoneNumber: text})
-                }
+                value={updatedPhoneNumber}
+                onChangeText={text => setUpdatedPhoneNumber(text)}
                 placeholder="Phone Number"
                 keyboardType="phone-pad"
                 placeholderTextColor="#000"
@@ -224,10 +288,8 @@ const ProfileKsa = ({navigation}) => {
               />
               <TextInput
                 style={styles.input}
-                value={updatedProfile.websiteLink}
-                onChangeText={text =>
-                  setUpdatedProfile({...updatedProfile, websiteLink: text})
-                }
+                value={updatedWebsiteLink}
+                onChangeText={text => setUpdatedWebsiteLink(text)}
                 placeholder="Website Link"
                 keyboardType="url"
                 placeholderTextColor="#000"
@@ -251,7 +313,7 @@ const ProfileKsa = ({navigation}) => {
       <CustomDrawerKSA
         visible={drawerVisible}
         onClose={() => setDrawerVisible(false)}
-        navigation={navigation}
+        navigation={props.navigation}
       />
       <BottomNavigatorKSA />
     </KeyboardAvoidingView>
@@ -261,12 +323,17 @@ const ProfileKsa = ({navigation}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // paddingHorizontal: width * 0.04,
   },
   scrollContainer: {
     flexGrow: 1,
     paddingHorizontal: width * 0.04,
     paddingBottom: height * 0.1,
+  },
+  profileTitle: {
+    fontSize: 20,
+    color: '#4a5f85',
+    marginLeft: 10,
+    fontWeight: 'bold',
   },
   headerImageCont: {
     width: '100%',
@@ -379,6 +446,20 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     alignSelf: 'center',
   },
+  activityIndicator: {
+    position: 'absolute',
+    alignSelf: 'center',
+    top: '60%', // Center vertically
+    zIndex: 999,
+  },
 });
 
-export default ProfileKsa;
+const mapStateToProps = state => ({
+  userData: state.userData,
+});
+
+const ActionCreators = Object.assign({}, userActions);
+const mapDispatchToProps = dispatch => ({
+  actions: bindActionCreators(ActionCreators, dispatch),
+});
+export default connect(mapStateToProps, mapDispatchToProps)(ProfileKsa);

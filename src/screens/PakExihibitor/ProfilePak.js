@@ -28,6 +28,7 @@ const {width, height} = Dimensions.get('window');
 
 const ProfilePak = props => {
   const dispatch = useDispatch();
+
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
@@ -36,8 +37,8 @@ const ProfilePak = props => {
   const [loading, setLoading] = useState(false);
 
   const user = useSelector(state => state?.userData?.user);
-  console.log(props, 'checking data');
-  const [fullName, setFullName] = useState();
+
+  const [fullName, setFullName] = useState('');
   const [companyName, setCompanyName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [email, setEmail] = useState('');
@@ -46,6 +47,7 @@ const ProfilePak = props => {
   const [updatedCompanyName, setUpdatedCompanyName] = useState('');
   const [updatedPhoneNumber, setUpdatedPhoneNumber] = useState('');
   const [updatedWebsiteLink, setUpdatedWebsiteLink] = useState('');
+
   const openModal = () => {
     setIsModalVisible(true);
     setUpdatedFullName(fullName);
@@ -57,18 +59,30 @@ const ProfilePak = props => {
   const validateInputs = () => {
     if (!updatedFullName.trim()) {
       setAlertMessage('Full Name is required.');
+      setAlertType('error');
+      setAlertVisible(true);
       return false;
     }
     if (!updatedCompanyName.trim()) {
       setAlertMessage('Company Name is required.');
+      setAlertType('error');
+      setAlertVisible(true);
       return false;
     }
-    if (!updatedPhoneNumber.trim()) {
+    if (
+      !updatedPhoneNumber.trim() ||
+      updatedPhoneNumber.length < 10 ||
+      updatedPhoneNumber.length > 15
+    ) {
       setAlertMessage('Phone Number must be between 10 to 15 digits.');
+      setAlertType('error');
+      setAlertVisible(true);
       return false;
     }
     if (!updatedWebsiteLink.trim()) {
       setAlertMessage('Invalid Website URL.');
+      setAlertType('error');
+      setAlertVisible(true);
       return false;
     }
     return true;
@@ -79,60 +93,74 @@ const ProfilePak = props => {
       return;
     }
     try {
+      setLoading(true);
       const updateData = {
         contact_name: updatedFullName,
-        category: 'required',
+        category: 'Hello',
         phone: updatedPhoneNumber,
-        country_code: 'required',
-        country: 'required',
+        country_code: '+92',
+        country: 'Pakistan',
         website: updatedWebsiteLink,
         company_name: updatedCompanyName,
         is_pasha_member: 1,
         services_offered: 'services_offered',
         about_us: 'about_us',
       };
+      const userId = user?.userData?.id;
       const response = await axios.put(
-        `${Api_Base_Url}updateProfile/1742`,
+        `${Api_Base_Url}updateProfile/${userId}`,
         updateData,
       );
       if (response.status === 200) {
-        // props.actions.user(response.data.user);
-        dispatch(user(response.data.user));
         setFullName(updatedFullName);
         setCompanyName(updatedCompanyName);
         setPhoneNumber(updatedPhoneNumber);
         setWebsiteLink(updatedWebsiteLink);
+        user.userAdditionalData.company_name =
+          response?.data?.exporter.company_name;
+        user.userAdditionalData.phone = response?.data?.exporter.phone;
+        user.userAdditionalData.website = response?.data?.exporter.website;
+        user.userAdditionalData.contact_name =
+          response?.data?.exporter.contact_name;
+        user.userData.name = response?.data?.exporter?.contact_name;
+
+        dispatch(userActions.user(user));
+
         setAlertMessage('Profile updated successfully.');
         setAlertType('success');
         setAlertVisible(true);
-        setIsModalVisible(false);
       } else {
-        setAlertMessage(response.data.message || 'Failed to update profile.');
+        setAlertMessage(response?.data?.message || 'Failed to update profile.');
         setAlertType('error');
         setAlertVisible(true);
       }
     } catch (error) {
+      console.error('Error updating profile:', error);
       setAlertMessage(
-        error.response?.data?.message ||
+        error?.response?.data?.message ||
           'An error occurred while updating the profile.',
       );
       setAlertType('error');
       setAlertVisible(true);
+    } finally {
+      setLoading(false);
+      setIsModalVisible(false);
     }
   };
 
   const setData = () => {
-    setLoading(true);
-    setFullName(user?.userData?.name);
-    setCompanyName(user?.userAdditionalData?.company_name);
-    setEmail(user?.userData?.email);
-    setPhoneNumber(user?.userAdditionalData?.phone);
-    setWebsiteLink(user?.userAdditionalData?.website);
-    setLoading(false);
+    if (user) {
+      setFullName(user?.userData?.name || '');
+      setCompanyName(user?.userAdditionalData?.company_name || '');
+      setEmail(user?.userData?.email || '');
+      setPhoneNumber(user?.userAdditionalData?.phone || '');
+      setWebsiteLink(user?.userAdditionalData?.website || '');
+    }
   };
+
   useEffect(() => {
     setData();
-  }, []);
+  }, [user]);
 
   return (
     <KeyboardAvoidingView
@@ -303,6 +331,12 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingHorizontal: width * 0.04,
     paddingBottom: height * 0.1,
+  },
+  profileTitle: {
+    fontSize: 20,
+    color: '#4a5f85',
+    marginLeft: 10,
+    fontWeight: 'bold',
   },
   headerImageCont: {
     width: '100%',

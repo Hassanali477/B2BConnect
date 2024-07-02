@@ -8,16 +8,23 @@ import {
   TouchableOpacity,
   Alert,
   Image,
+  ActivityIndicator
+
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import BottomNavigator from '../../components/BottomNavigator';
-import AlertMessage from '../../components/AlertMessage';
 import {Icon} from 'react-native-elements';
+import axios from 'axios';
+import Api_Base_Url from '../../api';
+import {connect, useSelector} from 'react-redux';
+import * as userActions from '../../redux/actions/user';
+import {bindActionCreators} from 'redux';
+import AlertMessage from '../../components/AlertMessage';
 
 const {width, height} = Dimensions.get('screen');
 
 const ResetPasswordKsa = () => {
+  const user = useSelector(state => state?.userData);
   const navigation = useNavigation();
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -28,16 +35,16 @@ const ResetPasswordKsa = () => {
   const [oldPasswordVisible, setOldPasswordVisible] = useState(false);
   const [newPasswordVisible, setNewPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
-  const [message, setMessage] = useState('');
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [alertType, setAlertType] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const validatePassword = password => {
     return password.length >= 8;
   };
 
-  const handleResetPassword = () => {
+  const handleResetPassword = async () => {
     let valid = true;
 
     if (!oldPassword) {
@@ -68,12 +75,36 @@ const ResetPasswordKsa = () => {
     }
 
     if (valid) {
-      setAlertType('success');
-      setAlertMessage('Password Reset Successful');
-      setAlertVisible(true);
-      setTimeout(() => {
-        navigation.navigate('LoginPak');
-      }, 1000);
+      setLoading(true);
+      try {
+        const response = await axios.post(`${Api_Base_Url}changePassword`, {
+          user_id: user?.user?.userData?.id,
+          old_password: oldPassword,
+          new_password: newPassword,
+          confirm_password: confirmPassword,
+        });
+        if (response.data.status === 200) {
+          setAlertType('success');
+          setAlertMessage('Password updated successfully.');
+          setAlertVisible(true);
+          setLoading(false);
+
+          setTimeout(() => {
+            navigation.navigate('LoginKSA');
+          }, 1000);
+        } else {
+          setAlertType('error');
+          setAlertMessage('Something went wrong. Please try again later.');
+          setAlertVisible(true);
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error('Error:', error.response || error.message || error);
+        setAlertType('error');
+        setAlertMessage('Something went wrong. Please try again later.');
+        setAlertVisible(true);
+        setLoading(false);
+      }
     }
   };
 
@@ -191,11 +222,25 @@ const ResetPasswordKsa = () => {
           style={styles.logo1}
         />
       </View>
+      {loading && (
+        <ActivityIndicator
+          style={styles.activityIndicator}
+          color="#4a5f85"
+          size={40}
+        />
+      )}
     </View>
   );
 };
 
-export default ResetPasswordKsa;
+const mapStateToProps = state => ({
+  user: state.user,
+});
+
+const mapDispatchToProps = dispatch =>
+  bindActionCreators(userActions, dispatch);
+
+export default connect(mapStateToProps, mapDispatchToProps)(ResetPasswordKsa);
 
 const styles = StyleSheet.create({
   container: {
@@ -351,5 +396,11 @@ const styles = StyleSheet.create({
     color: '#000',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  activityIndicator: {
+    position: 'absolute',
+    alignSelf: 'center',
+    top: '60%', // Center vertically
+    zIndex: 999,
   },
 });

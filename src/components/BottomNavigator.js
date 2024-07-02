@@ -6,7 +6,7 @@ import {Image} from 'react-native';
 
 const {width} = Dimensions.get('window');
 
-const BottomNavigator = () => {
+const BottomNavigator = (style) => {
   const navigation = useNavigation();
   const isFocused = useIsFocused();
 

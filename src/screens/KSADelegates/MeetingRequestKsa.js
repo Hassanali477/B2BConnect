@@ -7,6 +7,7 @@ import {
   Modal,
   TouchableOpacity,
   TextInput,
+  ActivityIndicator,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import AlertMessage from '../../components/AlertMessage';
@@ -16,6 +17,7 @@ import {connect, useSelector} from 'react-redux';
 import * as userActions from '../../redux/actions/user';
 import {bindActionCreators} from 'redux';
 import SelectDropdownKsa from '../../components/KSADelegates/SelectDropdownKsa';
+import SelectDropdown from '../../components/PakExhibitor/SelectDropdownPak';
 
 const {width, height} = Dimensions.get('screen');
 
@@ -29,6 +31,7 @@ const MeetingRequestKsa = ({modalVisible, setModalVisible, selectedRow}) => {
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [alertType, setAlertType] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const dates = [
     '2023-05-01',
@@ -45,36 +48,27 @@ const MeetingRequestKsa = ({modalVisible, setModalVisible, selectedRow}) => {
     '01:00 PM - 02:00 PM',
   ];
   const locations = [
-    'Pearl Continental Hotel, Karachi',
-    'Marriott Hotel, Karachi',
-    'Mövenpick Hotel, Karachi',
-    'Avari Towers, Karachi',
-    'Ramada Plaza, Karachi',
-    'Regent Plaza Hotel & Convention Center, Karachi',
-    'Beach Luxury Hotel, Karachi',
-    'Hotel One, Karachi',
-    'Ambassador Hotel, Karachi',
-    'Dreamworld Resort, Karachi',
-    'Islamabad Serena Hotel, Islamabad',
-    'Pearl Continental Hotel, Lahore',
-    'Nishat Hotel, Lahore',
-    "Faletti's Hotel, Lahore",
-    'Avari Hotel, Lahore',
-    'Pearl Continental Hotel, Rawalpindi',
-    'Ramada by Wyndham, Multan',
-    'Pearl Continental Hotel, Peshawar',
-    'Mövenpick Hotel, Islamabad',
-    'Hotel One, Faisalabad',
-    'The Residency Hotel, Lahore',
-    'Marriott Hotel, Islamabad',
-    'Hotel Crown Plaza, Islamabad',
-    'Royalton Hotel, Faisalabad',
-    'Hotel One, Sialkot',
-    'Best Western Hotel, Islamabad',
-    'Pearl Continental Hotel, Bhurban',
-    'Shangrila Resort, Skardu',
-    'Gilgit Serena Hotel, Gilgit',
-    'Hunza Serena Inn, Hunza',
+    'Ritz-Carlton, Riyadh',
+    'Four Seasons Hotel, Riyadh',
+    'Al Faisaliah Hotel, Riyadh',
+    'Rosewood Jeddah, Jeddah',
+    'Hilton Jeddah, Jeddah',
+    'InterContinental Jeddah, Jeddah',
+    'Mövenpick Hotel, Jeddah',
+    'Sheraton Dammam Hotel, Dammam',
+    'Kempinski Al Othman Hotel, Al Khobar',
+    'Le Meridien, Al Khobar',
+    'Marriott Hotel, Riyadh',
+    'Hyatt Regency, Riyadh',
+    'Narcissus Hotel, Riyadh',
+    'Crowne Plaza, Riyadh',
+    'Park Hyatt, Jeddah',
+    'Radisson Blu, Jeddah',
+    'Holiday Inn, Riyadh',
+    'Novotel Al Anoud, Riyadh',
+    'Holiday Inn Al Qasr, Riyadh',
+    'InterContinental Al Khobar',
+    'Radisson Blu, Al Khobar',
   ];
 
   const handleDateSelect = date => setSelectedDate(date);
@@ -108,6 +102,7 @@ const MeetingRequestKsa = ({modalVisible, setModalVisible, selectedRow}) => {
       };
 
       try {
+        setLoading(true);
         const response = await axios.post(
           `${Api_Base_Url}meetingRequestExporter`,
           data,
@@ -120,15 +115,18 @@ const MeetingRequestKsa = ({modalVisible, setModalVisible, selectedRow}) => {
           setSelectedTimeslot('Select Timeslot');
           setSelectedLocation('Select Meeting Location');
           setMessage('');
+          setLoading(false);
         } else {
           setAlertMessage('Failed to send meeting request. Please try again.');
           setAlertType('error');
           setAlertVisible(true);
+          setLoading(false);
         }
       } catch (error) {
         setAlertMessage('Failed to send meeting request. Please try again.');
         setAlertType('error');
         setAlertVisible(true);
+        setLoading(false);
       }
     }
   };
@@ -153,9 +151,7 @@ const MeetingRequestKsa = ({modalVisible, setModalVisible, selectedRow}) => {
         <View style={styles.modalBackground}>
           <View style={styles.modalView}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>
-                Meeting Request - Alkaram Textiles
-              </Text>
+              <Text style={styles.modalTitle}>Alkaram Meeting Request</Text>
               <TouchableOpacity onPress={() => setModalVisible(false)}>
                 <Icon
                   name="times"
@@ -171,7 +167,7 @@ const MeetingRequestKsa = ({modalVisible, setModalVisible, selectedRow}) => {
               <View style={styles.dropdownContainer}>
                 <View style={styles.dropdownSection}>
                   <Text style={styles.dropdownHeading}>Select Date</Text>
-                  <SelectDropdownKsa
+                  <SelectDropdown
                     title={'Select Date'}
                     options={dates}
                     selectedValue={selectedDate}
@@ -180,7 +176,7 @@ const MeetingRequestKsa = ({modalVisible, setModalVisible, selectedRow}) => {
                 </View>
                 <View style={styles.dropdownSection}>
                   <Text style={styles.dropdownHeading}>Select Timeslot</Text>
-                  <SelectDropdownKsa
+                  <SelectDropdown
                     title={'Select Timeslot'}
                     options={timeslots}
                     selectedValue={selectedTimeslot}
@@ -193,7 +189,7 @@ const MeetingRequestKsa = ({modalVisible, setModalVisible, selectedRow}) => {
             <Text style={styles.meetingHeading}>Meeting Location</Text>
             <View style={styles.locationContainer}>
               <Text style={styles.locationHeading}>Select Location</Text>
-              <SelectDropdownKsa
+              <SelectDropdown
                 title={'Select Location'}
                 options={locations}
                 selectedValue={selectedLocation}
@@ -216,6 +212,13 @@ const MeetingRequestKsa = ({modalVisible, setModalVisible, selectedRow}) => {
               onPress={handleSendMessage}>
               <Text style={styles.sendButtonText}>Send Meeting Request</Text>
             </TouchableOpacity>
+            {loading && (
+              <ActivityIndicator
+                style={styles.activityIndicator}
+                color="#4a5f85"
+                size={40}
+              />
+            )}
           </View>
         </View>
       </Modal>
@@ -247,48 +250,38 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalView: {
-    width: width / 1.1,
-    height: height / 1.3,
+    width: width * 0.9,
+    height: height * 0.75,
     backgroundColor: 'white',
     borderRadius: 10,
+    padding: 10,
   },
   modalHeader: {
-    padding: 15,
-    width: '100%',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingBottom: 10,
   },
   modalTitle: {
     color: '#3C4B64',
     fontWeight: '600',
-    fontSize: 20,
+    fontSize: width * 0.05,
   },
   modalSeparator: {
     borderBottomWidth: 1,
-    width: '100%',
     borderColor: '#ccc',
+    marginVertical: 10,
   },
   modalContent: {
     width: '100%',
   },
-  mainContent: {
-    flex: 1,
-    width: width,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-  },
   modalSubTitle: {
     color: '#3C4B64',
     fontWeight: '600',
-    padding: 10,
-    fontSize: 20,
-    width: '100%',
+    fontSize: width * 0.05,
+    marginBottom: 10,
   },
   dropdownContainer: {
-    width: '100%',
-    padding: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
@@ -297,64 +290,62 @@ const styles = StyleSheet.create({
   },
   dropdownHeading: {
     fontWeight: '600',
-    fontSize: 14,
+    fontSize: width * 0.04,
     color: '#3C4B64',
-    marginLeft: 5,
+    marginBottom: 5,
   },
   meetingHeading: {
     fontWeight: '600',
-    fontSize: 20,
+    fontSize: width * 0.05,
     color: '#3C4B64',
-    width: '94%',
-    marginLeft: 10,
-    marginTop: 10,
-    marginBottom: 5,
+    marginVertical: 10,
   },
   locationContainer: {
-    width: '100%',
-    padding: 10,
+    marginBottom: 10,
   },
   locationHeading: {
-    fontSize: 14,
+    fontSize: width * 0.04,
     fontWeight: '600',
     color: '#3C4B64',
-    marginLeft: 5,
+    marginBottom: 5,
   },
   separator: {
     borderBottomWidth: 1,
     borderColor: '#ccc',
-    width: '100%',
+    marginVertical: 10,
   },
   messageHeading: {
-    width: '100%',
-    fontSize: 14,
+    fontSize: width * 0.04,
     color: '#3C4B64',
     fontWeight: '600',
-    padding: 10,
+    marginBottom: 10,
   },
   messageInput: {
-    height: '25%',
-    width: '95%',
+    height: height * 0.15,
     borderWidth: 1,
     borderColor: '#ccc',
-    marginBottom: 10,
-    alignSelf: 'center',
     paddingHorizontal: 10,
     color: 'black',
+    marginBottom: 10,
   },
   sendButton: {
-    width: '80%',
     backgroundColor: '#0059CF',
-    borderWidth: 1,
-    borderColor: '#0059CF',
-    padding: 15,
+    paddingVertical: 15,
+    paddingHorizontal: 30,
     borderRadius: 50,
-    alignSelf: 'center',
     alignItems: 'center',
+    alignSelf: 'center',
     marginTop: 15,
   },
   sendButtonText: {
     color: '#fff',
     fontWeight: 'bold',
+    fontSize: width * 0.04,
+  },
+  activityIndicator: {
+    position: 'absolute',
+    alignSelf: 'center',
+    top: '50%',
+    zIndex: 999,
   },
 });

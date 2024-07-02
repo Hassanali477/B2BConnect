@@ -1,7 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useNavigation} from '@react-navigation/native';
 import React from 'react';
-import {Image} from 'react-native';
 import {
+  Image,
   View,
   Text,
   StyleSheet,
@@ -10,11 +11,14 @@ import {
   Pressable,
 } from 'react-native';
 import {Icon} from 'react-native-elements';
-import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 
 const {width, height} = Dimensions.get('screen');
+const drawerWidth = width * 0.7;
+const blankSpaceWidth = width * 0.3;
 
-const CustomDrawerKSA = ({visible, onClose, navigation}) => {
+const CustomDrawerKSA = ({visible, onClose}) => {
+  const navigation = useNavigation();
+
   const navigateToScreen = screenName => {
     AsyncStorage.clear();
     navigation.navigate(screenName);
@@ -163,21 +167,21 @@ const styles = StyleSheet.create({
 
   mainContainer: {
     width: '100%',
-    height: '75%',
+    height: '76%',
     backgroundColor: '#3c4b64',
     padding: 10,
   },
   footerContainer: {
     width: '100%',
-    height: '25%',
+    height: '24%',
     backgroundColor: '#2f3c54',
     padding: 10,
   },
   drawerItem1: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
     paddingHorizontal: 10,
+    paddingVertical: 5,
   },
   logoutText: {
     fontSize: 17,

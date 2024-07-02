@@ -10,8 +10,10 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
-import {CheckBox, Icon} from 'react-native-elements';
+import {Icon} from 'react-native-elements';
+import axios from 'axios';
 import AlertMessage from '../../components/AlertMessage';
+import Api_Base_Url from '../../api'; // Ensure this is the correct path to your API base URL
 
 const {width, height} = Dimensions.get('screen');
 
@@ -28,18 +30,37 @@ const ForgotPasswordPak = () => {
     return regex.test(email);
   };
 
-  const handleResetPassword = () => {
+  const handleResetPassword = async () => {
     if (!email) {
       setEmailError('Email is required');
     } else if (!validateEmail(email)) {
       setEmailError('Please enter a valid email address');
     } else {
       setEmailError('');
-      setAlertType('success');
-      setAlertMessage('A password reset link has been sent to your email.');
+      try {
+        const response = await axios.post(`${Api_Base_Url}forgotPassword`, {
+          email: email,
+        });
+        console.log('Response:', response.data); // Log the response
+        if (response.data.status === 1) {
+          setAlertType('success');
+          setAlertMessage('A password reset link has been sent to your email.');
+        } else if (response.data.status === 0) {
+          setAlertType('error');
+          setAlertMessage('Email not found. Please check and try again.');
+        } else {
+          setAlertType('error');
+          setAlertMessage('Something went wrong. Please try again later.');
+        }
+      } catch (error) {
+        console.error('Error:', error.response || error.message || error); // Log the error
+        setAlertType('error');
+        setAlertMessage('Something went wrong. Please try again later.');
+      }
       setAlertVisible(true);
     }
   };
+
   const closeAlert = () => {
     setAlertVisible(false);
   };
@@ -126,7 +147,6 @@ const styles = StyleSheet.create({
   headerIconCont: {
     width: '100%',
     flexDirection: 'row',
-    // justifyContent: 'space-between',
     alignItems: 'center',
   },
   logo: {
@@ -211,75 +231,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 5,
     marginTop: 20,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  orContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 10,
-  },
-  line: {
-    flex: 1,
-    height: 2,
-    backgroundColor: '#ccc',
-  },
-  orText: {
-    marginHorizontal: 10,
-    fontSize: 16,
-    color: '#000',
-  },
-  signUpContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 10,
-  },
-  signUpText: {
-    color: '#000',
-    fontSize: 16,
-    alignSelf: 'flex-start',
-    marginLeft: 10,
-  },
-  signUpButtonText: {
-    color: '#4a5f85',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  rememberForgotContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginVertical: 10,
-  },
-  rememberMe: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  rememberMeText: {
-    // marginLeft: 5,
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#000',
-  },
-  forgotPasswordText: {
-    color: '#000',
-    fontSize: 14,
-    fontWeight: '500',
-    width: '100%',
-    textDecorationLine: 'underline',
-  },
-  button: {
-    width: '100%',
-    height: 50,
-    backgroundColor: '#4a5f85',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 5,
-    marginTop: 20,
-    marginBottom: 20,
   },
   buttonText: {
     color: '#fff',

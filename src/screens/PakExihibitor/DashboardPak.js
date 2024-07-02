@@ -12,6 +12,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   BackHandler,
+  ActivityIndicator,
 } from 'react-native';
 import HeaderComponent from '../../components/HeaderComponent';
 import CustomDropdown from '../../components/CustomDropdown';
@@ -52,10 +53,12 @@ const DashboardPak = () => {
   const [isSearchApplied, setIsSearchApplied] = useState(false);
   const [noResultsFound, setNoResultsFound] = useState(false);
   const [showAlert, setAlertMessage] = useState(false);
+
   const entriesData = [10, 25, 50];
 
   const user = useSelector(state => state?.userData?.user);
   const fetchDelegatesData = async () => {
+    setLoading(true);
     try {
       const response = await axios.get(`${Api_Base_Url}KSADelegate`, {
         params: {
@@ -232,6 +235,7 @@ const DashboardPak = () => {
               selectedValue={showEntries}
               onSelect={setShowEntries}
               delegatesData={apiData?.buyers}
+              condition={'buyer'}
               setFilteredData={item => setFilteredData(item)}
             />
           </View>
@@ -428,6 +432,13 @@ const DashboardPak = () => {
             </View>
           </View>
         </Modal>
+      )}
+      {loading && (
+        <ActivityIndicator
+          style={styles.activityIndicator}
+          color="#4a5f85"
+          size={40}
+        />
       )}
       <AlertMessage
         message="No results found for your search query."
@@ -695,6 +706,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#555', // Adjust the color as needed
+  },
+  activityIndicator: {
+    position: 'absolute',
+    alignSelf: 'center',
+    top: '60%', // Center vertically
+    zIndex: 999,
   },
 });
 

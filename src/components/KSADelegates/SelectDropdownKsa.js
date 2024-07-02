@@ -12,7 +12,7 @@ import {Icon} from 'react-native-elements';
 const SelectDropdownKsa = ({title, options, selectedValue, onSelect}) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  const handleToggle = () => {
+  const handleToggle = () => {z
     setIsOpen(!isOpen);
   };
   return (

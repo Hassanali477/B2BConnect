@@ -9,6 +9,10 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
+  Alert,
+  Modal,
+  TouchableHighlight,
+  ActivityIndicator,
 } from 'react-native';
 import HeaderComponent from '../../components/HeaderComponent';
 import CustomSelectEntries from '../../components/CustomSelectEntries';
@@ -21,6 +25,9 @@ import Api_Base_Url from '../../api';
 import AlertMessage from '../../components/AlertMessage';
 import BottomNavigatorKSA from '../../components/KSADelegates/BottomNavigatorKSA';
 import CustomDrawerKSA from '../../components/KSADelegates/CustomDrawerKSA';
+import SelectDropdown from '../../components/PakExhibitor/SelectDropdownPak';
+
+import {Icon} from 'react-native-elements';
 
 const {width, height} = Dimensions.get('screen');
 
@@ -37,35 +44,44 @@ const MeetingRequestScreenKsa = () => {
   const [alertMessage, setAlertMessage] = useState(false);
   const [alertVisible, setAlertVisible] = useState(false);
   const entriesData = [10, 25, 50];
+  const [showModal, setShowModal] = useState(false);
+  const [declineReason, setDeclineReason] = useState('');
+  const [rescheduleModalVisible, setRescheduleModalVisible] = useState(false);
+  const [newTime, setNewTime] = useState('');
+  const [newDate, setNewDate] = useState('');
+  const [meetingID, setMeetingID] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const user = useSelector(state => state?.userData);
   useEffect(() => {
     if (user && user?.user?.userData && user?.user?.userData?.id) {
-      fetchDelegatesData();
+      setLoading(true);
+      fetchDelegatesData(selectedTab);
     } else {
       console.error('User ID is undefined');
       setLoading(false);
     }
   }, []);
 
+  useEffect(() => {
+    setFilteredData(
+      selectedTab === 'received' ? receivedRequests : sentRequests,
+    );
+  }, [selectedTab, receivedRequests, sentRequests]);
+
   const fetchDelegatesData = async key => {
+    setLoading(true);
     try {
       const response = await axios.get(`${Api_Base_Url}showMeetings`, {
         params: {user_id: user?.user?.userData?.id},
       });
       const {received_requests, sent_requests} = response.data;
-      if (key === undefined) {
-        setReceivedRequests(received_requests);
-        setSentRequests(sent_requests);
-      } else if (key === 'sent') {
-        setSentRequests(sent_requests);
-        setFilteredData(sent_requests);
-      } else {
-        setReceivedRequests(received_requests);
-        setFilteredData(received_requests);
-      }
+      setReceivedRequests(received_requests);
+      setSentRequests(sent_requests);
+      setLoading(false);
     } catch (error) {
       console.error('Error fetching delegates data:', error);
+      setLoading(false);
     }
   };
 
@@ -81,24 +97,26 @@ const MeetingRequestScreenKsa = () => {
         selectedTab === 'received' ? receivedRequests : sentRequests
       ).filter(
         item =>
-          item.exporter.contact_name
+          item?.exporter?.contact_name
             ?.toLowerCase()
             ?.includes(query?.toLowerCase()) ||
-          item.id?.toString()?.includes(query) ||
-          item.exporter.company_name
+          item?.id?.toString()?.includes(query) ||
+          item?.exporter?.company_name
             ?.toLowerCase()
             ?.includes(query?.toLowerCase()) ||
-          item.exporter.industry
+          item?.exporter?.industry
             ?.toLowerCase()
             ?.includes(query?.toLowerCase()) ||
-          item.exporter.website
+          item?.exporter?.website
             ?.toLowerCase()
             ?.includes(query?.toLowerCase()) ||
-          item.exporter.email?.toLowerCase()?.includes(query?.toLowerCase()) ||
-          item.exporter.phone?.toLowerCase()?.includes(query) ||
-          item.location?.toLowerCase()?.includes(query?.toLowerCase()) ||
-          item.date?.toLowerCase()?.includes(query?.toLowerCase()) ||
-          item.time?.toLowerCase()?.includes(query?.toLowerCase()),
+          item?.exporter?.email
+            ?.toLowerCase()
+            ?.includes(query?.toLowerCase()) ||
+          item?.exporter?.phone?.toLowerCase()?.includes(query) ||
+          item?.location?.toLowerCase()?.includes(query?.toLowerCase()) ||
+          item?.date?.toLowerCase()?.includes(query?.toLowerCase()) ||
+          item?.time?.toLowerCase()?.includes(query?.toLowerCase()),
       );
       setFilteredData(filtered);
       setNoResults(filtered.length === 0);
@@ -106,6 +124,7 @@ const MeetingRequestScreenKsa = () => {
   };
 
   const onRemoveMeeting = async (meetingID, key) => {
+    setLoading(true);
     try {
       const response = await axios.delete(
         `${Api_Base_Url}meetingRevoke/` + meetingID,
@@ -114,11 +133,140 @@ const MeetingRequestScreenKsa = () => {
         fetchDelegatesData(key);
         setAlertMessage('Meeting deleted successfully!');
         setAlertVisible(true);
+        setLoading(false);
       }
     } catch (error) {
       setAlertMessage('Error revoking meeting');
       setAlertVisible(true);
       console.error('Error deleting meeting:', error);
+      setLoading(false);
+    }
+  };
+  const handleApprove = async (meetingID, key, retryCount = 0) => {
+    setLoading(true);
+
+    try {
+      const response = await axios.get(
+        `${Api_Base_Url}meetingApprove/` + meetingID,
+      );
+      if (response.status === 200) {
+        setAlertMessage('Meeting approved successfully!');
+        setAlertVisible(true); // Set alertVisible to true to show the alert modal
+        fetchDelegatesData(key); // Refresh the data
+        const updatedData = filteredData.filter(item => item.id !== meetingID);
+        setFilteredData(updatedData);
+        setLoading(false);
+      } else {
+        setAlertMessage('Error approving meeting.');
+        setAlertVisible(true); // Ensure to set alertVisible for error case as well
+        setLoading(false);
+      }
+    } catch (error) {
+      if (error.response?.status === 429) {
+        const delay = Math.pow(2, retryCount) * 1000; // Exponential backoff
+        setTimeout(() => handleApprove(meetingID, key, retryCount + 1), delay);
+        setLoading(false);
+      } else {
+        console.error('Error fetching delegates data:', error);
+        setAlertMessage('Error approving meeting.'); // Set error message for catch block
+        setAlertVisible(true); // Set alertVisible to true in case of error
+        setLoading(false);
+      }
+    } finally {
+      setLoading(false); // Ensure to set loading state if necessary
+    }
+  };
+  const handleDecline = meetingID => {
+    setMeetingID(meetingID);
+    setShowModal(true);
+  };
+
+  const handleModalClose = () => {
+    setShowModal(false);
+    setDeclineReason('');
+    setMeetingID(null); // Reset meetingID to null or an appropriate initial value
+  };
+
+  const handleDeclineRequest = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.post(
+        `${Api_Base_Url}meetingDecline/${meetingID}`,
+        {
+          reason_for_decline: declineReason,
+        },
+      );
+      if (response.status === 200) {
+        setAlertMessage('Meeting declined successfully!');
+        setAlertVisible(true);
+        fetchDelegatesData();
+        const updatedData = filteredData.filter(item => item.id !== meetingID);
+        setFilteredData(updatedData);
+        setLoading(false);
+      } else {
+        setAlertMessage('Failed to decline meeting.');
+        setAlertVisible(true);
+        console.error('Error response data:', response.data);
+        console.error('Error response status:', response.status);
+        console.log(
+          `Declining meeting ${meetingID} for reason: ${reason_for_decline}`,
+        );
+      }
+      setLoading(false);
+    } catch (error) {
+      console.error('Error declining meeting:', error); // Log the full error object
+      setAlertMessage('Failed to decline meeting.');
+      setAlertVisible(true);
+      setLoading(false);
+    } finally {
+      handleModalClose();
+      setLoading(false);
+    }
+  };
+
+  const handleReschedule = meetingID => {
+    setLoading(true);
+    setMeetingID(meetingID);
+    setRescheduleModalVisible(true);
+    setLoading(false);
+  };
+
+  const sendRequest = () => {
+    handleRescheduleRequest();
+  };
+
+  const handleRescheduleRequest = async () => {
+    setLoading(true);
+    const data = {
+      meeting_id: meetingID,
+      date: newDate,
+      time: newTime,
+    };
+    try {
+      const response = await axios.post(
+        `${Api_Base_Url}meetingReschedule`,
+        data,
+      );
+      if (response.status === 200) {
+        setAlertMessage('Your reschedule request has been sent successfully!');
+        setAlertVisible(true);
+        fetchDelegatesData();
+        const updatedData = filteredData.filter(item => item.id !== meetingID);
+        setFilteredData(updatedData);
+        setLoading(false);
+      } else {
+        setAlertMessage('Failed to send reschedule request.');
+        setAlertVisible(true);
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error('Error rescheduling meeting:', error);
+      setAlertMessage('Failed to send reschedule request.');
+      setAlertVisible(true);
+      setLoading(false);
+    } finally {
+      setRescheduleModalVisible(false);
+      setLoading(false);
     }
   };
 
@@ -142,7 +290,9 @@ const MeetingRequestScreenKsa = () => {
             <Text style={styles.headerCell}>Address</Text>
             <Text style={styles.headerCell}>Requested Date</Text>
             <Text style={styles.headerCell}>Requested Time</Text>
-            <Text style={styles.headerCell}>Action</Text>
+            <Text style={styles.headerCell}>New Time</Text>
+            <Text style={styles.headerCell}>Approve</Text>
+            <Text style={styles.headerCell}>Decline</Text>
           </View>
           <ScrollView
             style={{height: height * 0.4}}
@@ -154,7 +304,7 @@ const MeetingRequestScreenKsa = () => {
                 </Text>
               </View>
             ) : (
-              filteredData.map(item => (
+              filteredData.map((item, index) => (
                 <View key={item?.id} style={styles.row}>
                   <Text
                     style={[styles.headerCell, {width: 40, color: '#4a5f85'}]}>
@@ -186,8 +336,31 @@ const MeetingRequestScreenKsa = () => {
                   </Text>
 
                   <View style={styles.headerCell}>
-                    <TouchableOpacity style={styles.meetingButton}>
-                      <Text style={styles.meetingButtonText}>Revoke</Text>
+                    <TouchableOpacity
+                      style={styles.meetingButton}
+                      onPress={() => handleReschedule(item?.id)}>
+                      <Text style={styles.meetingButtonText}>Reschedule</Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  <View style={styles.headerCell}>
+                    <TouchableOpacity
+                      style={styles.meetingButton}
+                      onPress={() => handleApprove(item?.id, selectedTab)}>
+                      <Text style={styles.meetingButtonText}>Approve</Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  <View style={styles.headerCell}>
+                    <TouchableOpacity
+                      style={[
+                        styles.meetingButton,
+                        {backgroundColor: '#FF6347'},
+                      ]}
+                      onPress={() => {
+                        handleDecline(item?.id);
+                      }}>
+                      <Text style={styles.meetingButtonText}>Decline</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -254,9 +427,18 @@ const MeetingRequestScreenKsa = () => {
                   <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
                     {item.date}
                   </Text>
-                  <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
+                  <Text
+                    style={[
+                      styles.headerCell,
+                      {
+                        backgroundColor:
+                          item.is_approved === 1 ? '#2EB85C' : '#E03232',
+                        padding: width * 0.025,
+                      },
+                    ]}>
                     {item.is_approved === 1 ? 'Approved' : 'Pending'}
                   </Text>
+
                   <View style={styles.headerCell}>
                     <TouchableOpacity
                       style={styles.meetingButton}
@@ -316,20 +498,20 @@ const MeetingRequestScreenKsa = () => {
         </TouchableOpacity>
       </View>
       <View style={styles.mainHeadCont}>
-        <View style={{width: '45%'}}>
-          <View style={{flexDirection: 'row', alignItems: 'center'}}>
-            <Text style={styles.mainHeadText}>Show</Text>
-            <Text style={styles.mainHeadText}>Entries</Text>
-            <CustomSelectEntries
-              data={entriesData}
-              selectedValue={showEntries}
-              onSelect={setShowEntries}
-              delegatesData={filteredData}
-              setFilteredData={setFilteredData}
-            />
-          </View>
+        <View
+          style={{flexDirection: 'row', alignItems: 'center', width: '40%'}}>
+          <Text style={styles.mainHeadText}>Show</Text>
+          <Text style={styles.mainHeadText}>Entries</Text>
+          <CustomSelectEntries
+            data={entriesData}
+            selectedValue={showEntries}
+            onSelect={setShowEntries}
+            delegatesData={filteredData}
+            condition={'request'}
+            setFilteredData={setFilteredData}
+          />
         </View>
-        <View style={{width: '45%'}}>
+        <View style={{width: '40%'}}>
           <TextInput
             style={styles.searchInput2}
             placeholder="Search..."
@@ -342,6 +524,90 @@ const MeetingRequestScreenKsa = () => {
       {selectedTab === 'received'
         ? renderReceivedRequests()
         : renderSentRequests()}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={showModal}
+        onRequestClose={handleModalClose}>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeadingContainer}>
+              <Text style={styles.modalHeading}>Decline Request</Text>
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={handleModalClose}>
+                <Icon name="close" type="material" color="#000" />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.divider}></View>
+            <Text style={styles.reasonHeading}>Reason for Decline:</Text>
+            <TextInput
+              style={styles.reasonInput}
+              placeholder="Enter reason..."
+              multiline={true}
+              value={declineReason}
+              onChangeText={text => setDeclineReason(text)}
+            />
+            <TouchableOpacity
+              style={styles.declineButton}
+              onPress={handleDeclineRequest}>
+              <Text style={styles.declineButtonText}>Decline</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={rescheduleModalVisible}
+        onRequestClose={() => setRescheduleModalVisible(false)}>
+        <View style={styles.modalContainer}>
+          <View style={[styles.modalContent, {width: '90%'}]}>
+            <View style={styles.modalHeadingContainer}>
+              <Text style={styles.modalHeading}>New Meeting Time</Text>
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={() => setRescheduleModalVisible(false)}>
+                <Icon name="close" type="material" color="#000" />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.divider}></View>
+            <View style={styles.dropdownContainer}>
+              <View style={[styles.dropdownWrapper, {zIndex: 999}]}>
+                <SelectDropdown
+                  title="Select New Time"
+                  options={['10:00 AM', '11:00 AM', '12:00 PM']}
+                  selectedValue={newTime}
+                  onSelect={setNewTime}
+                />
+              </View>
+              <View style={[styles.dropdownWrapper, {zIndex: 999}]}>
+                <SelectDropdown
+                  title="Select New Date"
+                  options={['2024-06-25', '2024-06-26', '2024-06-27']}
+                  selectedValue={newDate}
+                  onSelect={setNewDate}
+                />
+              </View>
+            </View>
+            <TouchableOpacity
+              style={styles.rescheduleButton}
+              onPress={() => {
+                sendRequest();
+              }}>
+              <Text style={styles.rescheduleButtonText}>Send Request</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+      {loading && (
+        <ActivityIndicator
+          style={styles.activityIndicator}
+          color="#4a5f85"
+          size={40}
+        />
+      )}
       <AlertMessage
         visible={alertVisible}
         message={alertMessage}
@@ -413,7 +679,7 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   mainHeadCont: {
-    width: width / 1.16,
+    width: '90%',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -484,6 +750,8 @@ const styles = StyleSheet.create({
   },
   noDataText: {
     fontSize: 16,
+    color: '#000',
+    alignSelf: 'center',
   },
   noResultsContainer: {
     width: '100%',
@@ -491,6 +759,111 @@ const styles = StyleSheet.create({
   },
   noResultsText: {
     fontSize: 16,
-    color: '#555',
+    color: '#000',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    width: '80%',
+    borderRadius: 10,
+    padding: 20,
+    alignItems: 'center',
+  },
+  modalHeadingContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+  },
+  modalHeading: {
+    color: '#000',
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  closeButton: {
+    // position: 'absolute',
+    // top: 10,
+    // right: 10,
+  },
+  closeButtonText: {
+    color: '#000',
+    fontSize: 20,
+  },
+  dropdownContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  dropdownWrapper: {
+    width: '48%',
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+    margin: 10,
+  },
+  divider: {
+    borderBottomWidth: 1,
+    width: '100%',
+    marginVertical: 10,
+    borderColor: '#ccc',
+  },
+  reasonHeading: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#000',
+    alignSelf: 'flex-start',
+  },
+  reasonInput: {
+    width: '100%',
+    height: 100,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 20,
+    color: '#000',
+    textAlignVertical: 'top',
+  },
+  selectContainer: {
+    flexDirection: 'row',
+    width: '100%',
+    justifyContent: 'space-between',
+  },
+  selectDropdown: {
+    borderBottomWidth: 1,
+  },
+  declineButton: {
+    backgroundColor: '#FF6347',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+  },
+  declineButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  rescheduleButton: {
+    marginTop: 20,
+    backgroundColor: '#4a5f85',
+    padding: 10,
+    borderRadius: 5,
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  rescheduleButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  activityIndicator: {
+    position: 'absolute',
+    alignSelf: 'center',
+    top: '60%', // Center vertically
+    zIndex: 999,
   },
 });

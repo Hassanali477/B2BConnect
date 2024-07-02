@@ -5,15 +5,11 @@ import {
   View,
   TextInput,
   ScrollView,
-  Alert,
   Dimensions,
-  Clipboard,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
-import XLSX from 'xlsx';
-import BottomNavigator from '../../components/BottomNavigator';
-import CustomDrawer from '../../components/CustomDrawer';
 import {useNavigation} from '@react-navigation/native';
 import HeaderComponent from '../../components/HeaderComponent';
 import RNFS from 'react-native-fs';
@@ -22,19 +18,51 @@ import AlertMessage from '../../components/AlertMessage';
 import {KeyboardAvoidingView} from 'react-native';
 import CustomDrawerKSA from '../../components/KSADelegates/CustomDrawerKSA';
 import BottomNavigatorKSA from '../../components/KSADelegates/BottomNavigatorKSA';
+import {connect, useSelector} from 'react-redux';
+import * as userActions from '../../redux/actions/user';
+import {bindActionCreators} from 'redux';
+import axios from 'axios';
+import Api_Base_Url from '../../api';
 
 const {width, height} = Dimensions.get('screen');
 
 const ConfirmAppointmentKsa = () => {
+  const user = useSelector(state => state?.userData?.user);
   const navigation = useNavigation();
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredAppointments, setFilteredAppointments] = useState([]);
   const [appointments, setAppointments] = useState([]);
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [alertType, setAlertType] = useState('');
+  const [noResultsFound, setNoResultsFound] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const fetchAppointments = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`${Api_Base_Url}confirmAppointment`, {
+        params: {
+          user_id: user?.userData?.id,
+        },
+      });
+
+      if (response.status !== 200) {
+        throw new Error('Failed to fetch data');
+      }
+
+      const data = response.data;
+      const appointments = Object.values(data.confirmAppointment);
+      setAppointments(appointments);
+      setFilteredAppointments(appointments);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      showAlertMessage('Error', 'Failed to fetch appointment data.');
+      setLoading(false);
+    }
+  };
 
   const handleDownloadPDF = async () => {
     try {
@@ -57,7 +85,6 @@ const ConfirmAppointmentKsa = () => {
       showAlertMessage('Error', 'Failed to request storage permission.');
     }
   };
-
   const downloadPDF = async () => {
     try {
       if (appointments.length === 0) {
@@ -70,13 +97,11 @@ const ConfirmAppointmentKsa = () => {
       const pdfDir = RNFS.DownloadDirectoryPath;
       const pdfFileName = 'appointments.pdf';
 
-      // Check if the file already exists
       const fileExists = await RNFS.exists(`${pdfDir}/${pdfFileName}`);
       let newPdfFileName = pdfFileName;
 
       if (fileExists) {
         let count = 1;
-        // Generate a new file name with a number suffix
         while (true) {
           const newFileName = `${pdfFileName.split('.pdf')[0]}_${count}.pdf`;
           const exists = await RNFS.exists(`${pdfDir}/${newFileName}`);
@@ -90,21 +115,18 @@ const ConfirmAppointmentKsa = () => {
 
       const pdfPath = `${pdfDir}/${newPdfFileName}`;
 
-      // Create PDF content
       const appointmentsText = appointments
         .map(
           item =>
-            `${item.date}, ${item.time}, ${item.name}, ${item.company}, ${item.sector}, ${item.phone}, ${item.email}, ${item.city}`,
+            `${item.date}, ${item.time}, ${item.exporter.contact_name}, ${item.exporter.company_name}, ${item.exporter.industry}, ${item.exporter.phone}, ${item.exporter.email}, ${item.exporter.country}`,
         )
         .join('\n');
 
-      // Write PDF content to the file
       await RNFS.writeFile(pdfPath, appointmentsText, 'utf8');
 
       setLoading(false);
       showAlertMessage('Success', 'PDF file downloaded successfully.');
 
-      // Open the downloaded PDF file
       RNFetchBlob.android.actionViewIntent(
         `file://${pdfPath}`,
         'application/pdf',
@@ -116,39 +138,9 @@ const ConfirmAppointmentKsa = () => {
     }
   };
 
-  const generateRandomAppointments = () => {
-    const randomAppointments = [];
-    for (let i = 0; i < 20; i++) {
-      const date = `2025-06-${Math.floor(Math.random() * 30) + 1}`;
-      const time = `${Math.floor(Math.random() * 12) + 1}:${Math.floor(
-        Math.random() * 60,
-      )
-        .toString()
-        .padStart(2, '0')}${Math.random() < 0.5 ? ' AM' : ' PM'}`;
-      const name = `Person ${i + 1}`;
-      const company = `Company ${Math.floor(Math.random() * 10) + 1}`;
-      const sector = `Sector ${Math.floor(Math.random() * 5) + 1}`;
-      const phone = `+1${Math.floor(1000000000 + Math.random() * 9000000000)}`;
-      const email = `person${i + 1}@example.com`;
-      const city = `City ${Math.floor(Math.random() * 5) + 1}`;
-      randomAppointments.push({
-        id: i + 1,
-        date,
-        time,
-        name,
-        company,
-        sector,
-        phone,
-        email,
-        city,
-      });
-    }
-    setAppointments(randomAppointments);
-    setFilteredAppointments(randomAppointments);
-  };
-
   const handleSearch = text => {
     setSearchQuery(text);
+    setNoResultsFound(false);
     const filtered = appointments.filter(item =>
       Object.values(item).some(
         val =>
@@ -157,17 +149,20 @@ const ConfirmAppointmentKsa = () => {
       ),
     );
     setFilteredAppointments(filtered);
+    setNoResultsFound(filtered.length === 0);
   };
 
   const showAlertMessage = (type, message) => {
     setAlertType(type);
     setAlertMessage(message);
     setShowAlert(true);
-    setTimeout(() => setShowAlert(false), 3000); // Close the alert after 3 seconds
+    setTimeout(() => setShowAlert(false), 3000);
   };
+
   useEffect(() => {
-    generateRandomAppointments();
+    fetchAppointments();
   }, []);
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -221,19 +216,29 @@ const ConfirmAppointmentKsa = () => {
                 <View key={item.id} style={styles.row}>
                   <Text style={styles.cell}>{item.date}</Text>
                   <Text style={styles.cell}>{item.time}</Text>
-                  <Text style={styles.cell}>{item.name}</Text>
-                  <Text style={styles.cell}>{item.company}</Text>
-                  <Text style={styles.cell}>{item.sector}</Text>
-                  <Text style={styles.cell}>{item.phone}</Text>
-                  <Text style={styles.cell}>{item.email}</Text>
-                  <Text style={styles.cell}>{item.city}</Text>
+                  <Text style={styles.cell}>
+                    {item?.exporter?.contact_name}
+                  </Text>
+                  <Text style={styles.cell}>
+                    {item?.exporter?.company_name}
+                  </Text>
+                  <Text style={styles.cell}>{item?.exporter?.industry}</Text>
+                  <Text style={styles.cell}>{item?.exporter?.phone}</Text>
+                  <Text style={styles.cell}>{item?.exporter?.email}</Text>
+                  <Text style={styles.cell}>{item?.exporter?.country}</Text>
                 </View>
               ))}
             </ScrollView>
           </View>
         </ScrollView>
       </View>
-
+      {loading && (
+        <ActivityIndicator
+          style={styles.activityIndicator}
+          color="#4a5f85"
+          size={40}
+        />
+      )}
       <CustomDrawerKSA
         visible={drawerVisible}
         onClose={() => setDrawerVisible(false)}
@@ -345,6 +350,22 @@ const styles = StyleSheet.create({
     color: '#000',
     textAlign: 'center',
   },
+  activityIndicator: {
+    position: 'absolute',
+    alignSelf: 'center',
+    top: '60%', // Center vertically
+    zIndex: 999,
+  },
 });
 
-export default ConfirmAppointmentKsa;
+const mapStateToProps = state => ({
+  user: state.user,
+});
+
+const mapDispatchToProps = dispatch =>
+  bindActionCreators(userActions, dispatch);
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(ConfirmAppointmentKsa);

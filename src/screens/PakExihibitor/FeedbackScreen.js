@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import {
   StyleSheet,
   Text,
@@ -9,32 +9,38 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import HeaderComponent from '../../components/HeaderComponent';
 import CustomDrawer from '../../components/CustomDrawer';
 import BottomNavigator from '../../components/BottomNavigator';
 import AlertMessage from '../../components/AlertMessage';
-import { useNavigation } from '@react-navigation/native';
+import axios from 'axios';
+import Api_Base_Url from '../../api';
+import {connect, useSelector} from 'react-redux';
+import * as userActions from '../../redux/actions/user';
+import {bindActionCreators} from 'redux';
 
-const { width, height } = Dimensions.get('screen');
+const {width, height} = Dimensions.get('window');
 
 const FeedbackScreen = () => {
+  const user = useSelector(state => state?.userData?.user);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [numberOfVisitors, setNumberOfVisitors] = useState('');
   const [numberOfCompanies, setNumberOfCompanies] = useState('');
   const [numberOfBooked, setNumberOfBooked] = useState('');
   const [ordersBooked, setOrdersBooked] = useState('');
   const [comments, setComments] = useState('');
-
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [alertType, setAlertType] = useState('error');
+  const [loading, setLoading] = useState(false);
 
-  const handleNumberChange = (text) => setNumberOfVisitors(text);
-  const handleNumberOfCompanies = (text) => setNumberOfCompanies(text);
-  const handleNumberOfBooked = (text) => setNumberOfBooked(text);
-  const handleOrdersBooked = (text) => setOrdersBooked(text);
-  const handleComments = (text) => setComments(text);
+  const handleNumberChange = text => setNumberOfVisitors(text);
+  const handleNumberOfCompanies = text => setNumberOfCompanies(text);
+  const handleNumberOfBooked = text => setNumberOfBooked(text);
+  const handleOrdersBooked = text => setOrdersBooked(text);
+  const handleComments = text => setComments(text);
 
   const validateForm = () => {
     if (!numberOfVisitors) {
@@ -56,17 +62,51 @@ const FeedbackScreen = () => {
     return true;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    setLoading(true);
     if (validateForm()) {
-      setAlertType('success');
-      setAlertMessage('Feedback submitted successfully!');
-      setAlertVisible(true);
+      try {
+        const response = await axios.post(`${Api_Base_Url}feedbackSubmit`, {
+          user_id: user?.userData?.id,
+          visits: numberOfVisitors,
+          leads: 2, // Example value
+          orders: numberOfBooked,
+          amount: ordersBooked,
+          portal_feedback: comments,
+          companies: numberOfCompanies,
+          countries: 3432, // Example value
+          enquries: 232, // Example value
+          order_booked: 324, // Example value
+          his_feedback: comments,
+        });
+
+        if (response.status === 200) {
+          setAlertType('success');
+          setAlertMessage('Feedback submitted successfully!');
+          setNumberOfVisitors('');
+          setNumberOfCompanies('');
+          setNumberOfBooked('');
+          setOrdersBooked('');
+          setComments('');
+          setLoading(false);
+        } else {
+          throw new Error('Failed to submit feedback');
+        }
+      } catch (error) {
+        setAlertType('error');
+        setAlertMessage('Failed to submit feedback');
+        setLoading(false);
+      } finally {
+        setAlertVisible(true);
+        setLoading(false);
+      }
     } else {
       setAlertType('error');
       setAlertVisible(true);
+      setLoading(false);
     }
   };
-  const navigation = useNavigation()
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -76,7 +116,10 @@ const FeedbackScreen = () => {
       <View style={styles.headerCont}>
         <Text style={styles.heading}>Feedback Form</Text>
       </View>
-      <ScrollView contentContainerStyle={styles.contentContainer}>
+      <ScrollView
+        contentContainerStyle={styles.contentContainer}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}>
         <View style={styles.inputContainer}>
           <Text style={styles.inputLabel}>
             Number of visitors received during exhibition
@@ -135,10 +178,16 @@ const FeedbackScreen = () => {
           <Text style={styles.submitButtonText}>Submit</Text>
         </TouchableOpacity>
       </ScrollView>
+      {loading && (
+        <ActivityIndicator
+          style={styles.activityIndicator}
+          color="#4a5f85"
+          size={40}
+        />
+      )}
       <CustomDrawer
         visible={drawerVisible}
         onClose={() => setDrawerVisible(false)}
-        navigation={navigation}
       />
       <BottomNavigator />
       <AlertMessage
@@ -175,6 +224,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     alignItems: 'center',
+    paddingBottom: '22%',
     paddingHorizontal: 10,
   },
   inputContainer: {
@@ -233,6 +283,19 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
   },
+  activityIndicator: {
+    position: 'absolute',
+    alignSelf: 'center',
+    top: '60%', // Center vertically
+    zIndex: 999,
+  },
 });
 
-export default FeedbackScreen;
+const mapStateToProps = state => ({
+  user: state.user,
+});
+
+const mapDispatchToProps = dispatch =>
+  bindActionCreators(userActions, dispatch);
+
+export default connect(mapStateToProps, mapDispatchToProps)(FeedbackScreen);

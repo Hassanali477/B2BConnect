@@ -12,10 +12,11 @@ import {
 } from 'react-native';
 import {CheckBox, Icon} from 'react-native-elements';
 import AlertMessage from '../../components/AlertMessage';
+import axios from 'axios';
 
 const {width, height} = Dimensions.get('screen');
 
-const ForgotPasswordPak = () => {
+const ForgotPasswordKsa = () => {
   const navigation = useNavigation();
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
@@ -28,18 +29,40 @@ const ForgotPasswordPak = () => {
     return regex.test(email);
   };
 
-  const handleResetPassword = () => {
+  const handleResetPassword = async () => {
     if (!email) {
       setEmailError('Email is required');
     } else if (!validateEmail(email)) {
       setEmailError('Please enter a valid email address');
     } else {
       setEmailError('');
-      setAlertType('success');
-      setAlertMessage('A password reset link has been sent to your email.');
+      try {
+        const response = await axios.post(
+          'https://devstaging.a2zcreatorz.com/b2bupdate/public/api/forgotPassword',
+          {
+            email: email,
+          },
+        );
+        console.log('Response:', response.data); // Log the response
+        if (response.data.status === 1) {
+          setAlertType('success');
+          setAlertMessage('A password reset link has been sent to your email.');
+        } else if (response.data.status === 0) {
+          setAlertType('error');
+          setAlertMessage('Email not found. Please check and try again.');
+        } else {
+          setAlertType('error');
+          setAlertMessage('Something went wrong. Please try again later.');
+        }
+      } catch (error) {
+        console.error('Error:', error.response || error.message || error); // Log the error
+        setAlertType('error');
+        setAlertMessage('Something went wrong. Please try again later.');
+      }
       setAlertVisible(true);
     }
   };
+
   const closeAlert = () => {
     setAlertVisible(false);
   };
@@ -102,7 +125,7 @@ const ForgotPasswordPak = () => {
   );
 };
 
-export default ForgotPasswordPak;
+export default ForgotPasswordKsa;
 
 const styles = StyleSheet.create({
   container: {

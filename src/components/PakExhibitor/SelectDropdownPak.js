@@ -10,7 +10,13 @@ import {
 import {Icon} from 'react-native-elements';
 
 const {width, height} = Dimensions.get('screen');
-const SelectDropdown = ({title, options, selectedValue, onSelect}) => {
+const SelectDropdown = ({
+  title,
+  options,
+  selectedValue,
+  onSelect,
+
+}) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleToggle = () => {

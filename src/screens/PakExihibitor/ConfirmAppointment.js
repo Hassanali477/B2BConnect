@@ -7,11 +7,10 @@ import {
   ScrollView,
   Alert,
   Dimensions,
-  Clipboard,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
-import XLSX from 'xlsx';
 import BottomNavigator from '../../components/BottomNavigator';
 import CustomDrawer from '../../components/CustomDrawer';
 import {useNavigation} from '@react-navigation/native';
@@ -20,20 +19,50 @@ import RNFS from 'react-native-fs';
 import {PermissionsAndroid} from 'react-native';
 import AlertMessage from '../../components/AlertMessage';
 import {KeyboardAvoidingView} from 'react-native';
+import axios from 'axios';
+import Api_Base_Url from '../../api';
+import {connect, useSelector} from 'react-redux';
+import * as userActions from '../../redux/actions/user';
+import {bindActionCreators} from 'redux';
 
 const {width, height} = Dimensions.get('screen');
 
 const ConfirmAppointment = () => {
+  const user = useSelector(state => state?.userData?.user);
   const navigation = useNavigation();
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredAppointments, setFilteredAppointments] = useState([]);
   const [appointments, setAppointments] = useState([]);
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [alertType, setAlertType] = useState('');
-  const [noResultsFound, setNoResultsFound] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const fetchAppointments = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`${Api_Base_Url}confirmAppointment`, {
+        params: {
+          user_id: user?.userData?.id,
+        },
+      });
+
+      if (response.status !== 200) {
+        throw new Error('Failed to fetch data');
+      }
+
+      const data = response.data;
+      const appointments = Object.values(data.confirmAppointment);
+      setAppointments(appointments);
+      setFilteredAppointments(appointments);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      showAlertMessage('Error', 'Failed to fetch appointment data.');
+      setLoading(false);
+    }
+  };
 
   const handleDownloadPDF = async () => {
     try {
@@ -67,43 +96,34 @@ const ConfirmAppointment = () => {
       setLoading(true);
 
       const pdfDir = RNFS.DownloadDirectoryPath;
-      const pdfFileName = 'appointments.pdf';
+      let pdfFileName = 'appointments.pdf';
 
-      // Check if the file already exists
-      const fileExists = await RNFS.exists(`${pdfDir}/${pdfFileName}`);
-      let newPdfFileName = pdfFileName;
+      // Check if file exists and update file name if necessary
+      let fileExists = await RNFS.exists(`${pdfDir}/${pdfFileName}`);
+      let fileCounter = 1;
 
-      if (fileExists) {
-        let count = 1;
-        // Generate a new file name with a number suffix
-        while (true) {
-          const newFileName = `${pdfFileName.split('.pdf')[0]}_${count}.pdf`;
-          const exists = await RNFS.exists(`${pdfDir}/${newFileName}`);
-          if (!exists) {
-            newPdfFileName = newFileName;
-            break;
-          }
-          count++;
-        }
+      while (fileExists) {
+        pdfFileName = `appointments_${fileCounter}.pdf`;
+        fileExists = await RNFS.exists(`${pdfDir}/${pdfFileName}`);
+        fileCounter++;
       }
 
-      const pdfPath = `${pdfDir}/${newPdfFileName}`;
+      const pdfPath = `${pdfDir}/${pdfFileName}`;
+      console.log('Saving PDF to:', pdfPath);
 
-      // Create PDF content
       const appointmentsText = appointments
-        .map(
-          item =>
-            `${item.date}, ${item.time}, ${item.name}, ${item.company}, ${item.sector}, ${item.phone}, ${item.email}, ${item.city}`,
+        .map(item =>
+          `${item.date}, ${item.time}, ${item.buyer.contact_name}, ${item.buyer.company_name}, ${item.buyer.industry}, ${item.buyer.phone}, ${item.buyer.email}, ${item.buyer.country}`,
         )
         .join('\n');
 
-      // Write PDF content to the file
+      // Write the file and check for errors
       await RNFS.writeFile(pdfPath, appointmentsText, 'utf8');
-
       setLoading(false);
+
       showAlertMessage('Success', 'PDF file downloaded successfully.');
 
-      // Open the downloaded PDF file
+      // Open the PDF file
       RNFetchBlob.android.actionViewIntent(
         `file://${pdfPath}`,
         'application/pdf',
@@ -115,40 +135,8 @@ const ConfirmAppointment = () => {
     }
   };
 
-  const generateRandomAppointments = () => {
-    const randomAppointments = [];
-    for (let i = 0; i < 20; i++) {
-      const date = `2025-06-${Math.floor(Math.random() * 30) + 1}`;
-      const time = `${Math.floor(Math.random() * 12) + 1}:${Math.floor(
-        Math.random() * 60,
-      )
-        .toString()
-        .padStart(2, '0')}${Math.random() < 0.5 ? ' AM' : ' PM'}`;
-      const name = `Person ${i + 1}`;
-      const company = `Company ${Math.floor(Math.random() * 10) + 1}`;
-      const sector = `Sector ${Math.floor(Math.random() * 5) + 1}`;
-      const phone = `+1${Math.floor(1000000000 + Math.random() * 9000000000)}`;
-      const email = `person${i + 1}@example.com`;
-      const city = `City ${Math.floor(Math.random() * 5) + 1}`;
-      randomAppointments.push({
-        id: i + 1,
-        date,
-        time,
-        name,
-        company,
-        sector,
-        phone,
-        email,
-        city,
-      });
-    }
-    setAppointments(randomAppointments);
-    setFilteredAppointments(randomAppointments);
-  };
-
   const handleSearch = text => {
     setSearchQuery(text);
-    setNoResultsFound(false);
     const filtered = appointments.filter(item =>
       Object.values(item).some(
         val =>
@@ -157,18 +145,20 @@ const ConfirmAppointment = () => {
       ),
     );
     setFilteredAppointments(filtered);
-    setNoResultsFound(filtered.length === 0);
   };
 
   const showAlertMessage = (type, message) => {
     setAlertType(type);
     setAlertMessage(message);
     setShowAlert(true);
-    setTimeout(() => setShowAlert(false), 3000); // Close the alert after 3 seconds
+    setTimeout(() => setShowAlert(false), 3000);
   };
+
   useEffect(() => {
-    generateRandomAppointments();
+    fetchAppointments();
   }, []);
+
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -222,22 +212,28 @@ const ConfirmAppointment = () => {
                 <View key={item.id} style={styles.row}>
                   <Text style={styles.cell}>{item.date}</Text>
                   <Text style={styles.cell}>{item.time}</Text>
-                  <Text style={styles.cell}>{item.name}</Text>
-                  <Text style={styles.cell}>{item.company}</Text>
-                  <Text style={styles.cell}>{item.sector}</Text>
-                  <Text style={styles.cell}>{item.phone}</Text>
-                  <Text style={styles.cell}>{item.email}</Text>
-                  <Text style={styles.cell}>{item.city}</Text>
+                  <Text style={styles.cell}>{item?.buyer?.contact_name}</Text>
+                  <Text style={styles.cell}>{item?.buyer?.company_name}</Text>
+                  <Text style={styles.cell}>{item.buyer.industry}</Text>
+                  <Text style={styles.cell}>{item?.buyer?.phone}</Text>
+                  <Text style={styles.cell}>{item?.buyer?.email}</Text>
+                  <Text style={styles.cell}>{item?.buyer?.country}</Text>
                 </View>
               ))}
-              <View style={styles.noResultsContainer}>
+              {/* <View style={styles.noResultsContainer}>
                 <Text style={styles.noResultsText}>No results found.</Text>
-              </View>
+              </View> */}
             </ScrollView>
           </View>
         </ScrollView>
       </View>
-
+      {loading && (
+        <ActivityIndicator
+          style={styles.activityIndicator}
+          color="#4a5f85"
+          size={40}
+        />
+      )}
       <CustomDrawer
         visible={drawerVisible}
         onClose={() => setDrawerVisible(false)}
@@ -360,6 +356,19 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#555', // Adjust the color as needed
   },
+  activityIndicator: {
+    position: 'absolute',
+    alignSelf: 'center',
+    top: '60%', // Center vertically
+    zIndex: 999,
+  },
 });
 
-export default ConfirmAppointment;
+const mapStateToProps = state => ({
+  user: state.user,
+});
+
+const mapDispatchToProps = dispatch =>
+  bindActionCreators(userActions, dispatch);
+
+export default connect(mapStateToProps, mapDispatchToProps)(ConfirmAppointment);

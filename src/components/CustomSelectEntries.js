@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import {
   StyleSheet,
   View,
@@ -6,36 +6,45 @@ import {
   Text,
   Dimensions,
 } from 'react-native';
-import { Icon } from 'react-native-elements';
+import {Icon} from 'react-native-elements';
 
-const { width } = Dimensions.get('screen');
+const {width} = Dimensions.get('screen');
 
 const CustomSelectEntries = ({
   data,
   selectedValue,
   onSelect,
-  delegatesData, // Ensure to pass the delegatesData from the parent
+  delegatesData,
   setFilteredData,
+  condition,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  const handleSelect = (item) => {
+  const handleSelect = item => {
     setIsOpen(false);
-    onSelect(item); // Pass the selected value to the parent component
-    // Filter the delegatesData based on the selected item
+    onSelect(item);
     const filteredData = delegatesData.slice(0, parseInt(item));
-    var obj = {
-      buyers: filteredData,
-    };
-    setFilteredData(obj); // Pass filtered data back to parent
+    var obj = {};
+    if (condition === 'buyer') {
+      obj = {
+        buyers: filteredData,
+      };
+      setFilteredData(obj);
+    } else if (condition === 'exporter') {
+      obj = {
+        exporters: filteredData,
+      };
+      setFilteredData(obj);
+    } else {
+      setFilteredData(filteredData);
+    }
   };
 
   return (
     <View style={styles.container}>
       <TouchableOpacity
         style={[styles.selectedOption, isOpen && styles.open]}
-        onPress={() => setIsOpen(!isOpen)}
-      >
+        onPress={() => setIsOpen(!isOpen)}>
         <Text style={styles.optionText}>{selectedValue}</Text>
         <Icon
           name="keyboard-arrow-down"
@@ -46,12 +55,11 @@ const CustomSelectEntries = ({
       </TouchableOpacity>
       {isOpen && (
         <View style={styles.optionsContainer}>
-          {data.map((item) => (
+          {data.map(item => (
             <TouchableOpacity
               key={item}
               style={styles.option}
-              onPress={() => handleSelect(item)}
-            >
+              onPress={() => handleSelect(item)}>
               <Text style={styles.optionText}>{item}</Text>
             </TouchableOpacity>
           ))}
