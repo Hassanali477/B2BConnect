@@ -5,18 +5,18 @@ import {
   View,
   TextInput,
   ScrollView,
-  Alert,
   Dimensions,
   TouchableOpacity,
   ActivityIndicator,
+  Platform,
+  PermissionsAndroid,
 } from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
+import RNHTMLtoPDF from 'react-native-html-to-pdf';
 import BottomNavigator from '../../components/BottomNavigator';
 import CustomDrawer from '../../components/CustomDrawer';
 import {useNavigation} from '@react-navigation/native';
 import HeaderComponent from '../../components/HeaderComponent';
-import RNFS from 'react-native-fs';
-import {PermissionsAndroid} from 'react-native';
 import AlertMessage from '../../components/AlertMessage';
 import {KeyboardAvoidingView} from 'react-native';
 import axios from 'axios';
@@ -37,6 +37,7 @@ const ConfirmAppointment = () => {
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [alertType, setAlertType] = useState('');
+  const [noResultsFound, setNoResultsFound] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const fetchAppointments = async () => {
@@ -64,69 +65,350 @@ const ConfirmAppointment = () => {
     }
   };
 
-  const handleDownloadPDF = async () => {
-    try {
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-        {
-          title: 'Storage Permission',
-          message: 'B2BConnect needs access to your storage to save files.',
-          buttonPositive: 'OK',
-        },
-      );
+  // const requestPermissions = async () => {
+  //   if (Platform.OS === 'android') {
+  //     try {
+  //       const granted = await PermissionsAndroid.requestMultiple([
+  //         PermissionsAndroid.PERMISSIONS.CAMERA,
+  //         PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+  //         PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+  //       ]);
+  //       console.log(granted, 'grateddddddddd');
+  //       return (
+  //         granted['android.permission.CAMERA'] ===
+  //           PermissionsAndroid.RESULTS.GRANTED &&
+  //         granted['android.permission.WRITE_EXTERNAL_STORAGE'] ===
+  //           PermissionsAndroid.RESULTS.GRANTED &&
+  //         granted['android.permission.READ_EXTERNAL_STORAGE'] ===
+  //           PermissionsAndroid.RESULTS.GRANTED
+  //       );
+  //     } catch (err) {
+  //       console.log(err, 'errorroor');
+  //       console.warn(err);
+  //       return false;
+  //     }
+  //   } else {
+  //     return true; // iOS permissions handled separately
+  //   }
+  // };
+  // const downloadPDF = async () => {
+  //   try {
+  //     if (appointments.length === 0) {
+  //       showAlertMessage('Error', 'No appointments to download.');
+  //       return;
+  //     }
 
-      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        downloadPDF();
-      } else {
-        showAlertMessage('Permission Denied', 'Storage permission denied.');
+  //     setLoading(true);
+
+  //     const htmlContent = `
+  //       <html>
+  //       <head>
+  //         <style>
+  //           table { width: 100%; border-collapse: collapse; }
+  //           th, td { border: 1px solid black; padding: 8px; text-align: center; }
+  //           th { background-color: #f2f2f2; }
+  //         </style>
+  //       </head>
+  //       <body>
+  //         <h1>Appointments</h1>
+  //         <table>
+  //           <tr>
+  //             <th>Date</th>
+  //             <th>Time</th>
+  //             <th>Name</th>
+  //             <th>Company</th>
+  //             <th>Sector</th>
+  //             <th>Phone</th>
+  //             <th>Email</th>
+  //             <th>City</th>
+  //           </tr>
+  //           ${appointments
+  //             .map(
+  //               item => `
+  //             <tr>
+  //               <td>${item.date}</td>
+  //               <td>${item.time}</td>
+  //               <td>${item.buyer.contact_name}</td>
+  //               <td>${item.buyer.company_name}</td>
+  //               <td>${item.buyer.industry}</td>
+  //               <td>${item.buyer.phone}</td>
+  //               <td>${item.buyer.email}</td>
+  //               <td>${item.buyer.country}</td>
+  //             </tr>
+  //           `,
+  //             )
+  //             .join('')}
+  //         </table>
+  //       </body>
+  //       </html>
+  //     `;
+
+  //     const options = {
+  //       html: htmlContent,
+  //       fileName: 'appointments',
+  //       directory: 'Download', // Save to Downloads directory
+  //     };
+
+  //     const file = await RNHTMLtoPDF.convert(options);
+  //     console.log('Generated PDF path:', file.filePath);
+
+  //     // Check if the file exists before moving
+  //     const fileExists = await RNFetchBlob.fs.exists(file.filePath);
+  //     if (!fileExists) {
+  //       throw new Error('Source file not found.');
+  //     }
+
+  //     // Generate unique file name if file already exists
+  //     const downloadsDir = RNFetchBlob.fs.dirs.DownloadDir;
+  //     let destPath = `${downloadsDir}/appointments.pdf`;
+  //     let fileCounter = 1;
+  //     while (await RNFetchBlob.fs.exists(destPath)) {
+  //       destPath = `${downloadsDir}/appointments_${fileCounter}.pdf`;
+  //       fileCounter++;
+  //     }
+
+  //     console.log('Saving PDF to:', destPath);
+
+  //     await RNFetchBlob.fs.mv(file.filePath, destPath);
+
+  //     setLoading(false);
+  //     showAlertMessage('Success', 'PDF file downloaded successfully.');
+
+  //     RNFetchBlob.android.actionViewIntent(destPath, 'application/pdf');
+  //   } catch (error) {
+  //     setLoading(false);
+  //     showAlertMessage('Error', 'Failed to download PDF file.');
+  //     console.error('PDF download error:', error);
+  //   }
+  // };
+
+  // const handleDownloadPDF = async () => {
+  //   console.log('Handling PDF download');
+  //   try {
+  //     const hasPermission = await requestPermissions();
+  //     console.log('Has permission:', hasPermission);
+  //     if (!hasPermission) {
+  //       return;
+  //     }
+
+  //     await downloadPDF();
+  //   } catch (error) {
+  //     console.error('Error handling permissions:', error);
+  //     showAlertMessage('Error', 'Failed to handle permissions.');
+  //   }
+  // };
+  // const checkPermissions = async () => {
+  //   if (Platform.OS === 'android') {
+  //     const granted = await PermissionsAndroid.check(
+  //       PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+  //     );
+  //     if (!granted) {
+  //       await PermissionsAndroid.request(
+  //         PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+  //       );
+  //     }
+  //   }
+  // };
+
+  // const downloadPDF = async () => {
+  //   try {
+  //     if (appointments.length === 0) {
+  //       showAlertMessage('Error', 'No appointments to download.');
+  //       return;
+  //     }
+
+  //     setLoading(true);
+
+  //     const htmlContent = `
+  //       <html>
+  //       <head>
+  //         <style>
+  //           table { width: 100%; border-collapse: collapse; }
+  //           th, td { border: 1px solid black; padding: 8px; text-align: center; }
+  //           th { background-color: #f2f2f2; }
+  //         </style>
+  //       </head>
+  //       <body>
+  //         <h1>Appointments</h1>
+  //         <table>
+  //           <tr>
+  //             <th>Date</th>
+  //             <th>Time</th>
+  //             <th>Name</th>
+  //             <th>Company</th>
+  //             <th>Sector</th>
+  //             <th>Phone</th>
+  //             <th>Email</th>
+  //             <th>City</th>
+  //           </tr>
+  //           ${appointments
+  //             .map(
+  //               item => `
+  //             <tr>
+  //               <td>${item.date}</td>
+  //               <td>${item.time}</td>
+  //               <td>${item.buyer.contact_name}</td>
+  //               <td>${item.buyer.company_name}</td>
+  //               <td>${item.buyer.industry}</td>
+  //               <td>${item.buyer.phone}</td>
+  //               <td>${item.buyer.email}</td>
+  //               <td>${item.buyer.country}</td>
+  //             </tr>
+  //           `,
+  //             )
+  //             .join('')}
+  //         </table>
+  //       </body>
+  //       </html>
+  //     `;
+
+  //     const options = {
+  //       html: htmlContent,
+  //       fileName: 'appointments',
+  //       directory: 'Documents', // Save to Documents directory initially
+  //     };
+
+  //     const file = await RNHTMLtoPDF.convert(options);
+  //     console.log('Generated PDF path:', file.filePath);
+
+  //     // Check if the file exists before moving
+  //     const fileExists = await RNFetchBlob.fs.exists(file.filePath);
+  //     if (!fileExists) {
+  //       throw new Error('Source file not found.');
+  //     }
+
+  //     // Set the path to /storage/emulated/0/Download
+  //     const downloadsDir = '/storage/emulated/0/Download';
+  //     let destPath = `${downloadsDir}/appointments.pdf`;
+  //     let fileCounter = 1;
+  //     while (await RNFetchBlob.fs.exists(destPath)) {
+  //       destPath = `${downloadsDir}/appointments_${fileCounter}.pdf`;
+  //       fileCounter++;
+  //     }
+
+  //     console.log('Saving PDF to:', destPath);
+
+  //     await RNFetchBlob.fs.mv(file.filePath, destPath);
+
+  //     setLoading(false);
+  //     showAlertMessage('Success', 'PDF file downloaded successfully.');
+
+  //     RNFetchBlob.android.actionViewIntent(destPath, 'application/pdf');
+  //   } catch (error) {
+  //     setLoading(false);
+  //     showAlertMessage('Error', 'Failed to download PDF file.');
+  //     console.error('PDF download error:', error);
+  //   }
+  // };
+
+  // const handleDownloadPDF = async () => {
+  //   console.log('Handling PDF download');
+  //   try {
+  //     await checkPermissions();
+  //     await downloadPDF();
+  //   } catch (error) {
+  //     console.error('Error handling permissions:', error);
+  //     showAlertMessage('Error', 'Failed to handle permissions.');
+  //   }
+  // };
+  const checkPermissions = async () => {
+    if (Platform.OS === 'android') {
+      const granted = await PermissionsAndroid.check(
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+      );
+      if (!granted) {
+        await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+        );
       }
-    } catch (error) {
-      console.error('Error requesting storage permission:', error);
-      showAlertMessage('Error', 'Failed to request storage permission.');
     }
   };
 
   const downloadPDF = async () => {
     try {
       if (appointments.length === 0) {
-        showAlertMessage('Error', 'No appointments to download.');
+        showAlertMessage('Error', 'No Pak Exhibitor appointments to download.');
         return;
       }
 
       setLoading(true);
 
-      const pdfDir = RNFS.DownloadDirectoryPath;
-      let pdfFileName = 'appointments.pdf';
+      const htmlContent = `
+        <html>
+        <head>
+          <style>
+            table { width: 100%; border-collapse: collapse; }
+            th, td { border: 1px solid black; padding: 8px; text-align: center; }
+            th { background-color: #f2f2f2; }
+          </style>
+        </head>
+        <body>
+          <h1>Appointments</h1>
+          <table>
+            <tr>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Name</th>
+              <th>Company</th>
+              <th>Sector</th>
+              <th>Phone</th>
+              <th>Email</th>
+              <th>City</th>
+            </tr>
+            ${appointments
+              .map(
+                item => `
+              <tr>
+                <td>${item.date}</td>
+                <td>${item.time}</td>
+                <td>${item.buyer.contact_name}</td>
+                <td>${item.buyer.company_name}</td>
+                <td>${item.buyer.industry}</td>
+                <td>${item.buyer.phone}</td>
+                <td>${item.buyer.email}</td>
+                <td>${item.buyer.country}</td>
+              </tr>
+            `,
+              )
+              .join('')}
+          </table>
+        </body>
+        </html>
+      `;
 
-      // Check if file exists and update file name if necessary
-      let fileExists = await RNFS.exists(`${pdfDir}/${pdfFileName}`);
+      const options = {
+        html: htmlContent,
+        fileName: 'PakExhibitorAppointments',
+        directory: 'Documents', // Save to Documents directory initially
+      };
+
+      const file = await RNHTMLtoPDF.convert(options);
+      console.log('Generated PDF path:', file.filePath);
+
+      // Check if the file exists before moving
+      const fileExists = await RNFetchBlob.fs.exists(file.filePath);
+      if (!fileExists) {
+        throw new Error('Source file not found.');
+      }
+
+      // Set the path to /storage/emulated/0/Download
+      const downloadsDir = '/storage/emulated/0/Download';
+      let destPath = `${downloadsDir}/PakExhibitorAppointments.pdf`;
       let fileCounter = 1;
-
-      while (fileExists) {
-        pdfFileName = `appointments_${fileCounter}.pdf`;
-        fileExists = await RNFS.exists(`${pdfDir}/${pdfFileName}`);
+      while (await RNFetchBlob.fs.exists(destPath)) {
+        destPath = `${downloadsDir}/PakExhibitorAppointments_${fileCounter}.pdf`;
         fileCounter++;
       }
 
-      const pdfPath = `${pdfDir}/${pdfFileName}`;
-      console.log('Saving PDF to:', pdfPath);
+      console.log('Saving PDF to:', destPath);
 
-      const appointmentsText = appointments
-        .map(item =>
-          `${item.date}, ${item.time}, ${item.buyer.contact_name}, ${item.buyer.company_name}, ${item.buyer.industry}, ${item.buyer.phone}, ${item.buyer.email}, ${item.buyer.country}`,
-        )
-        .join('\n');
-
-      // Write the file and check for errors
-      await RNFS.writeFile(pdfPath, appointmentsText, 'utf8');
+      await RNFetchBlob.fs.mv(file.filePath, destPath);
       setLoading(false);
-
       showAlertMessage('Success', 'PDF file downloaded successfully.');
 
-      // Open the PDF file
       RNFetchBlob.android.actionViewIntent(
-        `file://${pdfPath}`,
-        'application/pdf',
+        destPath,
+        'PakExhibitorApplication/pdf',
       );
     } catch (error) {
       setLoading(false);
@@ -135,8 +417,20 @@ const ConfirmAppointment = () => {
     }
   };
 
+  const handleDownloadPDF = async () => {
+    console.log('Handling PDF download');
+    try {
+      await checkPermissions();
+      await downloadPDF();
+    } catch (error) {
+      console.error('Error handling permissions:', error);
+      showAlertMessage('Error', 'Failed to handle permissions.');
+    }
+  };
+
   const handleSearch = text => {
     setSearchQuery(text);
+    setNoResultsFound(false);
     const filtered = appointments.filter(item =>
       Object.values(item).some(
         val =>
@@ -145,6 +439,7 @@ const ConfirmAppointment = () => {
       ),
     );
     setFilteredAppointments(filtered);
+    setNoResultsFound(filtered.length === 0);
   };
 
   const showAlertMessage = (type, message) => {
@@ -157,7 +452,6 @@ const ConfirmAppointment = () => {
   useEffect(() => {
     fetchAppointments();
   }, []);
-
 
   return (
     <KeyboardAvoidingView

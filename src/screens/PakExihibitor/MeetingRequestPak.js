@@ -7,17 +7,38 @@ import {
   Modal,
   TouchableOpacity,
   TextInput,
+  ActivityIndicator,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import SelectDropdown from '../../components/PakExhibitor/SelectDropdownPak';
 import AlertMessage from '../../components/AlertMessage';
 import Api_Base_Url from '../../api';
-import axios from 'axios'; // Ensure axios is imported
+import axios from 'axios';
 import {connect, useSelector} from 'react-redux';
 import * as userActions from '../../redux/actions/user';
 import {bindActionCreators} from 'redux';
 
 const {width, height} = Dimensions.get('screen');
+
+const generateDates = () => {
+  const today = new Date();
+  const dates = [];
+  for (let i = 0; i < 7; i++) {
+    const date = new Date(today);
+    date.setDate(today.getDate() + i);
+    dates.push(date.toISOString().split('T')[0]); // Format: YYYY-MM-DD
+  }
+  return dates;
+};
+
+// Define standard timeslots
+const generateTimeslots = () => [
+  '10:00 AM - 11:00 AM',
+  '11:00 AM - 12:00 PM',
+  '01:00 PM - 02:00 PM',
+  '03:00 PM - 04:00 PM',
+  '04:00 PM - 05:00 PM',
+];
 
 const MeetingRequestPak = ({modalVisible, setModalVisible, selectedRow}) => {
   const [selectedDate, setSelectedDate] = useState('Select Date');
@@ -29,21 +50,10 @@ const MeetingRequestPak = ({modalVisible, setModalVisible, selectedRow}) => {
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [alertType, setAlertType] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const dates = [
-    '2023-05-01',
-    '2023-05-02',
-    '2023-05-03',
-    '2023-05-03',
-    '2023-05-03',
-  ];
-  const timeslots = [
-    '10:00 AM - 11:00 AM',
-    '11:00 AM - 12:00 PM',
-    '11:00 AM - 12:00 PM',
-    '11:00 AM - 12:00 PM',
-    '01:00 PM - 02:00 PM',
-  ];
+  const dates = generateDates();
+  const timeslots = generateTimeslots();
   const locations = [
     'Pearl Continental Hotel, Karachi',
     'Marriott Hotel, Karachi',
@@ -83,6 +93,7 @@ const MeetingRequestPak = ({modalVisible, setModalVisible, selectedRow}) => {
   const handleMessageChange = text => setMessage(text);
 
   const user = useSelector(state => state?.userData?.user);
+
   const handleSendMessage = async () => {
     if (
       selectedDate === 'Select Date' ||
@@ -108,6 +119,7 @@ const MeetingRequestPak = ({modalVisible, setModalVisible, selectedRow}) => {
       };
 
       try {
+        setLoading(true);
         const response = await axios.post(
           `${Api_Base_Url}meetingRequestBuyer`,
           data,
@@ -120,15 +132,18 @@ const MeetingRequestPak = ({modalVisible, setModalVisible, selectedRow}) => {
           setSelectedTimeslot('Select Timeslot');
           setSelectedLocation('Select Meeting Location');
           setMessage('');
+          setLoading(false);
         } else {
           setAlertMessage('Failed to send meeting request. Please try again.');
           setAlertType('error');
           setAlertVisible(true);
+          setLoading(false);
         }
       } catch (error) {
         setAlertMessage('Failed to send meeting request. Please try again.');
         setAlertType('error');
         setAlertVisible(true);
+        setLoading(false);
       }
     }
   };
@@ -155,12 +170,7 @@ const MeetingRequestPak = ({modalVisible, setModalVisible, selectedRow}) => {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Meeting Request - ELM</Text>
               <TouchableOpacity onPress={() => setModalVisible(false)}>
-                <Icon
-                  name="times"
-                  type="material"
-                  size={26}
-                  color={'#0059CF'}
-                />
+                <Icon name="times" size={26} color={'#0059CF'} />
               </TouchableOpacity>
             </View>
             <View style={styles.modalSeparator} />
@@ -214,12 +224,20 @@ const MeetingRequestPak = ({modalVisible, setModalVisible, selectedRow}) => {
               onPress={handleSendMessage}>
               <Text style={styles.sendButtonText}>Send Meeting Request</Text>
             </TouchableOpacity>
+            {loading && (
+              <ActivityIndicator
+                style={styles.activityIndicator}
+                color="#4a5f85"
+                size={40}
+              />
+            )}
           </View>
         </View>
       </Modal>
     </View>
   );
 };
+
 const mapStateToProps = state => ({
   userData: state.userData,
 });
@@ -245,114 +263,94 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalView: {
-    width: width / 1.1,
-    height: height / 1.3,
+    width: width * 0.9,
+    height: height * 0.75,
     backgroundColor: 'white',
     borderRadius: 10,
+    padding: 20,
   },
   modalHeader: {
-    padding: 15,
-    width: '100%',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   modalTitle: {
-    color: '#3C4B64',
-    fontWeight: '600',
-    fontSize: 20,
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   modalSeparator: {
-    borderBottomWidth: 1,
-    width: '100%',
-    borderColor: '#ccc',
+    height: 1,
+    backgroundColor: '#e0e0e0',
+    marginVertical: 10,
   },
   modalContent: {
-    width: '100%',
-  },
-  mainContent: {
     flex: 1,
-    width: width,
     justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
   },
   modalSubTitle: {
-    color: '#3C4B64',
-    fontWeight: '600',
-    padding: 10,
-    fontSize: 20,
-    width: '100%',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 10,
   },
   dropdownContainer: {
-    width: '100%',
-    padding: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginBottom: 20,
   },
   dropdownSection: {
     width: '48%',
   },
   dropdownHeading: {
-    fontWeight: '600',
     fontSize: 14,
-    color: '#3C4B64',
-    marginLeft: 5,
-  },
-  meetingHeading: {
-    fontWeight: '600',
-    fontSize: 20,
-    color: '#3C4B64',
-    width: '94%',
-    marginLeft: 10,
-    marginTop: 10,
+    fontWeight: 'bold',
     marginBottom: 5,
   },
+  meetingHeading: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
   locationContainer: {
-    width: '100%',
-    padding: 10,
+    marginBottom: 20,
   },
   locationHeading: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#3C4B64',
-    marginLeft: 5,
+    fontWeight: 'bold',
+    marginBottom: 5,
   },
   separator: {
-    borderBottomWidth: 1,
-    borderColor: '#ccc',
-    width: '100%',
+    height: 1,
+    backgroundColor: '#e0e0e0',
+    marginVertical: 10,
   },
   messageHeading: {
-    width: '100%',
     fontSize: 14,
-    color: '#3C4B64',
-    fontWeight: '600',
-    padding: 10,
+    fontWeight: 'bold',
+    marginBottom: 5,
   },
   messageInput: {
-    height: '25%',
-    width: '95%',
+    height: height * 0.2,
+    borderColor: '#e0e0e0',
     borderWidth: 1,
-    borderColor: '#ccc',
-    marginBottom: 10,
-    alignSelf: 'center',
-    paddingHorizontal: 10,
-    color: 'black',
+    borderRadius: 5,
+    padding: 10,
+    textAlignVertical: 'top',
   },
   sendButton: {
-    width: '80%',
     backgroundColor: '#0059CF',
-    borderWidth: 1,
-    borderColor: '#0059CF',
-    padding: 15,
-    borderRadius: 50,
-    alignSelf: 'center',
+    borderRadius: 5,
+    paddingVertical: 10,
     alignItems: 'center',
-    marginTop: 15,
   },
   sendButtonText: {
-    color: '#fff',
+    color: 'white',
+    fontSize: 16,
     fontWeight: 'bold',
+  },
+  activityIndicator: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: [{translateX: -20}, {translateY: -20}],
   },
 });

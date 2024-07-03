@@ -21,6 +21,26 @@ import SelectDropdown from '../../components/PakExhibitor/SelectDropdownPak';
 
 const {width, height} = Dimensions.get('screen');
 
+const generateDates = () => {
+  const today = new Date();
+  const dates = [];
+  for (let i = 0; i < 7; i++) {
+    const date = new Date(today);
+    date.setDate(today.getDate() + i);
+    dates.push(date.toISOString().split('T')[0]); // Format: YYYY-MM-DD
+  }
+  return dates;
+};
+
+// Define standard timeslots
+const generateTimeslots = () => [
+  '10:00 AM - 11:00 AM',
+  '11:00 AM - 12:00 PM',
+  '01:00 PM - 02:00 PM',
+  '03:00 PM - 04:00 PM',
+  '04:00 PM - 05:00 PM',
+];
+
 const MeetingRequestKsa = ({modalVisible, setModalVisible, selectedRow}) => {
   const [selectedDate, setSelectedDate] = useState('Select Date');
   const [selectedTimeslot, setSelectedTimeslot] = useState('Select Timeslot');
@@ -33,20 +53,8 @@ const MeetingRequestKsa = ({modalVisible, setModalVisible, selectedRow}) => {
   const [alertType, setAlertType] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const dates = [
-    '2023-05-01',
-    '2023-05-02',
-    '2023-05-03',
-    '2023-05-03',
-    '2023-05-03',
-  ];
-  const timeslots = [
-    '10:00 AM - 11:00 AM',
-    '11:00 AM - 12:00 PM',
-    '11:00 AM - 12:00 PM',
-    '11:00 AM - 12:00 PM',
-    '01:00 PM - 02:00 PM',
-  ];
+  const dates = generateDates();
+  const timeslots = generateTimeslots();
   const locations = [
     'Ritz-Carlton, Riyadh',
     'Four Seasons Hotel, Riyadh',

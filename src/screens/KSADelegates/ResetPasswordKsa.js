@@ -145,7 +145,6 @@ const ResetPasswordKsa = () => {
             style={styles.logo}
           />
         </View>
-        <Text style={styles.heading}>KSA</Text>
         <Text style={styles.headerText}>Change Password</Text>
         <Text style={styles.headerText2}>Enter your old and new password</Text>
       </View>

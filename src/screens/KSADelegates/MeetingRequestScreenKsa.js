@@ -689,6 +689,7 @@ const styles = StyleSheet.create({
     marginRight: 5,
     color: 'black',
     marginLeft: 2,
+    fontWeight: 'bold',
   },
   searchInput2: {
     width: '100%',

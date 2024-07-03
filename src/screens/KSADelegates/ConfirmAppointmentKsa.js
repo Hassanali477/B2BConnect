@@ -8,12 +8,11 @@ import {
   Dimensions,
   TouchableOpacity,
   ActivityIndicator,
+  Platform,
+  PermissionsAndroid,
 } from 'react-native';
-import RNFetchBlob from 'rn-fetch-blob';
 import {useNavigation} from '@react-navigation/native';
 import HeaderComponent from '../../components/HeaderComponent';
-import RNFS from 'react-native-fs';
-import {PermissionsAndroid} from 'react-native';
 import AlertMessage from '../../components/AlertMessage';
 import {KeyboardAvoidingView} from 'react-native';
 import CustomDrawerKSA from '../../components/KSADelegates/CustomDrawerKSA';
@@ -23,6 +22,8 @@ import * as userActions from '../../redux/actions/user';
 import {bindActionCreators} from 'redux';
 import axios from 'axios';
 import Api_Base_Url from '../../api';
+import RNFetchBlob from 'rn-fetch-blob';
+import RNHTMLtoPDF from 'react-native-html-to-pdf';
 
 const {width, height} = Dimensions.get('screen');
 
@@ -64,77 +65,120 @@ const ConfirmAppointmentKsa = () => {
     }
   };
 
-  const handleDownloadPDF = async () => {
-    try {
-      const granted = await PermissionsAndroid.request(
+  const checkPermissions = async () => {
+    if (Platform.OS === 'android') {
+      const granted = await PermissionsAndroid.check(
         PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-        {
-          title: 'Storage Permission',
-          message: 'B2BConnect needs access to your storage to save files.',
-          buttonPositive: 'OK',
-        },
       );
-
-      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        downloadPDF();
-      } else {
-        showAlertMessage('Permission Denied', 'Storage permission denied.');
+      if (!granted) {
+        await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+        );
       }
-    } catch (error) {
-      console.error('Error requesting storage permission:', error);
-      showAlertMessage('Error', 'Failed to request storage permission.');
     }
   };
+
   const downloadPDF = async () => {
     try {
       if (appointments.length === 0) {
-        showAlertMessage('Error', 'No appointments to download.');
+        showAlertMessage('Error', 'No KSA Delegate Appointments to download.');
         return;
       }
 
       setLoading(true);
 
-      const pdfDir = RNFS.DownloadDirectoryPath;
-      const pdfFileName = 'appointments.pdf';
+      const htmlContent = `
+        <html>
+        <head>
+          <style>
+            table { width: 100%; border-collapse: collapse; }
+            th, td { border: 1px solid black; padding: 8px; text-align: center; }
+            th { background-color: #f2f2f2; }
+          </style>
+        </head>
+        <body>
+          <h1>Appointments</h1>
+          <table>
+            <tr>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Name</th>
+              <th>Company</th>
+              <th>Sector</th>
+              <th>Phone</th>
+              <th>Email</th>
+              <th>City</th>
+            </tr>
+            ${appointments
+              .map(
+                item => `
+              <tr>
+                <td>${item.date}</td>
+                <td>${item.time}</td>
+                <td>${item.exporter.contact_name}</td>
+                <td>${item.exporter.company_name}</td>
+                <td>${item.exporter.industry}</td>
+                <td>${item.exporter.phone}</td>
+                <td>${item.exporter.email}</td>
+                <td>${item.exporter.country}</td>
+              </tr>
+            `,
+              )
+              .join('')}
+          </table>
+        </body>
+        </html>
+      `;
 
-      const fileExists = await RNFS.exists(`${pdfDir}/${pdfFileName}`);
-      let newPdfFileName = pdfFileName;
+      const options = {
+        html: htmlContent,
+        fileName: 'KSADelegateAppointments',
+        directory: 'Documents',
+      };
 
-      if (fileExists) {
-        let count = 1;
-        while (true) {
-          const newFileName = `${pdfFileName.split('.pdf')[0]}_${count}.pdf`;
-          const exists = await RNFS.exists(`${pdfDir}/${newFileName}`);
-          if (!exists) {
-            newPdfFileName = newFileName;
-            break;
-          }
-          count++;
-        }
+      const file = await RNHTMLtoPDF.convert(options);
+      console.log('Generated PDF path:', file.filePath);
+
+      // Check if the file exists before moving
+      const fileExists = await RNFetchBlob.fs.exists(file.filePath);
+      if (!fileExists) {
+        throw new Error('Source file not found.');
       }
 
-      const pdfPath = `${pdfDir}/${newPdfFileName}`;
+      // Set the path to /storage/emulated/0/Download
+      const downloadsDir = '/storage/emulated/0/Download';
+      let destPath = `${downloadsDir}/KSADelegateAppointments.pdf`;
+      let fileCounter = 1;
+      while (await RNFetchBlob.fs.exists(destPath)) {
+        destPath = `${downloadsDir}/KSADelegateAppointments_${fileCounter}.pdf`;
+        fileCounter++;
+      }
 
-      const appointmentsText = appointments
-        .map(
-          item =>
-            `${item.date}, ${item.time}, ${item.exporter.contact_name}, ${item.exporter.company_name}, ${item.exporter.industry}, ${item.exporter.phone}, ${item.exporter.email}, ${item.exporter.country}`,
-        )
-        .join('\n');
+      console.log('Saving PDF to:', destPath);
 
-      await RNFS.writeFile(pdfPath, appointmentsText, 'utf8');
-
+      await RNFetchBlob.fs.mv(file.filePath, destPath);
       setLoading(false);
       showAlertMessage('Success', 'PDF file downloaded successfully.');
 
       RNFetchBlob.android.actionViewIntent(
-        `file://${pdfPath}`,
-        'application/pdf',
+        destPath,
+        'KSADelegateAppointments/pdf',
       );
     } catch (error) {
       setLoading(false);
       showAlertMessage('Error', 'Failed to download PDF file.');
       console.error('PDF download error:', error);
+    }
+  };
+
+  const handleDownloadPDF = async () => {
+    console.log('Handling PDF download');
+    try {
+      await checkPermissions();
+      await downloadPDF();
+    } catch (error) {
+      console.error('Error handling permissions:', error);
+      showAlertMessage('Error', 'Failed to handle permissions.');
     }
   };
 
