@@ -24,7 +24,6 @@ import ConfirmAppointmentKsa from '../screens/KSADelegates/ConfirmAppointmentKsa
 import FeedbackScreenKsa from '../screens/KSADelegates/FeedbackScreenKsa';
 import ResetPasswordKsa from '../screens/KSADelegates/ResetPasswordKsa';
 import ProfileKsa from '../screens/KSADelegates/ProfileKsa';
-import StateLifeDemo from '../screens/StateLifeDemo';
 
 const Stack = createStackNavigator();
 

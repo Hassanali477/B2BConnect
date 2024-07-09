@@ -169,7 +169,6 @@ const FeedbackScreen = () => {
             multiline={true}
             value={comments}
             onChangeText={handleComments}
-            placeholder="Enter your comments"
             placeholderTextColor="#ccc"
             textAlignVertical="top"
           />

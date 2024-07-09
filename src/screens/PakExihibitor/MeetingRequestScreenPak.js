@@ -442,6 +442,16 @@ const MeetingRequestScreenPak = () => {
   //   setFilteredData(newData);
   // };
 
+  const generateDates = () => {
+    const today = new Date();
+    const dates = [];
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      dates.push(date.toISOString().split('T')[0]); // Format: YYYY-MM-DD
+    }
+    return dates;
+  };
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -560,7 +570,16 @@ const MeetingRequestScreenPak = () => {
               <View style={[styles.dropdownWrapper, {zIndex: 999}]}>
                 <SelectDropdown
                   title="Select New Time"
-                  options={['10:00 AM', '11:00 AM', '12:00 PM']}
+                  options={[
+                    '10:00 AM',
+                    '11:00 AM',
+                    '12:00 PM',
+                    '01:00 PM',
+                    '02:00 PM',
+                    '03:00 PM',
+                    '04:00 PM',
+                    '05:00 PM',
+                  ]}
                   selectedValue={newTime}
                   onSelect={setNewTime}
                 />
@@ -568,7 +587,7 @@ const MeetingRequestScreenPak = () => {
               <View style={[styles.dropdownWrapper, {zIndex: 999}]}>
                 <SelectDropdown
                   title="Select New Date"
-                  options={['2024-06-25', '2024-06-26', '2024-06-27']}
+                  options={generateDates()}
                   selectedValue={newDate}
                   onSelect={setNewDate}
                 />
@@ -672,8 +691,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginRight: 5,
     color: 'black',
-    marginLeft: 2,
-    fontWeight:'bold'
+    fontWeight: 'bold',
   },
   searchInput2: {
     width: '100%',

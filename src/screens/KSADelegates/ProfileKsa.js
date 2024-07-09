@@ -83,6 +83,7 @@ const ProfileKsa = props => {
       setAlertVisible(true);
       return false;
     }
+
     if (!updatedWebsiteLink.trim()) {
       setAlertMessage('Invalid Website URL.');
       setAlertType('error');
@@ -98,6 +99,7 @@ const ProfileKsa = props => {
     }
     try {
       setLoading(true);
+
       const updateData = {
         contact_name: updatedFullName,
         category: 'Hello',
@@ -109,24 +111,27 @@ const ProfileKsa = props => {
         is_pasha_member: 1,
         services_offered: 'services_offered',
         about_us: 'about_us',
+        address: 'House no 33',
       };
+
       const userId = user?.userData?.id;
       const response = await axios.put(
         `${Api_Base_Url}updateProfile/${userId}`,
         updateData,
       );
       if (response.status === 200) {
-        console.log(response.data, 'checking user data');
-        setFullName(updatedFullName);
-        setCompanyName(updatedCompanyName);
-        setPhoneNumber(updatedPhoneNumber);
-        setWebsiteLink(updatedWebsiteLink);
+        setFullName(response?.data?.buyer?.contact_name);
+        setCompanyName(response?.data?.buyer?.company_name);
+        setPhoneNumber(response?.data?.buyer?.phone);
+        setWebsiteLink(response?.data?.buyer?.website);
+
         user.userAdditionalData.company_name =
           response?.data?.buyer.company_name;
-        user.userAdditionalData.phone = response?.data?.buyer.phone;
+        user.userAdditionalData.phone = response?.data?.exporter?.phone;
         user.userAdditionalData.website = response?.data?.buyer.website;
         user.userAdditionalData.contact_name =
           response?.data?.buyer.contact_name;
+
         user.userData.name = response?.data?.buyer?.contact_name;
         dispatch(userActions.user(user));
 
@@ -238,70 +243,72 @@ const ProfileKsa = props => {
           onPress={openModal}>
           <Text style={styles.updateButtonText}>Edit Profile</Text>
         </TouchableOpacity>
-        {loading && <ActivityIndicator />}
-        {!loading}
-        <Modal
-          animationType="fade"
-          transparent={true}
-          visible={isModalVisible}
-          onRequestClose={() => setIsModalVisible(false)}>
-          <KeyboardAvoidingView
-            style={styles.modalContainer}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : -width * 0.1}
-            behavior={Platform.OS === 'ios' ? 'height' : 'height'}>
-            <View style={styles.modalContent}>
-              <Image
-                source={require('../../assets/images/SplashScreen.png')}
-                style={styles.modalImage}
-              />
-              <View style={styles.modalHeader}>
-                <Text style={styles.modalHeading}>Update Profile</Text>
-                <FontAwesomeIcon
-                  name="times"
-                  size={28}
-                  color={'#0059CF'}
-                  onPress={() => setIsModalVisible(false)}
+        {loading && <CustomActivityIndicator />}
+        {!loading && (
+          <Modal
+            animationType="fade"
+            transparent={true}
+            visible={isModalVisible}
+            onRequestClose={() => setIsModalVisible(false)}>
+            <KeyboardAvoidingView
+              style={styles.modalContainer}
+              keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : -width * 0.1}
+              behavior={Platform.OS === 'ios' ? 'height' : 'height'}>
+              <View style={styles.modalContent}>
+                <Image
+                  source={require('../../assets/images/SplashScreen.png')}
+                  style={styles.modalImage}
                 />
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalHeading}>Update Profile</Text>
+                  <FontAwesomeIcon
+                    name="times"
+                    size={28}
+                    color={'#0059CF'}
+                    onPress={() => setIsModalVisible(false)}
+                  />
+                </View>
+                <TextInput
+                  style={styles.input}
+                  value={updatedFullName}
+                  onChangeText={text => setUpdatedFullName(text)}
+                  placeholder="Full Name"
+                  placeholderTextColor="#000"
+                />
+                <TextInput
+                  style={styles.input}
+                  value={updatedCompanyName}
+                  onChangeText={text => setUpdatedCompanyName(text)}
+                  placeholder="Company Name"
+                  placeholderTextColor="#000"
+                />
+                <TextInput
+                  style={styles.input}
+                  value={updatedPhoneNumber}
+                  onChangeText={text => setUpdatedPhoneNumber(text)}
+                  placeholder="Phone Number"
+                  keyboardType="phone-pad"
+                  placeholderTextColor="#000"
+                  maxLength={15}
+                />
+                <TextInput
+                  style={styles.input}
+                  value={updatedWebsiteLink}
+                  onChangeText={text => setUpdatedWebsiteLink(text)}
+                  placeholder="Website Link"
+                  keyboardType="url"
+                  placeholderTextColor="#000"
+                />
+                <TouchableOpacity
+                  style={styles.updateButton}
+                  onPress={updateProfile}>
+                  <Text style={styles.updateButtonText}>Update Profile</Text>
+                </TouchableOpacity>
               </View>
-              <TextInput
-                style={styles.input}
-                value={updatedFullName}
-                onChangeText={text => setUpdatedFullName(text)}
-                placeholder="Full Name"
-                placeholderTextColor="#000"
-              />
-              <TextInput
-                style={styles.input}
-                value={updatedCompanyName}
-                onChangeText={text => setUpdatedCompanyName(text)}
-                placeholder="Company Name"
-                placeholderTextColor="#000"
-              />
-              <TextInput
-                style={styles.input}
-                value={updatedPhoneNumber}
-                onChangeText={text => setUpdatedPhoneNumber(text)}
-                placeholder="Phone Number"
-                keyboardType="phone-pad"
-                placeholderTextColor="#000"
-                maxLength={15}
-              />
-              <TextInput
-                style={styles.input}
-                value={updatedWebsiteLink}
-                onChangeText={text => setUpdatedWebsiteLink(text)}
-                placeholder="Website Link"
-                keyboardType="url"
-                placeholderTextColor="#000"
-              />
-              <TouchableOpacity
-                style={styles.updateButton}
-                onPress={updateProfile}>
-                <Text style={styles.updateButtonText}>Update Profile</Text>
-              </TouchableOpacity>
-            </View>
-          </KeyboardAvoidingView>
-        </Modal>
+            </KeyboardAvoidingView>
+          </Modal>
+        )}
+
         {/* Alert Message */}
         <AlertMessage
           message={alertMessage}

@@ -326,7 +326,7 @@ const MeetingRequestScreenKsa = () => {
                     {item?.exporter?.email}
                   </Text>
                   <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                    {item?.exporter?.address}
+                    {item.location}
                   </Text>
                   <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
                     {item.date}
@@ -419,13 +419,13 @@ const MeetingRequestScreenKsa = () => {
                     {item?.exporter?.email}
                   </Text>
                   <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                    {item.location}
+                    {item?.location}
                   </Text>
                   <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                    {item.time}
+                    {item?.time}
                   </Text>
                   <Text style={[styles.headerCell, {color: '#4a5f85'}]}>
-                    {item.date}
+                    {item?.date}
                   </Text>
                   <Text
                     style={[
@@ -459,6 +459,16 @@ const MeetingRequestScreenKsa = () => {
       </ScrollView>
     </View>
   );
+  const generateDates = () => {
+    const today = new Date();
+    const dates = [];
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      dates.push(date.toISOString().split('T')[0]); // Format: YYYY-MM-DD
+    }
+    return dates;
+  };
 
   return (
     <KeyboardAvoidingView
@@ -577,7 +587,16 @@ const MeetingRequestScreenKsa = () => {
               <View style={[styles.dropdownWrapper, {zIndex: 999}]}>
                 <SelectDropdown
                   title="Select New Time"
-                  options={['10:00 AM', '11:00 AM', '12:00 PM']}
+                  options={[
+                    '10:00 AM',
+                    '11:00 AM',
+                    '12:00 PM',
+                    '01:00 PM',
+                    '02:00 PM',
+                    '03:00 PM',
+                    '04:00 PM',
+                    '05:00 PM',
+                  ]}
                   selectedValue={newTime}
                   onSelect={setNewTime}
                 />
@@ -585,7 +604,7 @@ const MeetingRequestScreenKsa = () => {
               <View style={[styles.dropdownWrapper, {zIndex: 999}]}>
                 <SelectDropdown
                   title="Select New Date"
-                  options={['2024-06-25', '2024-06-26', '2024-06-27']}
+                  options={generateDates()}
                   selectedValue={newDate}
                   onSelect={setNewDate}
                 />
@@ -688,7 +707,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginRight: 5,
     color: 'black',
-    marginLeft: 2,
     fontWeight: 'bold',
   },
   searchInput2: {

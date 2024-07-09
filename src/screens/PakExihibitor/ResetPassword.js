@@ -8,8 +8,7 @@ import {
   TouchableOpacity,
   Alert,
   Image,
-  ActivityIndicator
-
+  ActivityIndicator,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -39,8 +38,8 @@ const ResetPassword = () => {
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [alertType, setAlertType] = useState('');
-  const [loading, setLoading] = useState(true);
-  
+  const [loading, setLoading] = useState(false);
+
   const validatePassword = password => {
     return password.length >= 8;
   };

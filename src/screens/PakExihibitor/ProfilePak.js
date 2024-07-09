@@ -79,13 +79,19 @@ const ProfilePak = props => {
       setAlertVisible(true);
       return false;
     }
+    // if (!updatedPhoneNumber.startsWith('+92')) {
+    //   setAlertMessage('Phone Number must include Pakistan country code +92.');
+    //   setAlertType('error');
+    //   setAlertVisible(true);
+    //   return false;
+    // }
     if (!updatedWebsiteLink.trim()) {
       setAlertMessage('Invalid Website URL.');
       setAlertType('error');
       setAlertVisible(true);
       return false;
     }
-    return true;
+    return true; // Add this return to ensure successful validation
   };
 
   const updateProfile = async () => {
@@ -94,6 +100,7 @@ const ProfilePak = props => {
     }
     try {
       setLoading(true);
+
       const updateData = {
         contact_name: updatedFullName,
         category: 'Hello',
@@ -105,25 +112,30 @@ const ProfilePak = props => {
         is_pasha_member: 1,
         services_offered: 'services_offered',
         about_us: 'about_us',
+        address: 'House no 33',
       };
+
       const userId = user?.userData?.id;
       const response = await axios.put(
         `${Api_Base_Url}updateProfile/${userId}`,
         updateData,
       );
-      if (response.status === 200) {
-        setFullName(updatedFullName);
-        setCompanyName(updatedCompanyName);
-        setPhoneNumber(updatedPhoneNumber);
-        setWebsiteLink(updatedWebsiteLink);
-        user.userAdditionalData.company_name =
-          response?.data?.exporter.company_name;
-        user.userAdditionalData.phone = response?.data?.exporter.phone;
-        user.userAdditionalData.website = response?.data?.exporter.website;
-        user.userAdditionalData.contact_name =
-          response?.data?.exporter.contact_name;
-        user.userData.name = response?.data?.exporter?.contact_name;
 
+      if (response.status === 200) {
+        setFullName(response?.data?.exporter?.contact_name);
+        setCompanyName(response?.data?.exporter?.company_name);
+        setPhoneNumber(response?.data?.exporter?.phone); // Save the formatted phone number
+        setWebsiteLink(response?.data?.exporter?.website);
+
+        // Ensure you're using the correct response keys
+        user.userAdditionalData.company_name =
+          response?.data?.exporter?.company_name;
+        user.userAdditionalData.phone = response?.data?.exporter?.phone;
+        user.userAdditionalData.website = response?.data?.exporter?.website;
+        user.userAdditionalData.contact_name =
+          response?.data?.exporter?.contact_name;
+
+        user.userData.name = response?.data?.exporter?.contact_name;
         dispatch(userActions.user(user));
 
         setAlertMessage('Profile updated successfully.');
@@ -135,7 +147,7 @@ const ProfilePak = props => {
         setAlertVisible(true);
       }
     } catch (error) {
-      console.error('Error updating profile:', error);
+      console.error('Error updating profile:', error.response?.data);
       setAlertMessage(
         error?.response?.data?.message ||
           'An error occurred while updating the profile.',
@@ -189,50 +201,48 @@ const ProfilePak = props => {
         </View>
 
         {/*Profile Section */}
-        {loading && <CustomActivityIndicator />}
-        {!loading && (
-          <View style={styles.card}>
-            <Text style={styles.profileTitle}>My Profile</Text>
-            <TextInput
-              style={[styles.input, {color: '#000'}]}
-              value={fullName}
-              placeholder="Full Name"
-              placeholderTextColor="#000"
-              editable={false}
-            />
-            <TextInput
-              style={[styles.input, {color: '#000'}]}
-              value={companyName}
-              placeholder="Company Name"
-              placeholderTextColor="#000"
-              editable={false}
-            />
-            <TextInput
-              style={[styles.input, {color: '#000'}]}
-              value={email}
-              placeholder="Email"
-              keyboardType="email-address"
-              placeholderTextColor="#000"
-              editable={false}
-            />
-            <TextInput
-              style={[styles.input, {color: '#000'}]}
-              value={phoneNumber}
-              placeholder="Phone Number"
-              keyboardType="phone-pad"
-              placeholderTextColor="#000"
-              editable={false}
-            />
-            <TextInput
-              style={[styles.input, {color: '#000'}]}
-              value={websiteLink}
-              placeholder="Website Link"
-              keyboardType="url"
-              placeholderTextColor="#000"
-              editable={false}
-            />
-          </View>
-        )}
+        <View style={styles.card}>
+          <Text style={styles.profileTitle}>My Profile</Text>
+          <TextInput
+            style={[styles.input, {color: '#000'}]}
+            value={fullName}
+            placeholder="Full Name"
+            placeholderTextColor="#000"
+            editable={false}
+          />
+          <TextInput
+            style={[styles.input, {color: '#000'}]}
+            value={companyName}
+            placeholder="Company Name"
+            placeholderTextColor="#000"
+            editable={false}
+          />
+          <TextInput
+            style={[styles.input, {color: '#000'}]}
+            value={email}
+            placeholder="Email"
+            keyboardType="email-address"
+            placeholderTextColor="#000"
+            editable={false}
+          />
+
+          <TextInput
+            style={[styles.input, {color: '#000'}]}
+            value={phoneNumber}
+            placeholder="Phone Number"
+            keyboardType="phone-pad"
+            placeholderTextColor="#000"
+            editable={false}
+          />
+          <TextInput
+            style={[styles.input, {color: '#000'}]}
+            value={websiteLink}
+            placeholder="Website Link"
+            keyboardType="url"
+            placeholderTextColor="#000"
+            editable={false}
+          />
+        </View>
 
         {/* Update Button */}
         <TouchableOpacity
@@ -242,68 +252,72 @@ const ProfilePak = props => {
         </TouchableOpacity>
 
         {/* Modal for editing profile */}
-        <Modal
-          animationType="fade"
-          transparent={true}
-          visible={isModalVisible}
-          onRequestClose={() => setIsModalVisible(false)}>
-          <KeyboardAvoidingView
-            style={styles.modalContainer}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : -width * 0.1}
-            behavior={Platform.OS === 'ios' ? 'height' : 'height'}>
-            <View style={styles.modalContent}>
-              <Image
-                source={require('../../assets/images/SplashScreen.png')}
-                style={styles.modalImage}
-              />
-              <View style={styles.modalHeader}>
-                <Text style={styles.modalHeading}>Update Profile</Text>
-                <FontAwesomeIcon
-                  name="times"
-                  size={28}
-                  color={'#0059CF'}
-                  onPress={() => setIsModalVisible(false)}
+        {loading && <CustomActivityIndicator />}
+        {!loading && (
+          <Modal
+            animationType="fade"
+            transparent={true}
+            visible={isModalVisible}
+            onRequestClose={() => setIsModalVisible(false)}>
+            <KeyboardAvoidingView
+              style={styles.modalContainer}
+              keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : -width * 0.1}
+              behavior={Platform.OS === 'ios' ? 'height' : 'height'}>
+              <View style={styles.modalContent}>
+                <Image
+                  source={require('../../assets/images/SplashScreen.png')}
+                  style={styles.modalImage}
                 />
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalHeading}>Update Profile</Text>
+                  <FontAwesomeIcon
+                    name="times"
+                    size={28}
+                    color={'#0059CF'}
+                    onPress={() => setIsModalVisible(false)}
+                  />
+                </View>
+                <TextInput
+                  style={styles.input}
+                  value={updatedFullName}
+                  onChangeText={text => setUpdatedFullName(text)}
+                  placeholder="Full Name"
+                  placeholderTextColor="#000"
+                />
+                <TextInput
+                  style={styles.input}
+                  value={updatedCompanyName}
+                  onChangeText={text => setUpdatedCompanyName(text)}
+                  placeholder="Company Name"
+                  placeholderTextColor="#000"
+                />
+                <TextInput
+                  style={styles.input}
+                  value={updatedPhoneNumber}
+                  onChangeText={text => setUpdatedPhoneNumber(text)}
+                  placeholder="Phone Number"
+                  keyboardType="phone-pad"
+                  placeholderTextColor="#000"
+                  maxLength={15}
+                />
+                <TextInput
+                  style={styles.input}
+                  value={updatedWebsiteLink}
+                  onChangeText={text => setUpdatedWebsiteLink(text)}
+                  placeholder="Website Link"
+                  keyboardType="url"
+                  placeholderTextColor="#000"
+                />
+                <TouchableOpacity
+                  style={styles.updateButton}
+                  onPress={updateProfile}>
+                  <Text style={styles.updateButtonText}>Update Profile</Text>
+                </TouchableOpacity>
               </View>
-              <TextInput
-                style={styles.input}
-                value={updatedFullName}
-                onChangeText={text => setUpdatedFullName(text)}
-                placeholder="Full Name"
-                placeholderTextColor="#000"
-              />
-              <TextInput
-                style={styles.input}
-                value={updatedCompanyName}
-                onChangeText={text => setUpdatedCompanyName(text)}
-                placeholder="Company Name"
-                placeholderTextColor="#000"
-              />
-              <TextInput
-                style={styles.input}
-                value={updatedPhoneNumber}
-                onChangeText={text => setUpdatedPhoneNumber(text)}
-                placeholder="Phone Number"
-                keyboardType="phone-pad"
-                placeholderTextColor="#000"
-                maxLength={15}
-              />
-              <TextInput
-                style={styles.input}
-                value={updatedWebsiteLink}
-                onChangeText={text => setUpdatedWebsiteLink(text)}
-                placeholder="Website Link"
-                keyboardType="url"
-                placeholderTextColor="#000"
-              />
-              <TouchableOpacity
-                style={styles.updateButton}
-                onPress={updateProfile}>
-                <Text style={styles.updateButtonText}>Update Profile</Text>
-              </TouchableOpacity>
-            </View>
-          </KeyboardAvoidingView>
-        </Modal>
+            </KeyboardAvoidingView>
+          </Modal>
+        )}
+
         {/* Alert Message */}
         <AlertMessage
           message={alertMessage}
@@ -325,7 +339,6 @@ const ProfilePak = props => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // paddingHorizontal: width * 0.04,
   },
   scrollContainer: {
     flexGrow: 1,
@@ -395,6 +408,14 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     color: '#000',
   },
+  countryCodeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '20%',
+  },
+  // caretIcon: {
+  //   marginLeft: 5,
+  // },
   dropdownContainer: {
     marginBottom: height * 0.02,
   },
