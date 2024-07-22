@@ -176,7 +176,7 @@ const DashboardKSA = () => {
       behavior={Platform.OS === 'ios' ? 'height' : 'height'}>
       <HeaderComponent onMenuPress={() => setDrawerVisible(!drawerVisible)} />
       <View style={styles.headerCont}>
-        <Text style={styles.headerText}>List of PAK EXHIBITOR</Text>
+        <Text style={styles.headerText}>LIST OF EXHIBITOR</Text>
       </View>
       <View style={styles.headerSubCont}>
         <View style={styles.headerTextSearch}>
@@ -270,7 +270,8 @@ const DashboardKSA = () => {
       <View style={styles.tableContainer}>
         <ScrollView
           horizontal
-          showsHorizontalScrollIndicator={false}
+          showsHorizontalScrollIndicator={true}
+          indicatorStyle="black"
           contentContainerStyle={{
             alignItems: 'flex-start',
             alignSelf: 'flex-start',
@@ -297,7 +298,7 @@ const DashboardKSA = () => {
                 filteredData?.exporters?.length > 0 ? (
                 <ScrollView
                   style={{height: height * 0.4}}
-                  showsVerticalScrollIndicator={false}>
+                  showsVerticalScrollIndicator={true}>
                   {filteredData?.exporters?.map((item, index) => {
                     return (
                       <View key={item.id} style={styles.row}>
@@ -426,11 +427,26 @@ const DashboardKSA = () => {
                   </>
                 )}
               </View>
-              <TouchableOpacity
-                style={styles.closeButton}
-                onPress={() => setModalVisible1(false)}>
-                <Text style={styles.closeButtonText}>Close</Text>
-              </TouchableOpacity>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}>
+                <TouchableOpacity
+                  style={styles.closeButton}
+                  onPress={() => setModalVisible1(false)}>
+                  <Text style={styles.closeButtonText}>Close</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.closeButton}
+                  onPress={() => {
+                    setModalVisible(true);
+                    // setSelectedRow(item);
+                  }}>
+                  <Text style={styles.meetingButtonText}>Request</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         </Modal>
@@ -478,6 +494,8 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     marginVertical: 15,
+    letterSpacing: 1.5,
+    alignSelf: 'flex-start',
   },
   headerSubCont: {
     width: '100%',
@@ -530,8 +548,6 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   dropdownListContainer: {
-    // position: 'absolute',
-    // top: 50,
     width: '100%',
     borderWidth: 1,
     borderColor: '#ccc',
@@ -540,7 +556,7 @@ const styles = StyleSheet.create({
     maxHeight: 180,
   },
   scrollViewContent: {
-    paddingBottom: 10, // Adjust this value according to your need
+    paddingBottom: 10,
   },
   dropdownItem: {
     padding: 6,
@@ -562,16 +578,14 @@ const styles = StyleSheet.create({
   },
   tableContainer: {
     width: '95%',
-    backgroundColor: '#fff',
-    marginTop: width * 0.03,
-    borderWidth: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.12)',
+    marginTop: width * 0.015,
     borderRadius: 10,
     overflow: 'hidden',
-    borderColor: '#ccc',
   },
   headerRow: {
     flexDirection: 'row',
-    backgroundColor: '#ccc',
+    backgroundColor: 'rgba(0,0,0,0.15)',
     padding: 13,
     borderWidth: 1,
     borderColor: '#ccc',
@@ -712,7 +726,7 @@ const styles = StyleSheet.create({
   activityIndicator: {
     position: 'absolute',
     alignSelf: 'center',
-    top: '60%', // Center vertically
+    top: '70%', // Center vertically
     zIndex: 999,
   },
 });

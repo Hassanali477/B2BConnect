@@ -24,6 +24,7 @@ import axios from 'axios';
 import Api_Base_Url from '../../api';
 import RNFetchBlob from 'rn-fetch-blob';
 import RNHTMLtoPDF from 'react-native-html-to-pdf';
+import RNFS from 'react-native-fs';
 
 const {width, height} = Dimensions.get('screen');
 
@@ -65,19 +66,24 @@ const ConfirmAppointmentKsa = () => {
     }
   };
 
+  // Check Permissions
   const checkPermissions = async () => {
     if (Platform.OS === 'android') {
       const granted = await PermissionsAndroid.check(
         PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
       );
       if (!granted) {
-        await PermissionsAndroid.request(
+        const result = await PermissionsAndroid.request(
           PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
         );
+        if (result !== PermissionsAndroid.RESULTS.GRANTED) {
+          throw new Error('WRITE_EXTERNAL_STORAGE permission denied');
+        }
       }
     }
   };
 
+  // Download PDF
   const downloadPDF = async () => {
     try {
       if (appointments.length === 0) {
@@ -139,13 +145,7 @@ const ConfirmAppointmentKsa = () => {
       const file = await RNHTMLtoPDF.convert(options);
       console.log('Generated PDF path:', file.filePath);
 
-      // Check if the file exists before moving
-      const fileExists = await RNFetchBlob.fs.exists(file.filePath);
-      if (!fileExists) {
-        throw new Error('Source file not found.');
-      }
-
-      // Set the path to /storage/emulated/0/Download
+      // Determine the appropriate path based on the Android version
       const downloadsDir = '/storage/emulated/0/Download';
       let destPath = `${downloadsDir}/KSADelegateAppointments.pdf`;
       let fileCounter = 1;
@@ -156,14 +156,11 @@ const ConfirmAppointmentKsa = () => {
 
       console.log('Saving PDF to:', destPath);
 
-      await RNFetchBlob.fs.mv(file.filePath, destPath);
+      await RNFS.moveFile(file.filePath, destPath);
       setLoading(false);
       showAlertMessage('Success', 'PDF file downloaded successfully.');
 
-      RNFetchBlob.android.actionViewIntent(
-        destPath,
-        'KSADelegateAppointments/pdf',
-      );
+      RNFetchBlob.android.actionViewIntent(destPath, 'application/pdf');
     } catch (error) {
       setLoading(false);
       showAlertMessage('Error', 'Failed to download PDF file.');
@@ -171,6 +168,7 @@ const ConfirmAppointmentKsa = () => {
     }
   };
 
+  // Handle Download PDF
   const handleDownloadPDF = async () => {
     console.log('Handling PDF download');
     try {
@@ -237,7 +235,7 @@ const ConfirmAppointmentKsa = () => {
       <View style={styles.tableContainer}>
         <ScrollView
           horizontal
-          showsHorizontalScrollIndicator={false}
+          showsHorizontalScrollIndicator={true}
           contentContainerStyle={{
             alignItems: 'flex-start',
             alignSelf: 'flex-start',
@@ -255,7 +253,7 @@ const ConfirmAppointmentKsa = () => {
             </View>
             <ScrollView
               style={{height: height * 0.4}}
-              showsVerticalScrollIndicator={false}>
+              showsVerticalScrollIndicator={true}>
               {filteredAppointments.map(item => (
                 <View key={item.id} style={styles.row}>
                   <Text style={styles.cell}>{item.date}</Text>
@@ -346,21 +344,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   tableContainer: {
-    // width: width / 1.16,
-    // height: height * 0.5,
-    // backgroundColor: '#fff',
-    // marginTop: width * 0.06,
-    // borderWidth: 1,
-    // borderRadius: 10,
-    // overflow: 'hidden',
-    // borderColor: '#ccc',
     width: '95%',
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(0, 0, 0, 0.075)',
     marginTop: width * 0.06,
-    borderWidth: 1,
     borderRadius: 10,
     overflow: 'hidden',
-    borderColor: '#ccc',
   },
   headerRow: {
     flexDirection: 'row',

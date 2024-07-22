@@ -8,7 +8,7 @@ import {
   TextInput,
   Image,
   TouchableOpacity,
-  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import {CheckBox, Icon} from 'react-native-elements';
 import AlertMessage from '../../components/AlertMessage';
@@ -23,6 +23,7 @@ const ForgotPasswordKsa = () => {
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [alertType, setAlertType] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const validateEmail = email => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -30,6 +31,7 @@ const ForgotPasswordKsa = () => {
   };
 
   const handleResetPassword = async () => {
+    setLoading(true);
     if (!email) {
       setEmailError('Email is required');
     } else if (!validateEmail(email)) {
@@ -47,19 +49,24 @@ const ForgotPasswordKsa = () => {
         if (response.data.status === 1) {
           setAlertType('success');
           setAlertMessage('A password reset link has been sent to your email.');
+          setLoading(false);
         } else if (response.data.status === 0) {
           setAlertType('error');
           setAlertMessage('Email not found. Please check and try again.');
+          setLoading(false);
         } else {
           setAlertType('error');
           setAlertMessage('Something went wrong. Please try again later.');
+          setLoading(false);
         }
       } catch (error) {
         console.error('Error:', error.response || error.message || error); // Log the error
         setAlertType('error');
         setAlertMessage('Something went wrong. Please try again later.');
+        setLoading(false);
       }
       setAlertVisible(true);
+      setLoading(false);
     }
   };
 
@@ -115,6 +122,13 @@ const ForgotPasswordKsa = () => {
           style={styles.logo1}
         />
       </View>
+      {loading && (
+        <ActivityIndicator
+          style={styles.activityIndicator}
+          color="#4a5f85"
+          size={40}
+        />
+      )}
       <AlertMessage
         message={alertMessage}
         type={alertType}
@@ -308,5 +322,11 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  activityIndicator: {
+    position: 'absolute',
+    alignSelf: 'center',
+    top: '40%', // Center vertically
+    zIndex: 999,
   },
 });

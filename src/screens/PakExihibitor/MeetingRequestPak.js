@@ -7,6 +7,7 @@ import {
   Modal,
   TouchableOpacity,
   TextInput,
+  ScrollView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import SelectDropdown from '../../components/PakExhibitor/SelectDropdownPak';
@@ -16,6 +17,8 @@ import axios from 'axios'; // Ensure axios is imported
 import {connect, useSelector} from 'react-redux';
 import * as userActions from '../../redux/actions/user';
 import {bindActionCreators} from 'redux';
+import {Platform} from 'react-native';
+import {ActivityIndicator} from 'react-native';
 
 const {width, height} = Dimensions.get('screen');
 
@@ -49,6 +52,7 @@ const MeetingRequestPak = ({modalVisible, setModalVisible, selectedRow}) => {
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [alertType, setAlertType] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const dates = generateDates();
   const timeslots = generateTimeslots();
@@ -116,6 +120,7 @@ const MeetingRequestPak = ({modalVisible, setModalVisible, selectedRow}) => {
       };
 
       try {
+        setLoading(true);
         const response = await axios.post(
           `${Api_Base_Url}meetingRequestBuyer`,
           data,
@@ -128,15 +133,18 @@ const MeetingRequestPak = ({modalVisible, setModalVisible, selectedRow}) => {
           setSelectedTimeslot('Select Timeslot');
           setSelectedLocation('Select Meeting Location');
           setMessage('');
+          setLoading(false);
         } else {
           setAlertMessage('Failed to send meeting request. Please try again.');
           setAlertType('error');
           setAlertVisible(true);
+          setLoading(false);
         }
       } catch (error) {
         setAlertMessage('Failed to send meeting request. Please try again.');
         setAlertType('error');
         setAlertVisible(true);
+        setLoading(false);
       }
     }
   };
@@ -146,66 +154,64 @@ const MeetingRequestPak = ({modalVisible, setModalVisible, selectedRow}) => {
   };
 
   return (
-    <View style={styles.container}>
-      <AlertMessage
-        message={alertMessage}
-        type={alertType}
-        visible={alertVisible}
-        onClose={closeAlert}
-      />
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(!modalVisible)}>
-        <View style={styles.modalBackground}>
-          <View style={styles.modalView}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Meeting Request - ELM</Text>
-              <TouchableOpacity onPress={() => setModalVisible(false)}>
-                <Icon
-                  name="times"
-                  type="material"
-                  size={26}
-                  color={'#0059CF'}
+    <Modal
+      animationType="fade"
+      transparent={true}
+      visible={modalVisible}
+      onRequestClose={() => setModalVisible(!modalVisible)}>
+      <View style={styles.modalBackground}>
+        <View style={styles.modalView}>
+          <AlertMessage
+            message={alertMessage}
+            type={alertType}
+            visible={alertVisible}
+            onClose={closeAlert}
+          />
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Meeting Request - ELM</Text>
+            <TouchableOpacity onPress={() => setModalVisible(false)}>
+              <Icon name="times" type="material" size={26} color={'#0059CF'} />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.modalSeparator} />
+          <View style={styles.modalContent}>
+            <Text style={styles.modalSubTitle}>Send request for Meeting</Text>
+            <View style={styles.dropdownContainer}>
+              <View style={styles.dropdownSection}>
+                <Text style={styles.dropdownHeading}>Select Date</Text>
+                <SelectDropdown
+                  title={'Select Date'}
+                  options={dates}
+                  selectedValue={selectedDate}
+                  onSelect={handleDateSelect}
                 />
-              </TouchableOpacity>
-            </View>
-            <View style={styles.modalSeparator} />
-            <View style={styles.modalContent}>
-              <Text style={styles.modalSubTitle}>Send request for Meeting</Text>
-              <View style={styles.dropdownContainer}>
-                <View style={styles.dropdownSection}>
-                  <Text style={styles.dropdownHeading}>Select Date</Text>
-                  <SelectDropdown
-                    title={'Select Date'}
-                    options={dates}
-                    selectedValue={selectedDate}
-                    onSelect={handleDateSelect}
-                  />
-                </View>
-                <View style={styles.dropdownSection}>
-                  <Text style={styles.dropdownHeading}>Select Timeslot</Text>
-                  <SelectDropdown
-                    title={'Select Timeslot'}
-                    options={timeslots}
-                    selectedValue={selectedTimeslot}
-                    onSelect={handleTimeslotSelect}
-                  />
-                </View>
+              </View>
+              <View style={styles.dropdownSection}>
+                <Text style={styles.dropdownHeading}>Select Timeslot</Text>
+                <SelectDropdown
+                  title={'Select Timeslot'}
+                  options={timeslots}
+                  selectedValue={selectedTimeslot}
+                  onSelect={handleTimeslotSelect}
+                />
               </View>
             </View>
-            <View style={styles.modalSeparator} />
-            <Text style={styles.meetingHeading}>Meeting Location</Text>
-            <View style={styles.locationContainer}>
-              <Text style={styles.locationHeading}>Select Location</Text>
-              <SelectDropdown
-                title={'Select Location'}
-                options={locations}
-                selectedValue={selectedLocation}
-                onSelect={handleLocationSelect}
-              />
-            </View>
+          </View>
+          <View style={styles.modalSeparator} />
+          <Text style={styles.meetingHeading}>Meeting Location</Text>
+          <View style={styles.locationContainer}>
+            <Text style={styles.locationHeading}>Select Location</Text>
+            <SelectDropdown
+              title={'Select Location'}
+              options={locations}
+              selectedValue={selectedLocation}
+              onSelect={handleLocationSelect}
+            />
+          </View>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.scrollContainer}
+            persistentScrollbar={true}>
             <View style={styles.separator} />
             <Text style={styles.messageHeading}>Type Message...</Text>
             <TextInput
@@ -222,12 +228,20 @@ const MeetingRequestPak = ({modalVisible, setModalVisible, selectedRow}) => {
               onPress={handleSendMessage}>
               <Text style={styles.sendButtonText}>Send Meeting Request</Text>
             </TouchableOpacity>
-          </View>
+          </ScrollView>
         </View>
-      </Modal>
-    </View>
+      </View>
+      {loading && (
+        <ActivityIndicator
+          style={styles.activityIndicator}
+          color="#4a5f85"
+          size={40}
+        />
+      )}
+    </Modal>
   );
 };
+
 const mapStateToProps = state => ({
   userData: state.userData,
 });
@@ -239,116 +253,121 @@ const mapDispatchToProps = dispatch => ({
 export default connect(mapStateToProps, mapDispatchToProps)(MeetingRequestPak);
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: height,
-    width: width,
-  },
   modalBackground: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
   },
   modalView: {
     width: width * 0.9,
     height: height * 0.75,
-    backgroundColor: 'white',
-    borderRadius: 10,
-    padding: 10,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    ...(Platform.OS === 'android' && {
+      scrollBarColor: '#0059CF',
+    }),
+    paddingBottom: '25%',
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingBottom: 10,
+    marginBottom: 15,
   },
   modalTitle: {
-    color: '#3C4B64',
-    fontWeight: '600',
-    fontSize: width * 0.05,
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#4a5f85',
   },
   modalSeparator: {
-    borderBottomWidth: 1,
-    borderColor: '#ccc',
-    marginVertical: 10,
-  },
-  modalContent: {
-    width: '100%',
+    height: 1,
+    backgroundColor: '#ddd',
+    marginVertical: 5,
   },
   modalSubTitle: {
-    color: '#3C4B64',
+    fontSize: 18,
     fontWeight: '600',
-    fontSize: width * 0.05,
+    color: '#4a5f85',
     marginBottom: 10,
   },
   dropdownContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-  },
-  dropdownSection: {
-    width: '48%',
-  },
-  dropdownHeading: {
-    fontWeight: '600',
-    fontSize: width * 0.04,
-    color: '#3C4B64',
-    marginBottom: 5,
-  },
-  meetingHeading: {
-    fontWeight: '600',
-    fontSize: width * 0.05,
-    color: '#3C4B64',
-    marginVertical: 10,
-  },
-  locationContainer: {
     marginBottom: 10,
   },
-  locationHeading: {
-    fontSize: width * 0.04,
+  dropdownSection: {
+    flex: 1,
+    marginHorizontal: 5,
+  },
+  dropdownHeading: {
+    fontSize: 16,
     fontWeight: '600',
-    color: '#3C4B64',
+    color: '#4a5f85',
+  },
+  meetingHeading: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#4a5f85',
+    marginTop: 5,
+  },
+  locationContainer: {
+    marginVertical: 10,
+  },
+  locationHeading: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#4a5f85',
     marginBottom: 5,
   },
   separator: {
-    borderBottomWidth: 1,
-    borderColor: '#ccc',
+    height: 1,
+    backgroundColor: '#ddd',
     marginVertical: 10,
   },
   messageHeading: {
-    fontSize: width * 0.04,
-    color: '#3C4B64',
+    fontSize: 18,
     fontWeight: '600',
+    color: '#4a5f85',
     marginBottom: 10,
   },
   messageInput: {
-    height: height * 0.15,
-    borderWidth: 1,
+    height: 100,
     borderColor: '#ccc',
-    paddingHorizontal: 10,
-    color: 'black',
-    marginBottom: 10,
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 10,
+    color: '#333',
+    textAlignVertical: 'top',
   },
   sendButton: {
     backgroundColor: '#0059CF',
     paddingVertical: 15,
-    paddingHorizontal: 30,
-    borderRadius: 50,
+    borderRadius: 10,
     alignItems: 'center',
-    alignSelf: 'center',
-    marginTop: 15,
+    marginTop: 20,
   },
   sendButtonText: {
     color: '#fff',
     fontWeight: 'bold',
-    fontSize: width * 0.04,
+    fontSize: 16,
   },
   activityIndicator: {
     position: 'absolute',
     alignSelf: 'center',
-    top: '50%',
+    top: '50%', // Center vertically
     zIndex: 999,
   },
 });

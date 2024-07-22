@@ -155,6 +155,11 @@ const DashboardPak = () => {
     setModalVisible1(true);
   };
 
+  const multiplyFunctionModal = () => {
+    setModalVisible1(false);
+    setModalVisible(true);
+  };
+
   useFocusEffect(
     useCallback(() => {
       const onBackPress = () => {
@@ -174,7 +179,7 @@ const DashboardPak = () => {
       behavior={Platform.OS === 'ios' ? 'height' : 'height'}>
       <HeaderComponent onMenuPress={() => setDrawerVisible(!drawerVisible)} />
       <View style={styles.headerCont}>
-        <Text style={styles.headerText}>List of KSA DELEGATES</Text>
+        <Text style={styles.headerText}>LIST OF DELEGATES</Text>
       </View>
       <View style={styles.headerSubCont}>
         <View style={styles.headerTextSearch}>
@@ -268,7 +273,7 @@ const DashboardPak = () => {
       <View style={styles.tableContainer}>
         <ScrollView
           horizontal
-          showsHorizontalScrollIndicator={false}
+          showsHorizontalScrollIndicator={true}
           contentContainerStyle={{
             alignItems: 'flex-start',
             alignSelf: 'flex-start',
@@ -295,7 +300,7 @@ const DashboardPak = () => {
                 filteredData?.buyers?.length > 0 ? (
                 <ScrollView
                   style={{height: height * 0.4}}
-                  showsVerticalScrollIndicator={false}>
+                  showsVerticalScrollIndicator={true}>
                   {filteredData?.buyers?.map((item, index) => {
                     return (
                       <View key={item.id} style={styles.row}>
@@ -424,11 +429,26 @@ const DashboardPak = () => {
                   </>
                 )}
               </View>
-              <TouchableOpacity
-                style={styles.closeButton}
-                onPress={() => setModalVisible1(false)}>
-                <Text style={styles.closeButtonText}>Close</Text>
-              </TouchableOpacity>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}>
+                <TouchableOpacity
+                  style={styles.closeButton}
+                  onPress={() => setModalVisible1(false)}>
+                  <Text style={styles.closeButtonText}>Close</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.closeButton}
+                  onPress={() => {
+                    setModalVisible(true);
+                    // setSelectedRow(item);
+                  }}>
+                  <Text style={styles.meetingButtonText}>Request</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         </Modal>
@@ -476,6 +496,8 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     marginVertical: 15,
+    alignSelf: 'flex-start',
+    letterSpacing: 1.5,
   },
   headerSubCont: {
     width: '100%',
@@ -560,16 +582,14 @@ const styles = StyleSheet.create({
   },
   tableContainer: {
     width: '95%',
-    backgroundColor: '#fff',
-    marginTop: width * 0.03,
-    borderWidth: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.12)',
+    marginTop: width * 0.015,
     borderRadius: 10,
     overflow: 'hidden',
-    borderColor: '#ccc',
   },
   headerRow: {
     flexDirection: 'row',
-    backgroundColor: '#ccc',
+    backgroundColor: 'rgba(0,0,0,0.15)',
     padding: 13,
     borderWidth: 1,
     borderColor: '#ccc',
@@ -710,7 +730,7 @@ const styles = StyleSheet.create({
   activityIndicator: {
     position: 'absolute',
     alignSelf: 'center',
-    top: '60%', // Center vertically
+    top: '70%', // Center vertically
     zIndex: 999,
   },
 });

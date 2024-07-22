@@ -74,11 +74,18 @@ const ProfileKsa = props => {
       return false;
     }
     if (
-      !updatedPhoneNumber.trim() ||
-      updatedPhoneNumber.length < 10 ||
-      updatedPhoneNumber.length > 15
+      !updatedPhoneNumber.startsWith('+966') ||
+      updatedPhoneNumber.length !== 13
     ) {
-      setAlertMessage('Phone Number must be between 10 to 15 digits.');
+      setAlertMessage(
+        'Phone Number must be 13 digits long and start with +966.',
+      );
+      setAlertType('error');
+      setAlertVisible(true);
+      return false;
+    }
+    if (!updatedPhoneNumber.startsWith('+966')) {
+      setAlertMessage('Phone Number must contain only digits after +966..');
       setAlertType('error');
       setAlertVisible(true);
       return false;
@@ -166,7 +173,6 @@ const ProfileKsa = props => {
       setWebsiteLink(user?.userAdditionalData?.website || '');
     }
   };
-
   useEffect(() => {
     setData();
   }, [user]);
@@ -198,50 +204,82 @@ const ProfileKsa = props => {
 
         {/*Profile Section */}
         <View style={styles.card}>
-          <Text style={styles.profileTitle}>My Profile</Text>
-          <TextInput
-            style={[styles.input, {color: '#000'}]}
-            value={fullName}
-            placeholder="Full Name"
-            placeholderTextColor="#000"
-            editable={false}
-          />
-          <TextInput
-            style={[styles.input, {color: '#000'}]}
-            value={companyName}
-            placeholder="Company Name"
-            placeholderTextColor="#000"
-            editable={false}
-          />
-          <TextInput
-            style={[styles.input, {color: '#000'}]}
-            value={email}
-            placeholder="Email"
-            keyboardType="email-address"
-            placeholderTextColor="#000"
-            editable={false}
-          />
-          <TextInput
-            style={[styles.input, {color: '#000'}]}
-            value={phoneNumber}
-            placeholder="Phone Number"
-            keyboardType="phone-pad"
-            placeholderTextColor="#000"
-            editable={false}
-          />
-          <TextInput
-            style={[styles.input, {color: '#000'}]}
-            value={websiteLink}
-            placeholder="Website Link"
-            keyboardType="url"
-            placeholderTextColor="#000"
-            editable={false}
-          />
+          <Text style={styles.profileTitle}>Profile</Text>
+          <View style={styles.profileItem}>
+            <FontAwesomeIcon
+              name="user"
+              size={25}
+              color="#4a5f85"
+              style={styles.icon}
+            />
+            <View style={styles.profileDetail}>
+              <Text style={styles.label}>Full Name:</Text>
+              <Text style={styles.value}>{fullName}</Text>
+            </View>
+          </View>
+          <View style={styles.profileItem}>
+            <FontAwesomeIcon
+              name="building"
+              size={25}
+              color="#4a5f85"
+              style={styles.icon}
+            />
+            <View style={styles.profileDetail}>
+              <Text style={styles.label}>Company Name:</Text>
+              <Text style={styles.value}>{companyName}</Text>
+            </View>
+          </View>
+          <View style={styles.profileItem}>
+            <FontAwesomeIcon
+              name="envelope"
+              size={25}
+              color="#4a5f85"
+              style={styles.icon}
+            />
+            <View style={styles.profileDetail}>
+              <Text style={styles.label}>Email:</Text>
+              <Text style={styles.value}>{email}</Text>
+            </View>
+          </View>
+          <View style={styles.profileItem}>
+            <FontAwesomeIcon
+              name="phone"
+              size={25}
+              color="#4a5f85"
+              style={styles.icon}
+            />
+            <View style={styles.profileDetail}>
+              <Text style={styles.label}>Phone Number:</Text>
+              <Text style={styles.value}>{phoneNumber}</Text>
+            </View>
+          </View>
+          <View style={styles.profileItem}>
+            <FontAwesomeIcon
+              name="link"
+              size={25}
+              color="#4a5f85"
+              style={styles.icon}
+            />
+            <View style={styles.profileDetail}>
+              <Text style={styles.label}>Website Link:</Text>
+              <Text style={styles.value}>{websiteLink}</Text>
+            </View>
+          </View>
         </View>
         <TouchableOpacity
           style={[styles.updateButton, {marginTop: width * 0.1}]}
           onPress={openModal}>
-          <Text style={styles.updateButtonText}>Edit Profile</Text>
+          <Text
+            style={[
+              styles.updateButtonText,
+              {
+                letterSpacing: 2,
+                textTransform: 'uppercase',
+                fontSize: 18,
+              },
+            ]}>
+            Edit Profile
+          </Text>
         </TouchableOpacity>
         {loading && <CustomActivityIndicator />}
         {!loading && (
@@ -302,7 +340,17 @@ const ProfileKsa = props => {
                 <TouchableOpacity
                   style={styles.updateButton}
                   onPress={updateProfile}>
-                  <Text style={styles.updateButtonText}>Update Profile</Text>
+                  <Text
+                    style={[
+                      styles.updateButtonText,
+                      {
+                        letterSpacing: 2,
+                        textTransform: 'uppercase',
+                        fontSize: 16,
+                      },
+                    ]}>
+                    Update Profile
+                  </Text>
                 </TouchableOpacity>
               </View>
             </KeyboardAvoidingView>
@@ -337,10 +385,37 @@ const styles = StyleSheet.create({
     paddingBottom: height * 0.1,
   },
   profileTitle: {
-    fontSize: 20,
-    color: '#4a5f85',
-    marginLeft: 10,
+    fontSize: 22,
     fontWeight: 'bold',
+    marginBottom: 10,
+    textAlign: 'center',
+    color: '#4a5f85',
+    textTransform: 'uppercase',
+    letterSpacing: 1.5,
+  },
+  profileItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 20,
+    borderBottomWidth: 1,
+    borderColor: '#F0F0F0',
+  },
+  icon: {
+    marginRight: 10,
+  },
+  profileDetail: {
+    flex: 1,
+  },
+  label: {
+    fontSize: 16,
+    color: '#666',
+    marginLeft: 10,
+  },
+  value: {
+    fontSize: 16,
+    fontWeight: '500',
+    marginLeft: 10,
+    color: '#4a5f85',
   },
   headerImageCont: {
     width: '100%',
@@ -380,24 +455,29 @@ const styles = StyleSheet.create({
     borderRadius: width * 0.02,
   },
   card: {
-    marginTop: width * 0.1,
     backgroundColor: '#fff',
-    borderRadius: width * 0.03,
-    padding: width * 0.04,
+    borderRadius: 10,
+    padding: 16,
     shadowColor: '#000',
     shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
     elevation: 5,
+    marginTop: 20,
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#000',
+    borderWidth: 2,
+    borderColor: '#ccc',
     borderRadius: width * 0.015,
     padding: width * 0.035,
     marginTop: 10,
     marginBottom: 15,
     color: '#000',
+  },
+  countryCodeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '20%',
   },
   dropdownContainer: {
     marginBottom: height * 0.02,
@@ -416,7 +496,7 @@ const styles = StyleSheet.create({
     padding: width * 0.04,
     borderRadius: width * 0.02,
     alignItems: 'center',
-    marginTop: width * 0.1,
+    marginTop: width * 0.05,
   },
   updateButtonText: {
     fontWeight: 'bold',
@@ -446,18 +526,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalHeading: {
-    color: 'black',
+    color: '#4a5f85',
     padding: 10,
     fontSize: 24,
     textTransform: 'uppercase',
     fontWeight: '500',
     alignSelf: 'center',
-  },
-  activityIndicator: {
-    position: 'absolute',
-    alignSelf: 'center',
-    top: '60%', // Center vertically
-    zIndex: 999,
   },
 });
 

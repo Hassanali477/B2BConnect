@@ -9,9 +9,7 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
-  Alert,
   Modal,
-  TouchableHighlight,
   ActivityIndicator,
 } from 'react-native';
 import HeaderComponent from '../../components/HeaderComponent';
@@ -274,7 +272,7 @@ const MeetingRequestScreenKsa = () => {
     <View style={styles.tableContainer}>
       <ScrollView
         horizontal
-        showsHorizontalScrollIndicator={false}
+        showsHorizontalScrollIndicator={true}
         contentContainerStyle={{
           alignItems: 'flex-start',
           alignSelf: 'flex-start',
@@ -296,7 +294,7 @@ const MeetingRequestScreenKsa = () => {
           </View>
           <ScrollView
             style={{height: height * 0.4}}
-            showsVerticalScrollIndicator={false}>
+            showsVerticalScrollIndicator={true}>
             {filteredData.length === 0 ? (
               <View style={styles.noDataRow}>
                 <Text style={styles.noDataText}>
@@ -381,7 +379,7 @@ const MeetingRequestScreenKsa = () => {
     <View style={styles.tableContainer}>
       <ScrollView
         horizontal
-        showsHorizontalScrollIndicator={false}
+        showsHorizontalScrollIndicator={true}
         contentContainerStyle={{
           alignItems: 'flex-start',
           alignSelf: 'flex-start',
@@ -399,7 +397,7 @@ const MeetingRequestScreenKsa = () => {
           </View>
           <ScrollView
             style={{height: height * 0.4}}
-            showsVerticalScrollIndicator={false}>
+            showsVerticalScrollIndicator={true}>
             {filteredData.length === 0 ? (
               <View style={styles.noDataRow}>
                 <Text style={styles.noDataText}>
@@ -720,12 +718,11 @@ const styles = StyleSheet.create({
   },
   tableContainer: {
     width: '95%',
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(0, 0, 0, 0.075)',
+
     marginTop: width * 0.06,
-    borderWidth: 1,
     borderRadius: 10,
     overflow: 'hidden',
-    borderColor: '#ccc',
   },
   headerRow: {
     flexDirection: 'row',

@@ -247,7 +247,7 @@ const MeetingRequestScreenPak = () => {
     <View style={styles.tableContainer}>
       <ScrollView
         horizontal
-        showsHorizontalScrollIndicator={false}
+        showsHorizontalScrollIndicator={true}
         contentContainerStyle={{
           alignItems: 'flex-start',
           alignSelf: 'flex-start',
@@ -270,7 +270,7 @@ const MeetingRequestScreenPak = () => {
 
           <ScrollView
             style={{height: height * 0.4}}
-            showsVerticalScrollIndicator={false}>
+            showsVerticalScrollIndicator={true}>
             {filteredData.length === 0 ? (
               <View style={styles.noDataRow}>
                 <Text style={styles.noDataText}>
@@ -357,7 +357,7 @@ const MeetingRequestScreenPak = () => {
     <View style={styles.tableContainer}>
       <ScrollView
         horizontal
-        showsHorizontalScrollIndicator={false}
+        showsHorizontalScrollIndicator={true}
         contentContainerStyle={{
           alignItems: 'flex-start',
           alignSelf: 'flex-start',
@@ -375,7 +375,7 @@ const MeetingRequestScreenPak = () => {
           </View>
           <ScrollView
             style={{height: height * 0.4}}
-            showsVerticalScrollIndicator={false}>
+            showsVerticalScrollIndicator={true}>
             {filteredData.length === 0 ? (
               <View style={styles.noDataRow}>
                 <Text style={styles.noDataText}>
@@ -704,12 +704,10 @@ const styles = StyleSheet.create({
   },
   tableContainer: {
     width: '95%',
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(0, 0, 0, 0.075)',
     marginTop: width * 0.06,
-    borderWidth: 1,
     borderRadius: 10,
     overflow: 'hidden',
-    borderColor: '#ccc',
   },
   headerRow: {
     flexDirection: 'row',

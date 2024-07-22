@@ -24,6 +24,7 @@ import Api_Base_Url from '../../api';
 import {connect, useSelector} from 'react-redux';
 import * as userActions from '../../redux/actions/user';
 import {bindActionCreators} from 'redux';
+import RNFS from 'react-native-fs';
 
 const {width, height} = Dimensions.get('screen');
 
@@ -65,265 +66,24 @@ const ConfirmAppointment = () => {
     }
   };
 
-  // const requestPermissions = async () => {
-  //   if (Platform.OS === 'android') {
-  //     try {
-  //       const granted = await PermissionsAndroid.requestMultiple([
-  //         PermissionsAndroid.PERMISSIONS.CAMERA,
-  //         PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-  //         PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-  //       ]);
-  //       console.log(granted, 'grateddddddddd');
-  //       return (
-  //         granted['android.permission.CAMERA'] ===
-  //           PermissionsAndroid.RESULTS.GRANTED &&
-  //         granted['android.permission.WRITE_EXTERNAL_STORAGE'] ===
-  //           PermissionsAndroid.RESULTS.GRANTED &&
-  //         granted['android.permission.READ_EXTERNAL_STORAGE'] ===
-  //           PermissionsAndroid.RESULTS.GRANTED
-  //       );
-  //     } catch (err) {
-  //       console.log(err, 'errorroor');
-  //       console.warn(err);
-  //       return false;
-  //     }
-  //   } else {
-  //     return true; // iOS permissions handled separately
-  //   }
-  // };
-  // const downloadPDF = async () => {
-  //   try {
-  //     if (appointments.length === 0) {
-  //       showAlertMessage('Error', 'No appointments to download.');
-  //       return;
-  //     }
-
-  //     setLoading(true);
-
-  //     const htmlContent = `
-  //       <html>
-  //       <head>
-  //         <style>
-  //           table { width: 100%; border-collapse: collapse; }
-  //           th, td { border: 1px solid black; padding: 8px; text-align: center; }
-  //           th { background-color: #f2f2f2; }
-  //         </style>
-  //       </head>
-  //       <body>
-  //         <h1>Appointments</h1>
-  //         <table>
-  //           <tr>
-  //             <th>Date</th>
-  //             <th>Time</th>
-  //             <th>Name</th>
-  //             <th>Company</th>
-  //             <th>Sector</th>
-  //             <th>Phone</th>
-  //             <th>Email</th>
-  //             <th>City</th>
-  //           </tr>
-  //           ${appointments
-  //             .map(
-  //               item => `
-  //             <tr>
-  //               <td>${item.date}</td>
-  //               <td>${item.time}</td>
-  //               <td>${item.buyer.contact_name}</td>
-  //               <td>${item.buyer.company_name}</td>
-  //               <td>${item.buyer.industry}</td>
-  //               <td>${item.buyer.phone}</td>
-  //               <td>${item.buyer.email}</td>
-  //               <td>${item.buyer.country}</td>
-  //             </tr>
-  //           `,
-  //             )
-  //             .join('')}
-  //         </table>
-  //       </body>
-  //       </html>
-  //     `;
-
-  //     const options = {
-  //       html: htmlContent,
-  //       fileName: 'appointments',
-  //       directory: 'Download', // Save to Downloads directory
-  //     };
-
-  //     const file = await RNHTMLtoPDF.convert(options);
-  //     console.log('Generated PDF path:', file.filePath);
-
-  //     // Check if the file exists before moving
-  //     const fileExists = await RNFetchBlob.fs.exists(file.filePath);
-  //     if (!fileExists) {
-  //       throw new Error('Source file not found.');
-  //     }
-
-  //     // Generate unique file name if file already exists
-  //     const downloadsDir = RNFetchBlob.fs.dirs.DownloadDir;
-  //     let destPath = `${downloadsDir}/appointments.pdf`;
-  //     let fileCounter = 1;
-  //     while (await RNFetchBlob.fs.exists(destPath)) {
-  //       destPath = `${downloadsDir}/appointments_${fileCounter}.pdf`;
-  //       fileCounter++;
-  //     }
-
-  //     console.log('Saving PDF to:', destPath);
-
-  //     await RNFetchBlob.fs.mv(file.filePath, destPath);
-
-  //     setLoading(false);
-  //     showAlertMessage('Success', 'PDF file downloaded successfully.');
-
-  //     RNFetchBlob.android.actionViewIntent(destPath, 'application/pdf');
-  //   } catch (error) {
-  //     setLoading(false);
-  //     showAlertMessage('Error', 'Failed to download PDF file.');
-  //     console.error('PDF download error:', error);
-  //   }
-  // };
-
-  // const handleDownloadPDF = async () => {
-  //   console.log('Handling PDF download');
-  //   try {
-  //     const hasPermission = await requestPermissions();
-  //     console.log('Has permission:', hasPermission);
-  //     if (!hasPermission) {
-  //       return;
-  //     }
-
-  //     await downloadPDF();
-  //   } catch (error) {
-  //     console.error('Error handling permissions:', error);
-  //     showAlertMessage('Error', 'Failed to handle permissions.');
-  //   }
-  // };
-  // const checkPermissions = async () => {
-  //   if (Platform.OS === 'android') {
-  //     const granted = await PermissionsAndroid.check(
-  //       PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-  //     );
-  //     if (!granted) {
-  //       await PermissionsAndroid.request(
-  //         PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-  //       );
-  //     }
-  //   }
-  // };
-
-  // const downloadPDF = async () => {
-  //   try {
-  //     if (appointments.length === 0) {
-  //       showAlertMessage('Error', 'No appointments to download.');
-  //       return;
-  //     }
-
-  //     setLoading(true);
-
-  //     const htmlContent = `
-  //       <html>
-  //       <head>
-  //         <style>
-  //           table { width: 100%; border-collapse: collapse; }
-  //           th, td { border: 1px solid black; padding: 8px; text-align: center; }
-  //           th { background-color: #f2f2f2; }
-  //         </style>
-  //       </head>
-  //       <body>
-  //         <h1>Appointments</h1>
-  //         <table>
-  //           <tr>
-  //             <th>Date</th>
-  //             <th>Time</th>
-  //             <th>Name</th>
-  //             <th>Company</th>
-  //             <th>Sector</th>
-  //             <th>Phone</th>
-  //             <th>Email</th>
-  //             <th>City</th>
-  //           </tr>
-  //           ${appointments
-  //             .map(
-  //               item => `
-  //             <tr>
-  //               <td>${item.date}</td>
-  //               <td>${item.time}</td>
-  //               <td>${item.buyer.contact_name}</td>
-  //               <td>${item.buyer.company_name}</td>
-  //               <td>${item.buyer.industry}</td>
-  //               <td>${item.buyer.phone}</td>
-  //               <td>${item.buyer.email}</td>
-  //               <td>${item.buyer.country}</td>
-  //             </tr>
-  //           `,
-  //             )
-  //             .join('')}
-  //         </table>
-  //       </body>
-  //       </html>
-  //     `;
-
-  //     const options = {
-  //       html: htmlContent,
-  //       fileName: 'appointments',
-  //       directory: 'Documents', // Save to Documents directory initially
-  //     };
-
-  //     const file = await RNHTMLtoPDF.convert(options);
-  //     console.log('Generated PDF path:', file.filePath);
-
-  //     // Check if the file exists before moving
-  //     const fileExists = await RNFetchBlob.fs.exists(file.filePath);
-  //     if (!fileExists) {
-  //       throw new Error('Source file not found.');
-  //     }
-
-  //     // Set the path to /storage/emulated/0/Download
-  //     const downloadsDir = '/storage/emulated/0/Download';
-  //     let destPath = `${downloadsDir}/appointments.pdf`;
-  //     let fileCounter = 1;
-  //     while (await RNFetchBlob.fs.exists(destPath)) {
-  //       destPath = `${downloadsDir}/appointments_${fileCounter}.pdf`;
-  //       fileCounter++;
-  //     }
-
-  //     console.log('Saving PDF to:', destPath);
-
-  //     await RNFetchBlob.fs.mv(file.filePath, destPath);
-
-  //     setLoading(false);
-  //     showAlertMessage('Success', 'PDF file downloaded successfully.');
-
-  //     RNFetchBlob.android.actionViewIntent(destPath, 'application/pdf');
-  //   } catch (error) {
-  //     setLoading(false);
-  //     showAlertMessage('Error', 'Failed to download PDF file.');
-  //     console.error('PDF download error:', error);
-  //   }
-  // };
-
-  // const handleDownloadPDF = async () => {
-  //   console.log('Handling PDF download');
-  //   try {
-  //     await checkPermissions();
-  //     await downloadPDF();
-  //   } catch (error) {
-  //     console.error('Error handling permissions:', error);
-  //     showAlertMessage('Error', 'Failed to handle permissions.');
-  //   }
-  // };
+  // Check Permissions
   const checkPermissions = async () => {
-    if (Platform.OS === 'android') {
+    if (Platform.OS === 'android' && Platform.Version < 29) {
       const granted = await PermissionsAndroid.check(
         PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
       );
       if (!granted) {
-        await PermissionsAndroid.request(
+        const result = await PermissionsAndroid.request(
           PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
         );
+        if (result !== PermissionsAndroid.RESULTS.GRANTED) {
+          throw new Error('WRITE_EXTERNAL_STORAGE permission denied');
+        }
       }
     }
   };
 
+  // Download PDF
   const downloadPDF = async () => {
     try {
       if (appointments.length === 0) {
@@ -385,31 +145,22 @@ const ConfirmAppointment = () => {
       const file = await RNHTMLtoPDF.convert(options);
       console.log('Generated PDF path:', file.filePath);
 
-      // Check if the file exists before moving
-      const fileExists = await RNFetchBlob.fs.exists(file.filePath);
-      if (!fileExists) {
-        throw new Error('Source file not found.');
-      }
-
-      // Set the path to /storage/emulated/0/Download
+      // Save to /storage/emulated/0/Download
       const downloadsDir = '/storage/emulated/0/Download';
       let destPath = `${downloadsDir}/PakExhibitorAppointments.pdf`;
       let fileCounter = 1;
-      while (await RNFetchBlob.fs.exists(destPath)) {
+      while (await RNFS.exists(destPath)) {
         destPath = `${downloadsDir}/PakExhibitorAppointments_${fileCounter}.pdf`;
         fileCounter++;
       }
 
       console.log('Saving PDF to:', destPath);
 
-      await RNFetchBlob.fs.mv(file.filePath, destPath);
+      await RNFS.moveFile(file.filePath, destPath);
       setLoading(false);
       showAlertMessage('Success', 'PDF file downloaded successfully.');
 
-      RNFetchBlob.android.actionViewIntent(
-        destPath,
-        'PakExhibitorApplication/pdf',
-      );
+      RNFetchBlob.android.actionViewIntent(destPath, 'application/pdf');
     } catch (error) {
       setLoading(false);
       showAlertMessage('Error', 'Failed to download PDF file.');
@@ -417,6 +168,7 @@ const ConfirmAppointment = () => {
     }
   };
 
+  // Handle Download PDF
   const handleDownloadPDF = async () => {
     console.log('Handling PDF download');
     try {
@@ -483,7 +235,7 @@ const ConfirmAppointment = () => {
       <View style={styles.tableContainer}>
         <ScrollView
           horizontal
-          showsHorizontalScrollIndicator={false}
+          showsHorizontalScrollIndicator={true}
           contentContainerStyle={{
             alignItems: 'flex-start',
             alignSelf: 'flex-start',
@@ -501,7 +253,7 @@ const ConfirmAppointment = () => {
             </View>
             <ScrollView
               style={{height: height * 0.4}}
-              showsVerticalScrollIndicator={false}>
+              showsVerticalScrollIndicator={true}>
               {filteredAppointments.map(item => (
                 <View key={item.id} style={styles.row}>
                   <Text style={styles.cell}>{item.date}</Text>
@@ -591,21 +343,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   tableContainer: {
-    // width: width / 1.16,
-    // height: height * 0.5,
-    // backgroundColor: '#fff',
-    // marginTop: width * 0.06,
-    // borderWidth: 1,
-    // borderRadius: 10,
-    // overflow: 'hidden',
-    // borderColor: '#ccc',
     width: '95%',
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(0, 0, 0, 0.075)',
     marginTop: width * 0.06,
-    borderWidth: 1,
     borderRadius: 10,
     overflow: 'hidden',
-    borderColor: '#ccc',
   },
   headerRow: {
     flexDirection: 'row',

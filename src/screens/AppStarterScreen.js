@@ -46,10 +46,8 @@ const AppStarterScreen = () => {
           source={require('../assets/images/SplashScreen.png')}
           style={styles.imageHeader}
         />
-        <Text style={styles.headerText}>INVESTMENT CONFERENCE 2024</Text>
-        <Text style={styles.headerText1}>
-          مؤتمر الاستثمار الباكستاني السعودي 2024
-        </Text>
+        <Text style={styles.headerText}>Empowering Global Business</Text>
+        <Text style={styles.headerText1}>Fostering Dynamic Partnerships</Text>
       </View>
       {/* Main Component */}
       <View style={styles.mainContainer}>
@@ -57,36 +55,30 @@ const AppStarterScreen = () => {
           <TouchableOpacity
             style={styles.optionContainer}
             onPress={handleNavigateToLoginKSA}>
-            <View
-              style={{
-                width: width * 0.3,
-                height: '80%',
-                overflow: 'hidden',
-              }}>
+            <View style={styles.imageContainer}>
               <Image
-                source={require('../assets/images/sa.png')}
+                source={require('../assets/images/Delegates.png')}
                 style={styles.imageFlag}
               />
             </View>
-            <Text style={styles.optionText1}>KSA DELEGATE</Text>
+            <View style={styles.textContainer}>
+              <Text style={styles.optionText1}>DELEGATE</Text>
+            </View>
           </TouchableOpacity>
         </View>
         <View style={styles.card}>
           <TouchableOpacity
             style={styles.optionContainer}
             onPress={handleNavigateToLoginPak}>
-            <View
-              style={{
-                width: width * 0.3,
-                height: '80%',
-                overflow: 'hidden',
-              }}>
+            <View style={styles.imageContainer}>
               <Image
-                source={require('../assets/images/pak.png')}
+                source={require('../assets/images/Exhibitor.png')}
                 style={styles.imageFlag}
               />
             </View>
-            <Text style={styles.optionText}>PAK EXHIBITOR</Text>
+            <View style={styles.textContainer}>
+              <Text style={styles.optionText}>EXHIBITOR</Text>
+            </View>
           </TouchableOpacity>
         </View>
       </View>
@@ -125,17 +117,18 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
   headerText: {
-    color: '#ef8a38',
+    color: '#3C4B64',
     fontSize: 18,
     fontWeight: 'bold',
     textAlign: 'center',
     marginTop: 10,
   },
   headerText1: {
-    color: '#126a30',
+    color: '#3C4B64',
     fontSize: 18,
     fontWeight: 'bold',
     textAlign: 'center',
+    marginLeft: 25,
   },
   mainContainer: {
     flex: 1,
@@ -149,13 +142,13 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: 10,
     width: width * 0.4,
-    height: height * 0.26,
+    height: '50%', // Set height to 100% of the container
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#f2f2f2',
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: '#ef8a38',
     shadowColor: '#000',
     shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.25,
@@ -163,6 +156,18 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   optionContainer: {
+    width: '100%',
+    height: '100%',
+  },
+  imageContainer: {
+    width: '100%',
+    height: '80%', // 80% height for the image
+  },
+  textContainer: {
+    width: '100%',
+    height: '20%', // 20% height for the text
+    backgroundColor: '#ef8a38',
+    justifyContent: 'center',
     alignItems: 'center',
   },
   imageFlag: {
@@ -171,14 +176,14 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
   optionText: {
-    color: 'black',
-    fontSize: 16,
+    color: 'white',
+    fontSize: 18,
     fontWeight: 'bold',
     textAlign: 'center',
   },
   optionText1: {
-    color: 'black',
-    fontSize: 16,
+    color: 'white',
+    fontSize: 18,
     fontWeight: 'bold',
     textAlign: 'center',
   },

@@ -1,5 +1,5 @@
-import {useNavigation} from '@react-navigation/native';
-import React, {useState, useEffect} from 'react';
+import {useFocusEffect, useNavigation} from '@react-navigation/native';
+import React, {useState, useEffect, useCallback} from 'react';
 import {
   StyleSheet,
   Text,
@@ -9,6 +9,7 @@ import {
   Image,
   TouchableOpacity,
   Alert,
+  BackHandler,
 } from 'react-native';
 import CheckBox from '@react-native-community/checkbox';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -149,6 +150,19 @@ const LoginKSA = props => {
     navigation.navigate('ForgotScreenKSA');
   };
 
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        return true;
+      };
+
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+      return () => {
+        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+      };
+    }, [navigation]),
+  );
   return (
     <View style={styles.container}>
       {loading && <CustomActivityIndicator />}
@@ -177,9 +191,9 @@ const LoginKSA = props => {
           </View>
           <View style={styles.mainContainer}>
             <View style={styles.textInputHeadingCont}>
-              <Text style={styles.textInputHeading}>KSA DELEGATE</Text>
+              <Text style={styles.textInputHeading}>DELEGATE LOGIN</Text>
               <Image
-                source={require('../../assets/images/SaudiFlag.jpg')}
+                source={require('../../assets/images/Delegates.png')}
                 style={styles.imageFlagPak}
               />
             </View>
@@ -239,6 +253,13 @@ const LoginKSA = props => {
                 source={require('../../assets/images/A2Z.png')}
                 style={styles.logoBottom}
               />
+              <View style={styles.signupContainer}>
+                <Text style={styles.signupText}>Don't have an account?</Text>
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('SignupKSA')}>
+                  <Text style={styles.signupLink}>Sign up here</Text>
+                </TouchableOpacity>
+              </View>
             </View>
             <AlertMessage
               message="Login Successful. Welcome back!"
@@ -343,7 +364,7 @@ const styles = StyleSheet.create({
   },
   imageFlagPak: {
     width: width * 0.15,
-    height: 20,
+    height: 40,
     resizeMode: 'contain',
     alignSelf: 'center',
   },
@@ -422,5 +443,21 @@ const styles = StyleSheet.create({
     width: width * 0.43,
     resizeMode: 'contain',
     alignSelf: 'center',
+  },
+  signupContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 5,
+  },
+  signupText: {
+    fontSize: 16,
+    color: 'grey',
+  },
+  signupLink: {
+    fontSize: 16,
+    color: '#4a5f85',
+    fontWeight: 'bold',
+    marginLeft: 5,
   },
 });
